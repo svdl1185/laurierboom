@@ -282,3 +282,36 @@ footer {
         width: 100%;
     }
 }
+
+/* Dropdown styling */
+.dropdown-menu.show {
+    transform: translate3d(0, 42px, 0) !important;
+  }
+  
+  .dropdown-menu {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.375rem;
+  }
+  
+  /* Player selection dropdown */
+  #player-select {
+    width: 100%;
+  }
+  
+  /* Add this to your static/chess/js/main.js file */
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize any select2 dropdowns for better UX
+    if (typeof $.fn.select2 !== 'undefined') {
+      $('#player-select').select2({
+        dropdownParent: $('#player-select').closest('.dropdown-menu'),
+        width: '100%',
+        placeholder: 'Select a player',
+        allowClear: true
+      });
+    }
+    
+    // Handle clicking inside dropdown without closing it
+    $('.dropdown-menu.p-3').on('click', function(e) {
+      e.stopPropagation();
+    });
+  });

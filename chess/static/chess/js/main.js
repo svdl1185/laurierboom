@@ -81,3 +81,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+/* Add this to your static/chess/js/main.js file */
+document.addEventListener('DOMContentLoaded', function() {
+// Initialize any select2 dropdowns for better UX
+if (typeof $.fn.select2 !== 'undefined') {
+    $('#player-select').select2({
+    dropdownParent: $('#player-select').closest('.dropdown-menu'),
+    width: '100%',
+    placeholder: 'Select a player',
+    allowClear: true
+    });
+}
+
+// Handle clicking inside dropdown without closing it
+$('.dropdown-menu.p-3').on('click', function(e) {
+    e.stopPropagation();
+});
+});

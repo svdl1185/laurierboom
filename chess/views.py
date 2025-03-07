@@ -101,6 +101,20 @@ class TournamentDetailView(DetailView):
             context['current_matches'] = current_round.matches.all()
         except Round.DoesNotExist:
             context['current_round'] = None
+            
+        # Add available players for dropdown
+        if self.request.user.is_staff and not tournament.is_completed:
+            # Get already registered player IDs
+            registered_player_ids = tournament.participants.values_list('id', flat=True)
+            
+            # Get available players (not registered, not staff/superuser)
+            available_players = User.objects.filter(
+                is_active=True, 
+                is_staff=False, 
+                is_superuser=False
+            ).exclude(id__in=registered_player_ids).order_by('first_name', 'last_name')
+            
+            context['available_players'] = available_players
         
         return context
 
@@ -361,35 +375,24 @@ def add_player_to_tournament(request, tournament_id):
         return redirect('tournament_detail', pk=tournament_id)
     
     if request.method == 'POST':
-        form = AddPlayerToTournamentForm(request.POST)
-        if form.is_valid():
-            player = form.cleaned_data['player']
-            # Double check that player is not a superuser or staff
-            if player.is_superuser or player.is_staff:
-                messages.error(request, "Cannot add superuser or staff to tournaments")
-                return redirect('tournament_detail', pk=tournament_id)
-                
-            if player in tournament.participants.all():
-                messages.info(request, f"{player.username} is already registered for this tournament")
-            else:
-                tournament.participants.add(player)
-                messages.success(request, f"{player.username} added to tournament successfully")
-            return redirect('tournament_detail', pk=tournament_id)
-    else:
-        form = AddPlayerToTournamentForm()
+        player_id = request.POST.get('player')
+        if player_id:
+            try:
+                player = User.objects.get(id=player_id)
+                # Double check that player is not a superuser or staff
+                if player.is_superuser or player.is_staff:
+                    messages.error(request, "Cannot add superuser or staff to tournaments")
+                elif player in tournament.participants.all():
+                    messages.info(request, f"{player.get_full_name() or player.username} is already registered for this tournament")
+                else:
+                    tournament.participants.add(player)
+                    messages.success(request, f"{player.get_full_name() or player.username} added to tournament successfully")
+            except User.DoesNotExist:
+                messages.error(request, "Player not found")
+        else:
+            messages.error(request, "No player selected")
     
-    # Exclude already registered players and superusers/staff
-    registered_player_ids = tournament.participants.values_list('id', flat=True)
-    form.fields['player'].queryset = User.objects.filter(
-        is_active=True, 
-        is_staff=False, 
-        is_superuser=False
-    ).exclude(id__in=registered_player_ids).order_by('username')
-    
-    return render(request, 'chess/add_player_to_tournament.html', {
-        'form': form,
-        'tournament': tournament
-    })
+    return redirect('tournament_detail', pk=tournament_id)
 
 def remove_player_from_tournament(request, tournament_id, player_id):
     """Admin view to remove a player from a tournament"""
