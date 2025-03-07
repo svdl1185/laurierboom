@@ -17,7 +17,7 @@
                 </p>
                 <p>
                     We are a casual chess community based at De Laurierboom café in Amsterdam. 
-                    We host bi-monthly blitz tournaments every other Friday at 8:00 PM.
+                    We host bi-monthly blitz tournaments every first and third wednesday at 8:00 PM.
                 </p>
                 <p>
                     This website is used to manage our tournaments and in-house Glicko-2 rating system. 
@@ -95,7 +95,7 @@
     </div>
     
     <div class="col-lg-4">
-        <div class="card mb-4 shadow">
+        <div class="card mb-4 shadow-sm">
             <div class="card-header bg-success text-white">
                 <h3 class="card-title mb-0">Upcoming Tournaments</h3>
             </div>
@@ -116,7 +116,15 @@
                                     </small>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">
-                                    {{ tournament.tournament_type|title }}
+                                    {% if tournament.tournament_type == 'round_robin' %}
+                                        Round Robin
+                                    {% elif tournament.tournament_type == 'double_round_robin' %}
+                                        Double Round Robin
+                                    {% elif tournament.tournament_type == 'swiss' %}
+                                        Swiss
+                                    {% else %}
+                                        {{ tournament.tournament_type|title }}
+                                    {% endif %}
                                 </span>
                             </div>
                         </li>

@@ -43,7 +43,6 @@ class User(AbstractUser):
 class Tournament(models.Model):
     TOURNAMENT_TYPES = [
         ('swiss', 'Swiss'),
-        ('double_swiss', 'Double Swiss'),
         ('round_robin', 'Round Robin'),
         ('double_round_robin', 'Double Round Robin'),
     ]
@@ -66,10 +65,24 @@ class Tournament(models.Model):
         return self.participants.count()
     
     def is_swiss_type(self):
-        return self.tournament_type in ['swiss', 'double_swiss']
+        """Check if tournament is Swiss type"""
+        return self.tournament_type == 'swiss'
 
+    # And the is_round_robin_type method 
     def is_round_robin_type(self):
+        """Check if tournament is Round Robin type"""
         return self.tournament_type in ['round_robin', 'double_round_robin']
+    
+    def get_tournament_type_display(self):
+        """Return a properly formatted tournament type for display"""
+        if self.tournament_type == 'round_robin':
+            return "Round Robin"
+        elif self.tournament_type == 'double_round_robin':
+            return "Double Round Robin"
+        elif self.tournament_type == 'swiss':
+            return "Swiss"
+        else:
+            return self.tournament_type.replace('_', ' ').title()
 
 class Round(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='rounds')

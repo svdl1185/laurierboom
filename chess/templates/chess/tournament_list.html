@@ -34,7 +34,17 @@
                                     </div>
                                     <div class="card-body">
                                         <p><strong>Date:</strong> {{ tournament.date }}</p>
-                                        <p><strong>Type:</strong> {{ tournament.tournament_type|title }}</p>
+                                        <p><strong>Type:</strong> 
+                                            {% if tournament.tournament_type == 'round_robin' %}
+                                                Round Robin
+                                            {% elif tournament.tournament_type == 'double_round_robin' %}
+                                                Double Round Robin
+                                            {% elif tournament.tournament_type == 'swiss' %}
+                                                Swiss
+                                            {% else %}
+                                                {{ tournament.tournament_type|title }}
+                                            {% endif %}
+                                        </p>
                                         {% if tournament.is_swiss_type %}
                                             <p><strong>Rounds:</strong> {{ tournament.num_rounds }}</p>
                                         {% endif %}
@@ -89,7 +99,17 @@
                                     <tr>
                                         <td>{{ tournament.name }}</td>
                                         <td>{{ tournament.date }}</td>
-                                        <td>{{ tournament.tournament_type|title }}</td>
+                                        <td>
+                                            {% if tournament.tournament_type == 'round_robin' %}
+                                                Round Robin
+                                            {% elif tournament.tournament_type == 'double_round_robin' %}
+                                                Double Round Robin
+                                            {% elif tournament.tournament_type == 'swiss' %}
+                                                Swiss
+                                            {% else %}
+                                                {{ tournament.tournament_type|title }}
+                                            {% endif %}
+                                        </td>
                                         <td>{{ tournament.num_participants }}</td>
                                         <td>
                                             {% with winner=tournament.standings.all|dictsort:"-score"|first %}

@@ -215,7 +215,7 @@ class EnterMatchResultView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
                     planned_rounds = participant_count - 1
                 elif tournament.tournament_type == 'double_round_robin':
                     planned_rounds = 2 * (participant_count - 1)
-                else:  # Swiss or Double Swiss
+                else:  # Swiss only now
                     planned_rounds = tournament.num_rounds
                 
                 # Check if there are more rounds to be played and if the next round doesn't already exist
@@ -446,7 +446,7 @@ def complete_round(request, tournament_id, round_id):
         planned_rounds = participant_count - 1
     elif tournament.tournament_type == 'double_round_robin':
         planned_rounds = 2 * (participant_count - 1)
-    else:  # Swiss or Double Swiss
+    else:  # Swiss only now
         planned_rounds = tournament.num_rounds
     
     # Check if there are more rounds to be played

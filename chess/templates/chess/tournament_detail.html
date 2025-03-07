@@ -10,7 +10,17 @@
             <div class="card-header bg-primary text-white">
                 <div class="d-flex justify-content-between align-items-center">
                     <h2 class="card-title mb-0">{{ tournament.name }}</h2>
-                    <span class="badge bg-light text-dark">{{ tournament.tournament_type|title }}</span>
+                    <span class="badge bg-light text-dark">
+                        {% if tournament.tournament_type == 'round_robin' %}
+                            Round Robin
+                        {% elif tournament.tournament_type == 'double_round_robin' %}
+                            Double Round Robin
+                        {% elif tournament.tournament_type == 'swiss' %}
+                            Swiss
+                        {% else %}
+                            {{ tournament.tournament_type|title }}
+                        {% endif %}
+                    </span>
                 </div>
             </div>
             <div class="card-body">
@@ -32,7 +42,17 @@
                         </p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Type:</strong> {{ tournament.tournament_type|title }}</p>
+                        <p><strong>Type:</strong> 
+                            {% if tournament.tournament_type == 'round_robin' %}
+                                Round Robin
+                            {% elif tournament.tournament_type == 'double_round_robin' %}
+                                Double Round Robin
+                            {% elif tournament.tournament_type == 'swiss' %}
+                                Swiss
+                            {% else %}
+                                {{ tournament.tournament_type|title }}
+                            {% endif %}
+                        </p>
                         {% if tournament.is_swiss_type %}
                             <p><strong>Rounds:</strong> {{ tournament.num_rounds }}</p>
                         {% endif %}

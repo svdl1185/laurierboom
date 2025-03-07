@@ -11,9 +11,13 @@ class TournamentForm(forms.ModelForm):
         model = Tournament
         fields = ['name', 'date', 'start_time', 'location', 'tournament_type', 'num_rounds', 'description']
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'start_time': forms.TimeInput(attrs={'type': 'time'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'start_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
+            'tournament_type': forms.Select(attrs={'class': 'form-select'}),
+            'num_rounds': forms.NumberInput(attrs={'class': 'form-control'}),
         }
     
     def clean(self):
@@ -22,7 +26,7 @@ class TournamentForm(forms.ModelForm):
         num_rounds = cleaned_data.get('num_rounds')
         
         # Only validate if tournament_type is provided and is Swiss type
-        if tournament_type in ['swiss', 'double_swiss'] and not num_rounds:
+        if tournament_type == 'swiss' and not num_rounds:
             self.add_error('num_rounds', 'Number of rounds is required for Swiss tournaments')
         
         # For round robin types, num_rounds is automatically calculated
@@ -48,7 +52,7 @@ class StartTournamentSettingsForm(forms.ModelForm):
         num_rounds = cleaned_data.get('num_rounds')
         
         # Only validate if tournament_type is provided and is Swiss type
-        if tournament_type in ['swiss', 'double_swiss'] and not num_rounds:
+        if tournament_type == 'swiss' and not num_rounds:
             self.add_error('num_rounds', 'Number of rounds is required for Swiss tournaments')
         
         # For round robin types, num_rounds is automatically calculated
@@ -149,7 +153,6 @@ class SimplePlayerRegistrationForm(forms.ModelForm):
             user.save()
         return user
 
-# Add this to forms.py
 class EmptyForm(forms.Form):
     """Form with no fields, used for CSRF protection only"""
     pass

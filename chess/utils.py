@@ -68,15 +68,6 @@ def generate_swiss_pairings(tournament, round_obj):
     
     return pairings
 
-def generate_double_swiss_pairings(tournament, round_obj):
-    """
-    Generate pairings for a Double Swiss tournament.
-    In double swiss, each round is treated as two rounds of a normal swiss tournament.
-    """
-    # Double Swiss is just Swiss but with twice the number of rounds
-    # We can use the same pairing algorithm
-    return generate_swiss_pairings(tournament, round_obj)
-
 def generate_round_robin_pairings(tournament, round_obj):
     """
     Generate pairings for a Round Robin tournament

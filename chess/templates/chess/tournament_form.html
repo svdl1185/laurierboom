@@ -12,7 +12,7 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card shadow-sm">
+        <div class="card shadow">
             <div class="card-header bg-primary text-white">
                 <h2 class="card-title mb-0">
                     {% if form.instance.pk %}
@@ -26,12 +26,12 @@
                 <form method="post">
                     {% csrf_token %}
                     
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="{{ form.name.id_for_label }}" class="form-label">Tournament Name *</label>
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">Tournament Name <span class="text-danger">*</span></label>
                             <input type="text" name="{{ form.name.name }}" 
                                    id="{{ form.name.id_for_label }}" 
-                                   class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                                   class="form-control form-control-lg {% if form.name.errors %}is-invalid{% endif %}"
                                    value="{{ form.name.value|default:'' }}"
                                    autofocus required>
                             {% if form.name.errors %}
@@ -40,9 +40,11 @@
                                 </div>
                             {% endif %}
                         </div>
-                        
+                    </div>
+                    
+                    <div class="row mb-4">
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.date.id_for_label }}" class="form-label">Date *</label>
+                            <label for="{{ form.date.id_for_label }}" class="form-label fw-bold">Date <span class="text-danger">*</span></label>
                             {{ form.date }}
                             {% if form.date.errors %}
                                 <div class="invalid-feedback d-block">
@@ -52,7 +54,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.start_time.id_for_label }}" class="form-label">Start Time</label>
+                            <label for="{{ form.start_time.id_for_label }}" class="form-label fw-bold">Start Time</label>
                             {{ form.start_time }}
                             {% if form.start_time.errors %}
                                 <div class="invalid-feedback d-block">
@@ -62,9 +64,9 @@
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="{{ form.location.id_for_label }}" class="form-label">Location *</label>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label fw-bold">Location <span class="text-danger">*</span></label>
                             <input type="text" name="{{ form.location.name }}" 
                                    id="{{ form.location.id_for_label }}" 
                                    class="form-control {% if form.location.errors %}is-invalid{% endif %}"
@@ -77,8 +79,8 @@
                             {% endif %}
                         </div>
                         
-                        <div class="col-md-4 mb-3">
-                            <label for="{{ form.tournament_type.id_for_label }}" class="form-label">Tournament Type *</label>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.tournament_type.id_for_label }}" class="form-label fw-bold">Tournament Type <span class="text-danger">*</span></label>
                             <select name="{{ form.tournament_type.name }}" 
                                     id="{{ form.tournament_type.id_for_label }}" 
                                     class="form-select {% if form.tournament_type.errors %}is-invalid{% endif %}"
@@ -98,8 +100,8 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3 rounds-field">
-                        <label for="{{ form.num_rounds.id_for_label }}" class="form-label">Number of Rounds</label>
+                    <div class="mb-4 rounds-field">
+                        <label for="{{ form.num_rounds.id_for_label }}" class="form-label fw-bold">Number of Rounds</label>
                         <input type="number" name="{{ form.num_rounds.name }}" 
                                id="{{ form.num_rounds.id_for_label }}" 
                                class="form-control {% if form.num_rounds.errors %}is-invalid{% endif %}"
@@ -111,12 +113,12 @@
                             </div>
                         {% endif %}
                         <div class="form-text">
-                            Required for Swiss and Double Swiss tournaments. For Round Robin, this will be automatically calculated.
+                            Required for Swiss tournaments. For Round Robin, this will be automatically calculated.
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    <div class="mb-4">
+                        <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">Description</label>
                         {{ form.description }}
                         {% if form.description.errors %}
                             <div class="invalid-feedback d-block">
@@ -126,14 +128,14 @@
                     </div>
                     
                     <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'tournament_list' %}" class="btn btn-outline-secondary">
-                            Cancel
+                        <a href="{% url 'tournament_list' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-times me-2"></i>Cancel
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary btn-lg">
                             {% if form.instance.pk %}
-                                Update Tournament
+                                <i class="fas fa-save me-2"></i>Update Tournament
                             {% else %}
-                                Create Tournament
+                                <i class="fas fa-plus me-2"></i>Create Tournament
                             {% endif %}
                         </button>
                     </div>
@@ -165,7 +167,7 @@
         // Toggle on change
         tournamentTypeSelect.addEventListener('change', toggleNumRoundsField);
     });
-    </script>
+</script>
 {% endblock %}
 
 {% endblock %}
