@@ -1,0 +1,80 @@
+<!-- templates/chess/user_list.html -->
+{% extends 'chess/base.html' %}
+
+{% block title %}Manage Users - De Laurierboom Chess{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>Manage Users</h1>
+            <a href="{% url 'user_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create User
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h2 class="card-title mb-0">Users</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Rating</th>
+                        <th>Lichess</th>
+                        <th>Chess.com</th>
+                        <th>FIDE</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr {% if not user.is_active %}class="table-secondary"{% endif %}>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.get_full_name }}</td>
+                            <td>{{ user.email|default:"-" }}</td>
+                            <td>{{ user.elo|floatformat:0 }}</td>
+                            <td>{{ user.lichess_account|default:"-" }}</td>
+                            <td>{{ user.chesscom_account|default:"-" }}</td>
+                            <td>{{ user.fide_rating|default:"-" }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'user_edit' user.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a href="{% url 'user_toggle_active' user.id %}" class="btn btn-sm {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                                        {% if user.is_active %}
+                                            <i class="fas fa-ban"></i> Deactivate
+                                        {% else %}
+                                            <i class="fas fa-check"></i> Activate
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">No users found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

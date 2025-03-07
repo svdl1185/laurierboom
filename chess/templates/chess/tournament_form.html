@@ -1,0 +1,171 @@
+<!-- templates/chess/tournament_form.html -->
+{% extends 'chess/base.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Edit Tournament - De Laurierboom Chess
+    {% else %}
+        Create Tournament - De Laurierboom Chess
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title mb-0">
+                    {% if form.instance.pk %}
+                        Edit Tournament
+                    {% else %}
+                        Create Tournament
+                    {% endif %}
+                </h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Tournament Name *</label>
+                            <input type="text" name="{{ form.name.name }}" 
+                                   id="{{ form.name.id_for_label }}" 
+                                   class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                                   value="{{ form.name.value|default:'' }}"
+                                   autofocus required>
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.name.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.date.id_for_label }}" class="form-label">Date *</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.date.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.start_time.id_for_label }}" class="form-label">Start Time</label>
+                            {{ form.start_time }}
+                            {% if form.start_time.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.start_time.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location *</label>
+                            <input type="text" name="{{ form.location.name }}" 
+                                   id="{{ form.location.id_for_label }}" 
+                                   class="form-control {% if form.location.errors %}is-invalid{% endif %}"
+                                   value="{{ form.location.value|default:'De Laurierboom, Amsterdam' }}"
+                                   required>
+                            {% if form.location.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.location.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.tournament_type.id_for_label }}" class="form-label">Tournament Type *</label>
+                            <select name="{{ form.tournament_type.name }}" 
+                                    id="{{ form.tournament_type.id_for_label }}" 
+                                    class="form-select {% if form.tournament_type.errors %}is-invalid{% endif %}"
+                                    required>
+                                {% for value, label in form.tournament_type.field.choices %}
+                                    <option value="{{ value }}" 
+                                            {% if form.tournament_type.value == value|stringformat:"s" %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.tournament_type.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.tournament_type.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 rounds-field">
+                        <label for="{{ form.num_rounds.id_for_label }}" class="form-label">Number of Rounds</label>
+                        <input type="number" name="{{ form.num_rounds.name }}" 
+                               id="{{ form.num_rounds.id_for_label }}" 
+                               class="form-control {% if form.num_rounds.errors %}is-invalid{% endif %}"
+                               value="{{ form.num_rounds.value|default:'5' }}"
+                               min="1">
+                        {% if form.num_rounds.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.num_rounds.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Required for Swiss and Double Swiss tournaments. For Round Robin, this will be automatically calculated.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.description.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'tournament_list' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if form.instance.pk %}
+                                Update Tournament
+                            {% else %}
+                                Create Tournament
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tournamentTypeSelect = document.getElementById('{{ form.tournament_type.id_for_label }}');
+        const numRoundsField = document.querySelector('.rounds-field');
+        
+        function toggleNumRoundsField() {
+            if (tournamentTypeSelect.value === 'round_robin' || tournamentTypeSelect.value === 'double_round_robin') {
+                numRoundsField.style.display = 'none';
+                // Clear the input value when hidden
+                document.getElementById('{{ form.num_rounds.id_for_label }}').value = '';
+            } else {
+                numRoundsField.style.display = 'block';
+            }
+        }
+        
+        // Initial toggle
+        toggleNumRoundsField();
+        
+        // Toggle on change
+        tournamentTypeSelect.addEventListener('change', toggleNumRoundsField);
+    });
+    </script>
+{% endblock %}
+
+{% endblock %}

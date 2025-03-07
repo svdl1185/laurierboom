@@ -1,0 +1,115 @@
+<!-- templates/chess/start_tournament.html -->
+{% extends 'chess/base.html' %}
+
+{% block title %}Start Tournament - De Laurierboom Chess{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h2 class="card-title mb-0">Start Tournament: {{ tournament.name }}</h2>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <p><strong>Important:</strong> Starting the tournament will generate the first round of pairings and lock the participant list.</p>
+                    <p>This action cannot be undone. Please ensure all participants are registered before proceeding.</p>
+                </div>
+                
+                <h4 class="mt-4 mb-3">Configure Tournament</h4>
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.tournament_type.id_for_label }}" class="form-label">Tournament Type *</label>
+                            {{ form.tournament_type }}
+                            {% if form.tournament_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.tournament_type.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 num-rounds-field">
+                            <label for="{{ form.num_rounds.id_for_label }}" class="form-label">Number of Rounds *</label>
+                            {{ form.num_rounds }}
+                            {% if form.num_rounds.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.num_rounds.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Required for Swiss and Double Swiss tournaments</div>
+                        </div>
+                    </div>
+                
+                    <h4 class="mb-3">Registered Participants ({{ participants.count }})</h4>
+                    {% if participants.count < 2 %}
+                        <div class="alert alert-danger">
+                            At least 2 participants are required to start the tournament.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Player</th>
+                                    <th>Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player in participants %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ player.get_full_name|default:player.username }}</td>
+                                        <td>{{ player.elo|floatformat:0 }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">No participants registered yet</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-outline-secondary">
+                            Back to Tournament
+                        </a>
+                        <button type="submit" class="btn btn-warning" {% if participants.count < 2 %}disabled{% endif %}>
+                            Start Tournament
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tournamentTypeSelect = document.getElementById('{{ form.tournament_type.id_for_label }}');
+        const numRoundsField = document.querySelector('.num-rounds-field');
+        
+        function toggleNumRoundsField() {
+            if (tournamentTypeSelect.value === 'round_robin' || tournamentTypeSelect.value === 'double_round_robin') {
+                numRoundsField.style.display = 'none';
+            } else {
+                numRoundsField.style.display = 'block';
+            }
+        }
+        
+        // Initial toggle
+        toggleNumRoundsField();
+        
+        // Toggle on change
+        tournamentTypeSelect.addEventListener('change', toggleNumRoundsField);
+    });
+</script>
+{% endblock %}
+
+{% endblock %}

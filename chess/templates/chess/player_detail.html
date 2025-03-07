@@ -1,0 +1,178 @@
+<!-- templates/chess/player_detail.html -->
+{% extends 'chess/base.html' %}
+
+{% block title %}{{ player.get_full_name|default:player.username }} - De Laurierboom Chess{% endblock %}
+
+{% block content %}
+<div class="player-profile-header">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>{{ player.get_full_name|default:player.username }}</h1>
+            <div class="rating mb-2">
+                Rating: {{ player.elo|floatformat:0 }}
+            </div>
+            <div class="player-info">
+                {% if player.lichess_account %}
+                    <div class="mb-1">
+                        <span class="me-2">Lichess:</span>
+                        <a href="https://lichess.org/@/{{ player.lichess_account }}" target="_blank" class="text-light">
+                            {{ player.lichess_account }}
+                        </a>
+                    </div>
+                {% endif %}
+                
+                {% if player.chesscom_account %}
+                    <div class="mb-1">
+                        <span class="me-2">Chess.com:</span>
+                        <a href="https://chess.com/member/{{ player.chesscom_account }}" target="_blank" class="text-light">
+                            {{ player.chesscom_account }}
+                        </a>
+                    </div>
+                {% endif %}
+                
+                {% if player.fide_rating %}
+                    <div class="mb-1">
+                        <span class="me-2">FIDE Rating:</span>
+                        {{ player.fide_rating }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="stats">
+                <div class="mb-2">
+                    <h5>Statistics</h5>
+                    <div class="d-flex justify-content-md-end">
+                        <div class="me-3">
+                            <span class="d-block text-success">{{ wins }}</span>
+                            <small>Wins</small>
+                        </div>
+                        <div class="me-3">
+                            <span class="d-block text-warning">{{ draws }}</span>
+                            <small>Draws</small>
+                        </div>
+                        <div>
+                            <span class="d-block text-danger">{{ losses }}</span>
+                            <small>Losses</small>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <span class="d-block">{{ total_games }}</span>
+                    <small>Total Games</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">Recent Match History</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tournament</th>
+                                <th>Round</th>
+                                <th>Opponent</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for match in recent_matches %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'tournament_detail' match.tournament.id %}">
+                                            {{ match.tournament.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ match.round.number }}</td>
+                                    <td>
+                                        {% if match.white_player == player %}
+                                            <a href="{% url 'player_detail' match.black_player.id %}">
+                                                {{ match.black_player.username }}
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'player_detail' match.white_player.id %}">
+                                                {{ match.white_player.username }}
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if match.white_player == player %}
+                                            {% if match.result == 'white_win' %}
+                                                <span class="badge bg-success">Win</span>
+                                            {% elif match.result == 'black_win' %}
+                                                <span class="badge bg-danger">Loss</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Draw</span>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if match.result == 'black_win' %}
+                                                <span class="badge bg-success">Win</span>
+                                            {% elif match.result == 'white_win' %}
+                                                <span class="badge bg-danger">Loss</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Draw</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No match history</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h3 class="card-title mb-0">Tournaments</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for tournament in tournaments %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{% url 'tournament_detail' tournament.id %}">
+                                    {{ tournament.name }}
+                                </a>
+                                {% for standing in tournament.standings.all %}
+                                    {% if standing.player == player %}
+                                        {% if tournament.is_completed %}
+                                            <span class="badge bg-primary">
+                                                Rank: {{ standing.rank }} ({{ standing.score }} pts)
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">In Progress</span>
+                                        {% endif %}
+                                    {% endif %}
+                                {% empty %}
+                                    {% if tournament.is_completed %}
+                                        <span class="badge bg-secondary">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Upcoming</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-center">No tournaments</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

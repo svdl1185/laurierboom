@@ -1,0 +1,284 @@
+/* static/chess/css/style.css */
+
+/* General styles */
+body {
+    font-family: 'Roboto', 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Card styling */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: 600;
+    padding: 1rem 1.25rem;
+}
+
+/* Table styling */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    border-top: none;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Navigation */
+.navbar {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background-color: #3a5caa;
+    border-color: #3a5caa;
+}
+
+.btn-primary:hover {
+    background-color: #2d4b99;
+    border-color: #2d4b99;
+}
+
+/* Player rankings */
+.player-rank {
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    margin-right: 10px;
+}
+
+/* Tournament cards */
+.tournament-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tournament-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.tournament-card .btn {
+    margin-top: auto;
+}
+
+/* Match results styling */
+.match-result {
+    font-weight: 700;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+}
+
+.result-win {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.result-loss {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.result-draw {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.result-pending {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Forms */
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Home page hero section */
+.home-hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('../img/chess-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 5rem 0;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+}
+
+/* Player profile */
+.player-profile-header {
+    background-color: #343a40;
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.player-profile-header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.player-profile-header .rating {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Tournament standings */
+.standings-table tr:first-child td {
+    font-weight: 700;
+    background-color: #fff3cd;
+}
+
+.standings-table tr:nth-child(2) td {
+    font-weight: 600;
+    background-color: #e2e3e5;
+}
+
+.standings-table tr:nth-child(3) td {
+    font-weight: 600;
+    background-color: #f8d7da;
+}
+
+/* About section */
+.about-section {
+    background-color: #f8f9fa;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+}
+
+.about-section .lead {
+    font-size: 1.3rem;
+    font-weight: 300;
+    line-height: 1.6;
+}
+
+/* Search form in navbar */
+.navbar .form-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.navbar .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.navbar .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+/* List groups */
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 1rem 1.25rem;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* Accordion styling */
+.accordion-button:not(.collapsed) {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0, 0, 0, 0.125);
+}
+
+/* Tournament details page */
+.tournament-info-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.tournament-info-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.tournament-info-list li:last-child {
+    border-bottom: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .home-hero {
+        padding: 3rem 0;
+    }
+    
+    .navbar .form-control {
+        width: 120px;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar .form-control {
+        width: 100%;
+    }
+    
+    .navbar form {
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+}
