@@ -702,3 +702,260 @@ tr:nth-child(3) .rank-badge {
     margin-bottom: 0.5rem;
   }
 }
+
+
+/* Player Profile Page */
+.icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  text-align: center;
+}
+
+.rating-badge {
+  font-weight: 600;
+  padding: 0.35em 0.65em;
+  border-radius: 20px;
+}
+
+.player-link {
+  font-weight: 500;
+  color: var(--secondary-color);
+  transition: all 0.2s ease;
+}
+
+.player-link:hover {
+  color: var(--primary-color);
+}
+
+/* Tournament Forms */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(58, 92, 170, 0.25);
+}
+
+.input-group-text {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.form-select option:hover,
+.form-select option:checked {
+  background-color: var(--primary-light);
+}
+
+/* Tournament Detail */
+.accordion-button:not(.collapsed) {
+  background-color: rgba(58, 92, 170, 0.1);
+  color: var(--primary-dark);
+}
+
+.accordion-button:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(58, 92, 170, 0.25);
+}
+
+.accordion-button::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%233a5caa' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+}
+
+.result-select {
+  max-width: 140px;
+  display: inline-block;
+}
+
+.save-status {
+  min-width: 60px;
+  display: inline-block;
+  text-align: center;
+}
+
+.standings-table tr:nth-child(1) td {
+  font-weight: 600;
+}
+
+.standings-table tr:nth-child(2) td {
+  font-weight: 600;
+}
+
+.standings-table tr:nth-child(3) td {
+  font-weight: 600;
+}
+
+/* User List */
+.chess-accounts {
+  white-space: nowrap;
+}
+
+.chess-accounts .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+.chess-accounts .btn:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Filter buttons */
+.btn-group .btn-outline-primary {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-group .btn-outline-primary:hover,
+.btn-group .btn-outline-primary.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Hover effects on rows */
+.table-hover tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(58, 92, 170, 0.05);
+}
+
+/* Badge styling */
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+}
+
+.bg-primary-subtle {
+  background-color: rgba(58, 92, 170, 0.1);
+}
+
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+/* Form elements */
+.form-control, .form-select {
+  border-radius: 6px;
+}
+
+.btn {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover, 
+.btn-primary:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(58, 92, 170, 0.2);
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(58, 92, 170, 0.2);
+}
+
+/* List group styling */
+.list-group-item {
+  border-left: none;
+  border-right: none;
+  padding: 1rem 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+  background-color: rgba(58, 92, 170, 0.05);
+}
+
+.list-group-item:first-child {
+  border-top: none;
+}
+
+.list-group-item:last-child {
+  border-bottom: none;
+}
+
+/* Status indicators */
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.status-active {
+  background-color: var(--success-color);
+}
+
+.status-inactive {
+  background-color: var(--danger-color);
+}
+
+/* Modal styling */
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-header {
+  background-color: var(--dark-bg);
+  color: white;
+  border-bottom: none;
+}
+
+.modal-footer {
+  border-top: none;
+}
+
+/* Tooltip styling */
+.tooltip-inner {
+  background-color: var(--dark-bg);
+  border-radius: 4px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Animation for saving status */
+@keyframes pulse {
+  0% {
+      transform: scale(1);
+  }
+  50% {
+      transform: scale(1.1);
+  }
+  100% {
+      transform: scale(1);
+  }
+}
+
+.save-status.bg-success {
+  animation: pulse 0.5s ease-in-out;
+}
