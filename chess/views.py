@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db.models import F, Count, Sum, Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 
 from .models import Tournament, User, Match, Round, TournamentStanding
 from .forms import EmptyForm, MatchResultForm, SimplePlayerRegistrationForm, StartTournamentSettingsForm, TournamentForm, UserEditForm, UserRegistrationForm, AddPlayerToTournamentForm
@@ -139,7 +139,19 @@ class UpdateTournamentView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'chess/tournament_form.html'
     
     def test_func(self):
-        return self.request.user.is_staff
+        # Only staff can update tournaments
+        if not self.request.user.is_staff:
+            return False
+        
+        # Check if tournament has started - prevent editing if it has
+        tournament = self.get_object()
+        return not tournament.has_started
+    
+    def handle_no_permission(self):
+        tournament = self.get_object()
+        if tournament.has_started:
+            messages.error(self.request, "Cannot edit tournament after it has started")
+        return super().handle_no_permission()
     
     def get_success_url(self):
         return reverse_lazy('tournament_detail', kwargs={'pk': self.object.pk})
@@ -537,3 +549,38 @@ def simple_register(request):
         form = SimplePlayerRegistrationForm()
     
     return render(request, 'chess/simple_register.html', {'form': form})
+
+def inline_match_result(request, match_id):
+    """AJAX view to update match results inline from the tournament page"""
+    if not request.user.is_staff:
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    
+    match = get_object_or_404(Match, pk=match_id)
+    tournament = match.tournament
+    
+    # Check if tournament is completed
+    if tournament.is_completed:
+        return JsonResponse({'success': False, 'error': 'Tournament is already completed'})
+    
+    # Get the new result from the form
+    result = request.POST.get('result')
+    if result not in ['white_win', 'black_win', 'draw', 'pending']:
+        return JsonResponse({'success': False, 'error': 'Invalid result'})
+    
+    # Update the match
+    match.result = result
+    match.save()
+    
+    # Update tournament standings
+    update_tournament_standings(tournament)
+    
+    # Check if this is an XHR request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    else:
+        # Fallback for non-JavaScript clients
+        messages.success(request, "Match result updated")
+        return redirect('tournament_detail', pk=tournament.id)

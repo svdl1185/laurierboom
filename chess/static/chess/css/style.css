@@ -298,20 +298,32 @@ footer {
     width: 100%;
   }
   
-  /* Add this to your static/chess/js/main.js file */
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize any select2 dropdowns for better UX
-    if (typeof $.fn.select2 !== 'undefined') {
-      $('#player-select').select2({
-        dropdownParent: $('#player-select').closest('.dropdown-menu'),
-        width: '100%',
-        placeholder: 'Select a player',
-        allowClear: true
-      });
-    }
-    
-    // Handle clicking inside dropdown without closing it
-    $('.dropdown-menu.p-3').on('click', function(e) {
-      e.stopPropagation();
-    });
-  });
+/* Styling for match result selects */
+.result-select {
+    max-width: 200px;
+    display: inline-block;
+  }
+  
+  /* Status indicator styling */
+  .save-status {
+    min-width: 60px;
+    display: inline-block;
+    text-align: center;
+  }
+  
+  /* Styling for match result options */
+  .result-select option[value="white_win"] {
+    background-color: #d1e7dd;  /* light green */
+  }
+  
+  .result-select option[value="black_win"] {
+    background-color: #d1e7dd;  /* light green */
+  }
+  
+  .result-select option[value="draw"] {
+    background-color: #fff3cd;  /* light yellow */
+  }
+  
+  .result-select option[value="pending"] {
+    background-color: #e2e3e5;  /* light gray */
+  }

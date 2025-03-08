@@ -14,6 +14,35 @@ def generate_swiss_pairings(tournament, round_obj):
     
     participants = list(tournament.participants.all())
     
+    # Special case for exactly two players - alternate colors each round
+    if len(participants) == 2:
+        # Get previous matches between these players
+        previous_matches = Match.objects.filter(
+            tournament=tournament,
+            white_player__in=participants,
+            black_player__in=participants
+        ).order_by('round__number')
+        
+        # If there's an odd round number, reverse the colors from the latest match
+        if previous_matches.exists() and round_obj.number % 2 == 0:
+            latest_match = previous_matches.last()
+            white_player = latest_match.black_player
+            black_player = latest_match.white_player
+        else:
+            # First round or odd-numbered round, sort by rating
+            participants.sort(key=lambda x: x.elo, reverse=True)
+            white_player = participants[0]
+            black_player = participants[1]
+        
+        Match.objects.create(
+            tournament=tournament,
+            round=round_obj,
+            white_player=white_player,
+            black_player=black_player,
+            result='pending'
+        )
+        return [(white_player, black_player)]
+    
     # If it's the first round, pair by rating or randomly
     if round_obj.number == 1:
         # Sort players by rating
@@ -80,6 +109,26 @@ def generate_round_robin_pairings(tournament, round_obj):
     participants = list(tournament.participants.all())
     n = len(participants)
     
+    # Special case for exactly two players
+    if n == 2:
+        # For two players, alternate colors in each round
+        # In round robin with 2 players, we should have exactly 2 rounds (or 4 for double round robin)
+        if round_obj.number % 2 == 1:  # Odd round number
+            white_player, black_player = participants[0], participants[1]
+        else:  # Even round number
+            white_player, black_player = participants[1], participants[0]
+            
+        Match.objects.create(
+            tournament=tournament,
+            round=round_obj,
+            white_player=white_player,
+            black_player=black_player,
+            result='pending'
+        )
+        
+        return [(white_player, black_player)]
+    
+    # Standard round robin algorithm for more than 2 players
     # If odd number of players, add a "dummy" player for byes
     if n % 2 == 1:
         participants.append(None)

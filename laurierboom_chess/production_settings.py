@@ -16,6 +16,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'default-secret-key-change-in-producti
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
+    'laurierboom.com',
+    'www.laurierboom.com',
     'laurierboom-chess-79eebecf1db2.herokuapp.com',
     'localhost',
     '127.0.0.1',

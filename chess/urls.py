@@ -22,6 +22,7 @@ urlpatterns = [
     
     # Match views
     path('match/<int:pk>/result/', views.EnterMatchResultView.as_view(), name='match_result'),
+    path('match/<int:match_id>/inline-result/', views.inline_match_result, name='inline_match_result'),
     
     # User management
     path('users/', views.UserListView.as_view(), name='user_list'),

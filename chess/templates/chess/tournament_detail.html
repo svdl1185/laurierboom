@@ -81,9 +81,6 @@
                     {% if user.is_staff %}
                         <div class="d-flex flex-wrap gap-2 w-100 justify-content-between">
                             <div>
-                                <a href="{% url 'tournament_update' tournament.id %}" class="btn btn-outline-primary me-2">
-                                    <i class="fas fa-edit"></i> Edit Tournament
-                                </a>
                             </div>
                             
                             <div>
@@ -114,7 +111,7 @@
                         <h3 class="card-title mb-0">Round {{ current_round.number }} - Current Matches</h3>
                         {% if user.is_staff and not tournament.is_completed and current_round.matches.count > 0 %}
                             <form method="post" action="{% url 'complete_round' tournament.id current_round.id %}" class="d-inline" 
-                                  onsubmit="return confirm('Are all matches complete? This will generate the next round.');">
+                                onsubmit="return confirm('Are all matches complete? This will generate the next round.');">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-outline-dark">
                                     <i class="fas fa-check-circle"></i> Complete Round
@@ -152,26 +149,34 @@
                                             </a>
                                         </td>
                                         <td>
-                                            {% if match.result == 'pending' %}
-                                                <span class="badge bg-secondary">Pending</span>
-                                            {% elif match.result == 'white_win' %}
-                                                <span class="badge bg-success">1-0</span>
-                                            {% elif match.result == 'black_win' %}
-                                                <span class="badge bg-success">0-1</span>
+                                            {% if user.is_staff and not tournament.is_completed %}
+                                                <form method="post" action="{% url 'inline_match_result' match.id %}" class="d-inline match-result-form">
+                                                    {% csrf_token %}
+                                                    <select name="result" class="form-select form-select-sm result-select" data-match-id="{{ match.id }}">
+                                                        <option value="pending" {% if match.result == 'pending' %}selected{% endif %}>Pending</option>
+                                                        <option value="white_win" {% if match.result == 'white_win' %}selected{% endif %}>1-0 (White wins)</option>
+                                                        <option value="black_win" {% if match.result == 'black_win' %}selected{% endif %}>0-1 (Black wins)</option>
+                                                        <option value="draw" {% if match.result == 'draw' %}selected{% endif %}>½-½ (Draw)</option>
+                                                    </select>
+                                                </form>
                                             {% else %}
-                                                <span class="badge bg-success">½-½</span>
+                                                {% if match.result == 'pending' %}
+                                                    <span class="badge bg-secondary">Pending</span>
+                                                {% elif match.result == 'white_win' %}
+                                                    <span class="badge bg-success">1-0</span>
+                                                {% elif match.result == 'black_win' %}
+                                                    <span class="badge bg-success">0-1</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">½-½</span>
+                                                {% endif %}
                                             {% endif %}
                                         </td>
                                         {% if user.is_staff %}
                                             <td>
-                                                {% if match.result == 'pending' %}
-                                                    <a href="{% url 'match_result' match.id %}" class="btn btn-sm btn-primary">
-                                                        Enter Result
-                                                    </a>
+                                                {% if match.result != 'pending' %}
+                                                    <span class="badge bg-success save-status" id="save-status-{{ match.id }}">Saved</span>
                                                 {% else %}
-                                                    <a href="{% url 'match_result' match.id %}" class="btn btn-sm btn-outline-secondary">
-                                                        Edit Result
-                                                    </a>
+                                                    <span class="badge save-status" id="save-status-{{ match.id }}"></span>
                                                 {% endif %}
                                             </td>
                                         {% endif %}
@@ -190,6 +195,7 @@
             </div>
         {% endif %}
         
+        <!-- Update to the completed matches section -->
         {% if completed_matches %}
             <div class="card mb-4 shadow-sm">
                 <div class="card-header bg-success text-white">
@@ -207,7 +213,7 @@
                                         </button>
                                     </h2>
                                     <div id="collapse{{ round_obj.number }}" class="accordion-collapse collapse" 
-                                         aria-labelledby="heading{{ round_obj.number }}" data-bs-parent="#roundsAccordion">
+                                        aria-labelledby="heading{{ round_obj.number }}" data-bs-parent="#roundsAccordion">
                                         <div class="accordion-body">
                                             <div class="table-responsive">
                                                 <table class="table table-sm table-hover">
@@ -216,9 +222,6 @@
                                                             <th>White</th>
                                                             <th>Black</th>
                                                             <th>Result</th>
-                                                            {% if user.is_staff %}
-                                                                <th>Action</th>
-                                                            {% endif %}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -226,32 +229,37 @@
                                                             <tr>
                                                                 <td>
                                                                     <a href="{% url 'player_detail' match.white_player.id %}">
-                                                                        {{ match.white_player.username }}
+                                                                        {{ match.white_player.get_full_name|default:match.white_player.username }}
                                                                     </a>
                                                                 </td>
                                                                 <td>
                                                                     <a href="{% url 'player_detail' match.black_player.id %}">
-                                                                        {{ match.black_player.username }}
+                                                                        {{ match.black_player.get_full_name|default:match.black_player.username }}
                                                                     </a>
                                                                 </td>
                                                                 <td>
-                                                                    {% if match.result == 'white_win' %}
-                                                                        <span class="badge bg-success">1-0</span>
-                                                                    {% elif match.result == 'black_win' %}
-                                                                        <span class="badge bg-success">0-1</span>
-                                                                    {% elif match.result == 'draw' %}
-                                                                        <span class="badge bg-success">½-½</span>
+                                                                    {% if user.is_staff and not tournament.is_completed %}
+                                                                        <form method="post" action="{% url 'inline_match_result' match.id %}" class="d-inline match-result-form">
+                                                                            {% csrf_token %}
+                                                                            <select name="result" class="form-select form-select-sm result-select" data-match-id="{{ match.id }}">
+                                                                                <option value="pending" {% if match.result == 'pending' %}selected{% endif %}>Pending</option>
+                                                                                <option value="white_win" {% if match.result == 'white_win' %}selected{% endif %}>1-0 (White wins)</option>
+                                                                                <option value="black_win" {% if match.result == 'black_win' %}selected{% endif %}>0-1 (Black wins)</option>
+                                                                                <option value="draw" {% if match.result == 'draw' %}selected{% endif %}>½-½ (Draw)</option>
+                                                                            </select>
+                                                                        </form>
                                                                     {% else %}
-                                                                        <span class="badge bg-secondary">Pending</span>
+                                                                        {% if match.result == 'white_win' %}
+                                                                            <span class="badge bg-success">1-0</span>
+                                                                        {% elif match.result == 'black_win' %}
+                                                                            <span class="badge bg-success">0-1</span>
+                                                                        {% elif match.result == 'draw' %}
+                                                                            <span class="badge bg-success">½-½</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-secondary">Pending</span>
+                                                                        {% endif %}
                                                                     {% endif %}
                                                                 </td>
-                                                                {% if user.is_staff and not tournament.is_completed %}
-                                                                    <td>
-                                                                        <a href="{% url 'match_result' match.id %}" class="btn btn-sm btn-outline-secondary">
-                                                                            Edit
-                                                                        </a>
-                                                                    </td>
-                                                                {% endif %}
                                                             </tr>
                                                         {% endfor %}
                                                     </tbody>
@@ -266,6 +274,7 @@
                 </div>
             </div>
         {% endif %}
+        
     </div>
     
     <div class="col-lg-4">
@@ -373,6 +382,65 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle result dropdown changes
+    const resultSelects = document.querySelectorAll('.result-select');
+    resultSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const matchId = this.getAttribute('data-match-id');
+            const form = this.closest('form');
+            const saveStatus = document.getElementById(`save-status-${matchId}`);
+            
+            // Show saving status
+            if (saveStatus) {
+                saveStatus.textContent = 'Saving...';
+                saveStatus.classList.remove('bg-success', 'bg-danger');
+                saveStatus.classList.add('bg-warning');
+            }
+            
+            // Submit form via AJAX
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (saveStatus) {
+                        saveStatus.textContent = 'Saved';
+                        saveStatus.classList.remove('bg-warning', 'bg-danger');
+                        saveStatus.classList.add('bg-success');
+                    }
+                } else {
+                    if (saveStatus) {
+                        saveStatus.textContent = 'Error';
+                        saveStatus.classList.remove('bg-warning', 'bg-success');
+                        saveStatus.classList.add('bg-danger');
+                    }
+                    console.error('Error saving result:', data.error);
+                }
+            })
+            .catch(error => {
+                if (saveStatus) {
+                    saveStatus.textContent = 'Error';
+                    saveStatus.classList.remove('bg-warning', 'bg-success');
+                    saveStatus.classList.add('bg-danger');
+                }
+                console.error('Error saving result:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
