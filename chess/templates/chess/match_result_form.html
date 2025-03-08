@@ -4,43 +4,146 @@
 {% block title %}Enter Match Result - De Laurierboom Chess{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h2 class="card-title mb-0">Enter Match Result</h2>
-            </div>
-            <div class="card-body">
-                <h4 class="mb-4">{{ match.white_player.username }} vs {{ match.black_player.username }}</h4>
-                <p>Tournament: <strong>{{ match.tournament.name }}</strong></p>
-                <p>Round: <strong>{{ match.round.number }}</strong></p>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.result.id_for_label }}" class="form-label">Result</label>
-                        <div class="form-group">
-                            {{ form.result }}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-dark text-white py-3">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-chess-board me-2"></i>Enter Match Result
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                    <div class="match-header text-center mb-4">
+                        <h3 class="mb-1">{{ match.white_player.get_full_name|default:match.white_player.username }} vs {{ match.black_player.get_full_name|default:match.black_player.username }}</h3>
+                        <div class="match-meta text-muted">
+                            <span class="me-3"><i class="fas fa-trophy me-1"></i>{{ match.tournament.name }}</span>
+                            <span><i class="fas fa-layer-group me-1"></i>Round {{ match.round.number }}</span>
                         </div>
-                        {% if form.result.errors %}
-                            <div class="alert alert-danger mt-2">
-                                {{ form.result.errors }}
-                            </div>
-                        {% endif %}
                     </div>
                     
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'tournament_detail' match.tournament.id %}" class="btn btn-outline-secondary">
-                            Cancel
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            Save Result
-                        </button>
+                    <div class="match-players row align-items-center mb-4">
+                        <div class="col-5 text-center">
+                            <div class="player-white p-3">
+                                <div class="piece-icon mb-2">
+                                    <i class="fas fa-chess-king fa-2x text-dark"></i>
+                                </div>
+                                <h5>{{ match.white_player.get_full_name|default:match.white_player.username }}</h5>
+                                <div class="player-rating">
+                                    <span class="badge bg-light text-dark">{{ match.white_player.elo|floatformat:0 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-2 text-center">
+                            <div class="vs-badge">VS</div>
+                        </div>
+                        <div class="col-5 text-center">
+                            <div class="player-black p-3">
+                                <div class="piece-icon mb-2">
+                                    <i class="fas fa-chess-king fa-2x text-secondary"></i>
+                                </div>
+                                <h5>{{ match.black_player.get_full_name|default:match.black_player.username }}</h5>
+                                <div class="player-rating">
+                                    <span class="badge bg-light text-dark">{{ match.black_player.elo|floatformat:0 }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </form>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.result.id_for_label }}" class="form-label fw-bold">Select Result</label>
+                            <select name="{{ form.result.name }}" 
+                                    id="{{ form.result.id_for_label }}" 
+                                    class="form-select form-select-lg {% if form.result.errors %}is-invalid{% endif %}">
+                                <option value="white_win" {% if form.result.value == 'white_win' %}selected{% endif %}>
+                                    1-0 (White wins)
+                                </option>
+                                <option value="black_win" {% if form.result.value == 'black_win' %}selected{% endif %}>
+                                    0-1 (Black wins)
+                                </option>
+                                <option value="draw" {% if form.result.value == 'draw' %}selected{% endif %}>
+                                    ½-½ (Draw)
+                                </option>
+                                <option value="pending" {% if form.result.value == 'pending' %}selected{% endif %}>
+                                    Pending (No result yet)
+                                </option>
+                            </select>
+                            {% if form.result.errors %}
+                                <div class="text-danger mt-1 small">
+                                    {{ form.result.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="alert alert-info mb-4">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-info-circle fa-2x text-primary"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0">
+                                        Entering a result will automatically update player ratings.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'tournament_detail' match.tournament.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Tournament
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Result
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .vs-badge {
+        background-color: #f8f9fa;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .player-white, .player-black {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .player-white {
+        background-color: rgba(255, 255, 255, 0.5);
+        border: 1px solid #dee2e6;
+    }
+    
+    .player-black {
+        background-color: rgba(240, 240, 240, 0.5);
+        border: 1px solid #dee2e6;
+    }
+    
+    /* Highlight players based on selected result */
+    #form-result-white-win:checked ~ .player-white {
+        background-color: rgba(212, 237, 218, 0.5);
+        border-color: #28a745;
+    }
+    
+    #form-result-black-win:checked ~ .player-black {
+        background-color: rgba(212, 237, 218, 0.5);
+        border-color: #28a745;
+    }
+</style>
 {% endblock %}

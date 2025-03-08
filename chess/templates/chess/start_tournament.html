@@ -4,86 +4,119 @@
 {% block title %}Start Tournament - De Laurierboom Chess{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow">
-            <div class="card-header bg-warning">
-                <h2 class="card-title mb-0">Start Tournament: {{ tournament.name }}</h2>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <p><strong>Important:</strong> Starting the tournament will generate the first round of pairings and lock the participant list.</p>
-                    <p>This action cannot be undone. Please ensure all participants are registered before proceeding.</p>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-dark text-white py-3">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-play me-2"></i>Start Tournament: {{ tournament.name }}
+                    </h2>
                 </div>
-                
-                <h4 class="mt-4 mb-3">Configure Tournament</h4>
-                <form method="post" class="mb-4">
-                    {% csrf_token %}
+                <div class="card-body p-4">
+                    <div class="alert alert-warning">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Important</h5>
+                                <p>Starting the tournament will generate the first round of pairings and lock the participant list.</p>
+                                <p class="mb-0">This action cannot be undone. Please ensure all participants are registered before proceeding.</p>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="{{ form.tournament_type.id_for_label }}" class="form-label fw-bold">Tournament Type <span class="text-danger">*</span></label>
-                            {{ form.tournament_type }}
-                            {% if form.tournament_type.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.tournament_type.errors }}
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <h4 class="mb-3">
+                            <i class="fas fa-cog me-2"></i>Tournament Configuration
+                        </h4>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.tournament_type.id_for_label }}" class="form-label fw-bold">Tournament Type <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-chess"></i></span>
+                                    {{ form.tournament_type }}
                                 </div>
-                            {% endif %}
+                                {% if form.tournament_type.errors %}
+                                    <div class="text-danger mt-1 small">
+                                        {{ form.tournament_type.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3 num-rounds-field">
+                                <label for="{{ form.num_rounds.id_for_label }}" class="form-label fw-bold">Number of Rounds <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-list-ol"></i></span>
+                                    {{ form.num_rounds }}
+                                </div>
+                                {% if form.num_rounds.errors %}
+                                    <div class="text-danger mt-1 small">
+                                        {{ form.num_rounds.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Required for Swiss tournaments</div>
+                            </div>
+                        </div>
+                    
+                        <h4 class="mb-3">
+                            <i class="fas fa-users me-2"></i>Registered Participants ({{ participants.count }})
+                        </h4>
+                        
+                        {% if participants.count < 2 %}
+                            <div class="alert alert-danger">
+                                <div class="d-flex">
+                                    <div class="me-3">
+                                        <i class="fas fa-times-circle fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0">At least 2 participants are required to start the tournament.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Player</th>
+                                        <th>Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for player in participants %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ player.get_full_name|default:player.username }}</td>
+                                            <td>
+                                                <span class="badge bg-primary-subtle text-primary">{{ player.elo|floatformat:0 }}</span>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4">No participants registered yet</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                         
-                        <div class="col-md-6 num-rounds-field">
-                            <label for="{{ form.num_rounds.id_for_label }}" class="form-label fw-bold">Number of Rounds <span class="text-danger">*</span></label>
-                            {{ form.num_rounds }}
-                            {% if form.num_rounds.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.num_rounds.errors }}
-                                </div>
-                            {% endif %}
-                            <div class="form-text">Required for Swiss tournaments</div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Tournament
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg" {% if participants.count < 2 %}disabled{% endif %}>
+                                <i class="fas fa-play me-2"></i>Start Tournament
+                            </button>
                         </div>
-                    </div>
-                
-                    <h4 class="mb-3">Registered Participants ({{ participants.count }})</h4>
-                    {% if participants.count < 2 %}
-                        <div class="alert alert-danger">
-                            At least 2 participants are required to start the tournament.
-                        </div>
-                    {% endif %}
-                    
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Player</th>
-                                    <th>Rating</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for player in participants %}
-                                    <tr>
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ player.get_full_name|default:player.username }}</td>
-                                        <td>{{ player.elo|floatformat:0 }}</td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="3" class="text-center">No participants registered yet</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-outline-secondary btn-lg">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Tournament
-                        </a>
-                        <button type="submit" class="btn btn-warning btn-lg" {% if participants.count < 2 %}disabled{% endif %}>
-                            <i class="fas fa-play me-2"></i>Start Tournament
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -111,5 +144,4 @@
     });
 </script>
 {% endblock %}
-
 {% endblock %}

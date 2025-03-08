@@ -4,46 +4,75 @@
 {% block title %}Add Player to Tournament - De Laurierboom Chess{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h2 class="card-title mb-0">Add Player to {{ tournament.name }}</h2>
-            </div>
-            <div class="card-body">
-                {% if form.fields.player.queryset.exists %}
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.player.id_for_label }}" class="form-label">Select Player</label>
-                            {{ form.player }}
-                            {% if form.player.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.player.errors }}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-dark text-white py-3">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Add Player to {{ tournament.name }}
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                    {% if form.fields.player.queryset.exists %}
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.player.id_for_label }}" class="form-label fw-bold">Select Player</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    {{ form.player }}
                                 </div>
-                            {% endif %}
+                                {% if form.player.errors %}
+                                    <div class="text-danger mt-1 small">
+                                        {{ form.player.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="alert alert-info mb-4">
+                                <div class="d-flex">
+                                    <div class="me-3">
+                                        <i class="fas fa-info-circle fa-2x text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0">
+                                            This will add the player to the tournament participant list.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-user-plus me-2"></i>Add Player
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-info-circle fa-2x"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0">
+                                        All active users are already registered for this tournament or there are no active users to add.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-outline-secondary">
-                                Cancel
+                        <div class="text-center mt-4">
+                            <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Tournament
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                Add Player
-                            </button>
                         </div>
-                    </form>
-                {% else %}
-                    <div class="alert alert-info">
-                        <p>All active users are already registered for this tournament or there are no active users to add.</p>
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-primary">
-                            Back to Tournament
-                        </a>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

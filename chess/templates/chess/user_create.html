@@ -4,154 +4,200 @@
 {% block title %}Create New User - De Laurierboom Chess{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h2 class="card-title mb-0">Create New User</h2>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.username.id_for_label }}" class="form-label">Username *</label>
-                            <input type="text" name="{{ form.username.name }}" 
-                                   id="{{ form.username.id_for_label }}" 
-                                   class="form-control {% if form.username.errors %}is-invalid{% endif %}"
-                                   value="{{ form.username.value|default:'' }}"
-                                   autofocus required>
-                            {% if form.username.errors %}
-                                <div class="invalid-feedback">
-                                    {{ form.username.errors }}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-dark text-white py-3">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Create New User
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Account Information -->
+                            <div class="col-lg-6 mb-4">
+                                <h4 class="mb-3">Account Information</h4>
+                                
+                                <!-- Username -->
+                                <div class="mb-3">
+                                    <label for="{{ form.username.id_for_label }}" class="form-label">Username <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" name="{{ form.username.name }}" 
+                                               id="{{ form.username.id_for_label }}" 
+                                               class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                                               value="{{ form.username.value|default:'' }}"
+                                               autofocus required>
+                                    </div>
+                                    {% if form.username.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.username.errors }}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                            {% endif %}
+                                
+                                <!-- Email -->
+                                <div class="mb-3">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" name="{{ form.email.name }}" 
+                                               id="{{ form.email.id_for_label }}" 
+                                               class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                                               value="{{ form.email.value|default:'' }}">
+                                    </div>
+                                    {% if form.email.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.email.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- First Name -->
+                                <div class="mb-3">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
+                                        <input type="text" name="{{ form.first_name.name }}" 
+                                               id="{{ form.first_name.id_for_label }}" 
+                                               class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                                               value="{{ form.first_name.value|default:'' }}"
+                                               required>
+                                    </div>
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.first_name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Last Name -->
+                                <div class="mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
+                                        <input type="text" name="{{ form.last_name.name }}" 
+                                               id="{{ form.last_name.id_for_label }}" 
+                                               class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                                               value="{{ form.last_name.value|default:'' }}"
+                                               required>
+                                    </div>
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.last_name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Chess Information & Password -->
+                            <div class="col-lg-6 mb-4">
+                                <h4 class="mb-3">Chess Information</h4>
+                                
+                                <!-- Lichess Account -->
+                                <div class="mb-3">
+                                    <label for="{{ form.lichess_account.id_for_label }}" class="form-label">Lichess Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-chess-knight"></i></span>
+                                        <input type="text" name="{{ form.lichess_account.name }}" 
+                                               id="{{ form.lichess_account.id_for_label }}" 
+                                               class="form-control {% if form.lichess_account.errors %}is-invalid{% endif %}"
+                                               value="{{ form.lichess_account.value|default:'' }}">
+                                    </div>
+                                    {% if form.lichess_account.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.lichess_account.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Chess.com Account -->
+                                <div class="mb-3">
+                                    <label for="{{ form.chesscom_account.id_for_label }}" class="form-label">Chess.com Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-chess-rook"></i></span>
+                                        <input type="text" name="{{ form.chesscom_account.name }}" 
+                                               id="{{ form.chesscom_account.id_for_label }}" 
+                                               class="form-control {% if form.chesscom_account.errors %}is-invalid{% endif %}"
+                                               value="{{ form.chesscom_account.value|default:'' }}">
+                                    </div>
+                                    {% if form.chesscom_account.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.chesscom_account.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- FIDE Rating -->
+                                <div class="mb-3">
+                                    <label for="{{ form.fide_rating.id_for_label }}" class="form-label">FIDE Rating</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-chart-line"></i></span>
+                                        <input type="number" name="{{ form.fide_rating.name }}" 
+                                               id="{{ form.fide_rating.id_for_label }}" 
+                                               class="form-control {% if form.fide_rating.errors %}is-invalid{% endif %}"
+                                               value="{{ form.fide_rating.value|default:'' }}">
+                                    </div>
+                                    {% if form.fide_rating.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.fide_rating.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <h4 class="mb-3 mt-4">Password</h4>
+                                
+                                <!-- Password -->
+                                <div class="mb-3">
+                                    <label for="{{ form.password1.id_for_label }}" class="form-label">Password <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        <input type="password" name="{{ form.password1.name }}" 
+                                               id="{{ form.password1.id_for_label }}" 
+                                               class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                                               required>
+                                    </div>
+                                    {% if form.password1.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.password1.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text small">{{ form.password1.help_text }}</div>
+                                </div>
+                                
+                                <!-- Confirm Password -->
+                                <div class="mb-3">
+                                    <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        <input type="password" name="{{ form.password2.name }}" 
+                                               id="{{ form.password2.id_for_label }}" 
+                                               class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                                               required>
+                                    </div>
+                                    {% if form.password2.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.password2.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-                            <input type="email" name="{{ form.email.name }}" 
-                                   id="{{ form.email.id_for_label }}" 
-                                   class="form-control {% if form.email.errors %}is-invalid{% endif %}"
-                                   value="{{ form.email.value|default:'' }}">
-                            {% if form.email.errors %}
-                                <div class="invalid-feedback">
-                                    {{ form.email.errors }}
-                                </div>
-                            {% endif %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Create User
+                            </button>
                         </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name *</label>
-                            <input type="text" name="{{ form.first_name.name }}" 
-                                   id="{{ form.first_name.id_for_label }}" 
-                                   class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
-                                   value="{{ form.first_name.value|default:'' }}"
-                                   required>
-                            {% if form.first_name.errors %}
-                                <div class="invalid-feedback">
-                                    {{ form.first_name.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name *</label>
-                            <input type="text" name="{{ form.last_name.name }}" 
-                                   id="{{ form.last_name.id_for_label }}" 
-                                   class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
-                                   value="{{ form.last_name.value|default:'' }}"
-                                   required>
-                            {% if form.last_name.errors %}
-                                <div class="invalid-feedback">
-                                    {{ form.last_name.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="{{ form.lichess_account.id_for_label }}" class="form-label">Lichess Username</label>
-                            <input type="text" name="{{ form.lichess_account.name }}" 
-                                   id="{{ form.lichess_account.id_for_label }}" 
-                                   class="form-control {% if form.lichess_account.errors %}is-invalid{% endif %}"
-                                   value="{{ form.lichess_account.value|default:'' }}">
-                            {% if form.lichess_account.errors %}
-                                <div class="invalid-feedback">
-                                    {{ form.lichess_account.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="col-md-4 mb-3">
-                            <label for="{{ form.chesscom_account.id_for_label }}" class="form-label">Chess.com Username</label>
-                            <input type="text" name="{{ form.chesscom_account.name }}" 
-                                   id="{{ form.chesscom_account.id_for_label }}" 
-                                   class="form-control {% if form.chesscom_account.errors %}is-invalid{% endif %}"
-                                   value="{{ form.chesscom_account.value|default:'' }}">
-                            {% if form.chesscom_account.errors %}
-                                <div class="invalid-feedback">
-                                    {{ form.chesscom_account.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="col-md-4 mb-3">
-                            <label for="{{ form.fide_rating.id_for_label }}" class="form-label">FIDE Rating</label>
-                            <input type="number" name="{{ form.fide_rating.name }}" 
-                                   id="{{ form.fide_rating.id_for_label }}" 
-                                   class="form-control {% if form.fide_rating.errors %}is-invalid{% endif %}"
-                                   value="{{ form.fide_rating.value|default:'' }}">
-                            {% if form.fide_rating.errors %}
-                                <div class="invalid-feedback">
-                                    {{ form.fide_rating.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.password1.id_for_label }}" class="form-label">Password *</label>
-                            <input type="password" name="{{ form.password1.name }}" 
-                                   id="{{ form.password1.id_for_label }}" 
-                                   class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
-                                   required>
-                            {% if form.password1.errors %}
-                                <div class="invalid-feedback">
-                                    {{ form.password1.errors }}
-                                </div>
-                            {% endif %}
-                            <div class="form-text">{{ form.password1.help_text }}</div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password *</label>
-                            <input type="password" name="{{ form.password2.name }}" 
-                                   id="{{ form.password2.id_for_label }}" 
-                                   class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
-                                   required>
-                            {% if form.password2.errors %}
-                                <div class="invalid-feedback">
-                                    {{ form.password2.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">
-                            Cancel
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            Create User
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
