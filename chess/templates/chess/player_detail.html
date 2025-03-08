@@ -1,5 +1,5 @@
-<!-- templates/chess/player_detail.html -->
 {% extends 'chess/base.html' %}
+{% load static %}
 
 {% block title %}{{ player.get_full_name|default:player.username }} - De Laurierboom Chess{% endblock %}
 
@@ -94,9 +94,7 @@
                         </div>
                         <div class="col-md-6 mt-4 mt-md-0">
                             <h4 class="mb-3">Rating History</h4>
-                            <div class="bg-light rounded p-3 text-center">
-                                <p class="mb-0">Rating history chart coming soon</p>
-                            </div>
+                            <div id="rating-history-chart" data-player-id="{{ player.id }}" class="bg-light rounded p-3"></div>
                         </div>
                     </div>
                 </div>
@@ -229,4 +227,11 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Use Chart.js instead of Recharts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<!-- Include your chart script -->
+<script src="{% static 'chess/js/components/rating-chart.js' %}"></script>
 {% endblock %}

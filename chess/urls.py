@@ -38,4 +38,5 @@ urlpatterns = [
     
     # Player search
     path('players/search/', views.player_search, name='player_search'),
+    path('player/<int:player_id>/rating-history/', views.player_rating_history, name='player_rating_history'),
 ]

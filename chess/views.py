@@ -689,3 +689,52 @@ def inline_match_result(request, match_id):
         # Fallback for non-JavaScript clients
         messages.success(request, "Match result updated")
         return redirect('tournament_detail', pk=tournament.id)
+    
+def player_rating_history(request, player_id):
+    """API view to get rating history data for a player chart"""
+    try:
+        player = User.objects.get(pk=player_id)
+        
+        # Get all matches where this player participated
+        matches = Match.objects.filter(
+            Q(white_player=player) | Q(black_player=player),
+            result__in=['white_win', 'black_win', 'draw']  # Only completed matches
+        ).order_by('round__tournament__date', 'round__number')
+        
+        # We'll need to calculate rating after each match
+        # For the demo, we'll use a simplified approach with starting rating of 1500
+        data = []
+        current_rating = 1500  # Initial rating
+        
+        for match in matches:
+            # Get tournament details
+            tournament_name = match.tournament.name
+            date = match.tournament.date.strftime('%b %d, %Y')
+            
+            # Determine if player won or lost
+            if (match.white_player == player and match.result == 'white_win') or \
+               (match.black_player == player and match.result == 'black_win'):
+                # Player won, rating increases
+                rating_change = 10
+            elif (match.white_player == player and match.result == 'black_win') or \
+                 (match.black_player == player and match.result == 'white_win'):
+                # Player lost, rating decreases
+                rating_change = -10
+            else:
+                # Draw
+                rating_change = 0
+            
+            current_rating += rating_change
+            
+            # Add data point
+            data.append({
+                'date': date,
+                'rating': current_rating,
+                'tournament': tournament_name,
+                'opponent': match.white_player.username if match.black_player == player else match.black_player.username
+            })
+        
+        return JsonResponse(data, safe=False)
+    
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'Player not found'}, status=404)
