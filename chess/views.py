@@ -70,7 +70,33 @@ class TournamentListView(ListView):
     model = Tournament
     template_name = 'chess/tournament_list.html'
     context_object_name = 'tournaments'
-    ordering = ['-date']
+    
+    def get_queryset(self):
+        """Get tournaments and pre-calculate winners"""
+        tournaments = Tournament.objects.all().order_by('-date')
+        
+        # For each tournament, find the winner and runner-up
+        result = []
+        for tournament in tournaments:
+            # Manually execute updated standings calculation for completed tournaments
+            if tournament.is_completed:
+                from .utils import update_tournament_standings
+                update_tournament_standings(tournament)
+                
+                # Get standings sorted by score
+                standings = list(tournament.standings.all().order_by('-score'))
+                
+                # Find winner and runner-up
+                if standings:
+                    tournament.winner = standings[0].player
+                    tournament.runner_up = standings[1].player if len(standings) > 1 else None
+                else:
+                    tournament.winner = None
+                    tournament.runner_up = None
+            
+            result.append(tournament)
+        
+        return result
 
 class TournamentDetailView(DetailView):
     """View for tournament details"""
@@ -494,6 +520,76 @@ def complete_round(request, tournament_id, round_id):
     
     return redirect('tournament_detail', pk=tournament_id)
 
+def update_tournament_standings(tournament):
+    """
+    Update standings for a tournament based on match results
+    """
+    from .models import TournamentStanding, Match
+    
+    # Get all completed matches in this tournament
+    matches = Match.objects.filter(
+        tournament=tournament
+    ).exclude(result='pending')
+    
+    # Dictionary to track scores
+    scores = {}
+    
+    # Calculate scores based on match results
+    for match in matches:
+        white_id = match.white_player.id
+        black_id = match.black_player.id
+        
+        # Initialize scores if needed
+        if white_id not in scores:
+            scores[white_id] = 0
+        if black_id not in scores:
+            scores[black_id] = 0
+        
+        # Update scores based on match result
+        if match.result == 'white_win':
+            scores[white_id] += 1
+        elif match.result == 'black_win':
+            scores[black_id] += 1
+        else:  # Draw
+            scores[white_id] += 0.5
+            scores[black_id] += 0.5
+    
+    # Make sure all participants have a standing entry, even if they have no score
+    # This ensures the tournament standings are complete for all participants
+    for player in tournament.participants.all():
+        if player.id not in scores:
+            scores[player.id] = 0
+    
+    # Update standings table
+    for player_id, score in scores.items():
+        standing, created = TournamentStanding.objects.get_or_create(
+            tournament=tournament,
+            player_id=player_id,
+            defaults={'score': 0}
+        )
+        standing.score = score
+        standing.save()
+    
+    # Calculate and update ranks
+    standings = TournamentStanding.objects.filter(
+        tournament=tournament
+    ).order_by('-score')
+    
+    current_rank = 1
+    current_score = None
+    count_at_current_score = 0
+    
+    for i, standing in enumerate(standings):
+        if standing.score != current_score:
+            current_rank = i + 1
+            current_score = standing.score
+            count_at_current_score = 1
+        else:
+            count_at_current_score += 1
+        
+        standing.rank = current_rank
+        standing.save()
+
 def complete_tournament(request, tournament_id):
     """Admin view to manually complete a tournament"""
     if not request.user.is_staff:
@@ -505,6 +601,15 @@ def complete_tournament(request, tournament_id):
     if tournament.is_completed:
         messages.error(request, "This tournament is already completed")
         return redirect('tournament_detail', pk=tournament_id)
+    
+    # Ensure all matches have results before completing
+    pending_matches = tournament.matches.filter(result='pending')
+    if pending_matches.exists():
+        for match in pending_matches:
+            # Set any pending matches to draws to ensure all matches have a result
+            match.result = 'draw'
+            match.save()
+            messages.warning(request, f"Set pending match between {match.white_player.username} and {match.black_player.username} to a draw")
     
     # Update tournament standings one last time
     update_tournament_standings(tournament)
