@@ -5,96 +5,218 @@
 
 {% block content %}
 <div class="container">
-    <div class="row">
-        <!-- Player Profile Card -->
-        <div class="col-lg-12 mb-4">
-            <div class="card border-0 shadow">
-                <div class="card-header bg-dark text-white py-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h1 class="card-title mb-0">{{ player.get_full_name|default:player.username }}</h1>
-                            <div class="rating mt-2">
-                                <span class="badge bg-primary-subtle text-primary rating-badge fs-5">{{ player.elo|floatformat:0 }}</span>
-                                <span class="ms-2 text-light">Laurierboom Rating</span>
-                            </div>
+    <!-- Player Header -->
+    <div class="mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-dark text-white py-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h1 class="display-4 mb-0">{{ player.get_full_name|default:player.username }}</h1>
+                    <div class="d-flex">
+                        <div class="text-center mx-3">
+                            <div class="fs-1 text-success">{{ wins }}</div>
+                            <div class="text-light">Wins</div>
                         </div>
-                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <div class="stats d-flex flex-wrap justify-content-md-end">
-                                <div class="me-4 mb-2">
-                                    <span class="d-block text-success fs-4">{{ wins }}</span>
-                                    <small class="text-light">Wins</small>
-                                </div>
-                                <div class="me-4 mb-2">
-                                    <span class="d-block text-warning fs-4">{{ draws }}</span>
-                                    <small class="text-light">Draws</small>
-                                </div>
-                                <div class="mb-2">
-                                    <span class="d-block text-danger fs-4">{{ losses }}</span>
-                                    <small class="text-light">Losses</small>
-                                </div>
-                            </div>
-                            <div class="mt-2">
-                                <span class="d-block text-light fs-5">{{ total_games }}</span>
-                                <small class="text-light">Total Games</small>
-                            </div>
+                        <div class="text-center mx-3">
+                            <div class="fs-1 text-warning">{{ draws }}</div>
+                            <div class="text-light">Draws</div>
+                        </div>
+                        <div class="text-center mx-3">
+                            <div class="fs-1 text-danger">{{ losses }}</div>
+                            <div class="text-light">Losses</div>
                         </div>
                     </div>
                 </div>
-                <div class="card-body p-4">
+                <div class="d-flex mt-3">
+                    <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-3">
+                        <span class="fw-bold">{{ player.elo|floatformat:0 }}</span>
+                        <span class="ms-1">Laurierboom Rating</span>
+                    </div>
+                    <div class="badge bg-dark text-light border px-3 py-2 fs-6 rounded-pill">
+                        <span class="fw-bold">{{ total_games }}</span>
+                        <span class="ms-1">Total Games</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Profile Information -->
+        <div class="col-md-5">
+            <div class="card border-0 shadow h-100">
+                <div class="card-header bg-dark text-white">
+                    <h2 class="card-title mb-0">Profile Information</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% if player.lichess_account %}
+                            <li class="list-group-item px-0 border-0 pb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box me-3">
+                                        <i class="fas fa-chess-knight fs-4 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">Lichess:</div>
+                                        <a href="https://lichess.org/@/{{ player.lichess_account }}" target="_blank" class="text-decoration-none">
+                                            {{ player.lichess_account }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endif %}
+                        
+                        {% if player.chesscom_account %}
+                            <li class="list-group-item px-0 border-0 pb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box me-3">
+                                        <i class="fas fa-chess-rook fs-4 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">Chess.com:</div>
+                                        <a href="https://chess.com/member/{{ player.chesscom_account }}" target="_blank" class="text-decoration-none">
+                                            {{ player.chesscom_account }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endif %}
+                        
+                        {% if player.fide_rating %}
+                            <li class="list-group-item px-0 border-0 pb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box me-3">
+                                        <i class="fas fa-trophy fs-4 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">FIDE Rating:</div>
+                                        <span>{{ player.fide_rating }}</span>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- Additional profile information -->
+                        <li class="list-group-item px-0 border-0 pb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box me-3">
+                                    <i class="fas fa-calendar-alt fs-4 text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Member Since:</div>
+                                    <span>{{ player.date_joined|date:"F Y" }}</span>
+                                </div>
+                            </div>
+                        </li>
+                        
+                        <li class="list-group-item px-0 border-0 pb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box me-3">
+                                    <i class="fas fa-medal fs-4 text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Tournaments Played:</div>
+                                    <span>{{ tournaments|length }}</span>
+                                </div>
+                            </div>
+                        </li>
+                        
+                        <li class="list-group-item px-0 border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box me-3">
+                                    <i class="fas fa-chart-line fs-4 text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Rating Progression:</div>
+                                    <span>{{ rating_change|floatformat:0 }} points 
+                                    {% if rating_change > 0 %}
+                                        <span class="text-success">(+{{ rating_change|floatformat:0 }})</span>
+                                    {% elif rating_change < 0 %}
+                                        <span class="text-danger">({{ rating_change|floatformat:0 }})</span>
+                                    {% else %}
+                                        <span class="text-muted">(0)</span>
+                                    {% endif %}
+                                    over last month</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Stats -->
+        <div class="col-md-7">
+            <div class="card border-0 shadow h-100">
+                <div class="card-header bg-dark text-white">
+                    <h2 class="card-title mb-0">Performance Statistics</h2>
+                </div>
+                <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <h4 class="mb-3">Profile Information</h4>
-                            <ul class="list-group list-group-flush">
-                                {% if player.lichess_account %}
-                                    <li class="list-group-item px-0">
-                                        <div class="d-flex align-items-center">
-                                            <div class="icon-box me-2">
-                                                <i class="fas fa-chess-knight text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="fw-bold">Lichess:</span>
-                                                <a href="https://lichess.org/@/{{ player.lichess_account }}" target="_blank" class="ms-2">
-                                                    {{ player.lichess_account }}
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% endif %}
-                                
-                                {% if player.chesscom_account %}
-                                    <li class="list-group-item px-0">
-                                        <div class="d-flex align-items-center">
-                                            <div class="icon-box me-2">
-                                                <i class="fas fa-chess-rook text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="fw-bold">Chess.com:</span>
-                                                <a href="https://chess.com/member/{{ player.chesscom_account }}" target="_blank" class="ms-2">
-                                                    {{ player.chesscom_account }}
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% endif %}
-                                
-                                {% if player.fide_rating %}
-                                    <li class="list-group-item px-0">
-                                        <div class="d-flex align-items-center">
-                                            <div class="icon-box me-2">
-                                                <i class="fas fa-trophy text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="fw-bold">FIDE Rating:</span>
-                                                <span class="ms-2">{{ player.fide_rating }}</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% endif %}
-                            </ul>
+                        <div class="col-md-6 mb-4">
+                            <h5 class="mb-3">Performance by Color</h5>
+                            <div class="d-flex mb-3 justify-content-between">
+                                <div class="fw-bold">As White:</div>
+                                <div>
+                                    <span class="text-success">{{ white_wins }}W</span> <span class="text-muted mx-1">/</span> 
+                                    <span class="text-warning">{{ white_draws }}D</span> <span class="text-muted mx-1">/</span> 
+                                    <span class="text-danger">{{ white_losses }}L</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <div class="fw-bold">As Black:</div>
+                                <div>
+                                    <span class="text-success">{{ black_wins }}W</span> <span class="text-muted mx-1">/</span> 
+                                    <span class="text-warning">{{ black_draws }}D</span> <span class="text-muted mx-1">/</span> 
+                                    <span class="text-danger">{{ black_losses }}L</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6 mt-4 mt-md-0">
-                            <h4 class="mb-3">Rating History</h4>
-                            <div id="rating-history-chart" data-player-id="{{ player.id }}" class="bg-light rounded p-3"></div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <h5 class="mb-3">Recent Performance</h5>
+                            <div class="d-flex mb-2 justify-content-between">
+                                <div class="fw-bold">Win Rate:</div>
+                                <div>
+                                    {% if total_games > 0 %}
+                                        {% widthratio wins total_games 100 %}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <div class="fw-bold">Form (Last 5):</div>
+                                <div>
+                                    {% for match in recent_matches|slice:":5" %}
+                                        {% if match.white_player == player %}
+                                            {% if match.result == 'white_win' %}
+                                                <span class="badge rounded-circle bg-success">W</span>
+                                            {% elif match.result == 'black_win' %}
+                                                <span class="badge rounded-circle bg-danger">L</span>
+                                            {% else %}
+                                                <span class="badge rounded-circle bg-warning text-dark">D</span>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if match.result == 'black_win' %}
+                                                <span class="badge rounded-circle bg-success">W</span>
+                                            {% elif match.result == 'white_win' %}
+                                                <span class="badge rounded-circle bg-danger">L</span>
+                                            {% else %}
+                                                <span class="badge rounded-circle bg-warning text-dark">D</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% empty %}
+                                        <span class="text-muted">No recent games</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="mb-3">Rating History</h5>
+                            <div id="rating-history-chart" data-player-id="{{ player.id }}" class="bg-light rounded p-3" style="height: 250px;"></div>
                         </div>
                     </div>
                 </div>
@@ -118,6 +240,7 @@
                                 <tr>
                                     <th>Tournament</th>
                                     <th>Round</th>
+                                    <th>Color</th>
                                     <th>Opponent</th>
                                     <th>Result</th>
                                 </tr>
@@ -133,15 +256,24 @@
                                         <td>{{ match.round.number }}</td>
                                         <td>
                                             {% if match.white_player == player %}
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-chess-pawn me-1"></i> White
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-chess-pawn me-1"></i> Black
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if match.white_player == player %}
                                                 <a href="{% url 'player_detail' match.black_player.id %}">
                                                     {{ match.black_player.get_full_name|default:match.black_player.username }}
                                                 </a>
-                                                <small class="text-muted">(Black)</small>
                                             {% else %}
                                                 <a href="{% url 'player_detail' match.white_player.id %}">
                                                     {{ match.white_player.get_full_name|default:match.white_player.username }}
                                                 </a>
-                                                <small class="text-muted">(White)</small>
                                             {% endif %}
                                         </td>
                                         <td>
@@ -166,7 +298,7 @@
                                     </tr>
                                 {% empty %}
                                     <tr>
-                                        <td colspan="4" class="text-center py-4">No match history</td>
+                                        <td colspan="5" class="text-center py-4">No match history</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -185,43 +317,46 @@
                     </h2>
                 </div>
                 <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        {% for tournament in tournaments %}
-                            <li class="list-group-item p-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <a href="{% url 'tournament_detail' tournament.id %}" class="tournament-link">
-                                            <h5 class="mb-1">{{ tournament.name }}</h5>
-                                        </a>
-                                        <div class="text-muted">
-                                            <small><i class="far fa-calendar-alt me-1"></i>{{ tournament.date }}</small>
+                    {% for tournament in tournaments %}
+                        <div class="p-3 {% if not forloop.last %}border-bottom{% endif %}">
+                            <div class="mb-2">
+                                <a href="{% url 'tournament_detail' tournament.id %}" class="text-decoration-none">
+                                    <h5 class="text-primary mb-1">Bi-monthly blitz tournament</h5>
+                                </a>
+                            </div>
+                            <div class="mb-3">
+                                <i class="far fa-calendar-alt text-muted me-2"></i>{{ tournament.date }}
+                            </div>
+                            
+                            {% for standing in tournament.standings.all %}
+                                {% if standing.player == player %}
+                                    {% if tournament.is_completed %}
+                                        <div>
+                                            <span class="badge bg-primary rounded-pill px-3 py-2">
+                                                Rank: {{ standing.rank }} ({{ standing.score }} pts)
+                                            </span>
                                         </div>
-                                    </div>
+                                    {% else %}
+                                        <div>
+                                            <span class="badge bg-secondary rounded-pill px-3 py-2">In Progress</span>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% empty %}
+                                {% if tournament.is_completed %}
                                     <div>
-                                        {% for standing in tournament.standings.all %}
-                                            {% if standing.player == player %}
-                                                {% if tournament.is_completed %}
-                                                    <span class="badge bg-primary">
-                                                        Rank: {{ standing.rank }} ({{ standing.score }} pts)
-                                                    </span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary">In Progress</span>
-                                                {% endif %}
-                                            {% endif %}
-                                        {% empty %}
-                                            {% if tournament.is_completed %}
-                                                <span class="badge bg-secondary">Completed</span>
-                                            {% else %}
-                                                <span class="badge bg-info text-dark">Upcoming</span>
-                                            {% endif %}
-                                        {% endfor %}
+                                        <span class="badge bg-secondary rounded-pill px-3 py-2">Completed</span>
                                     </div>
-                                </div>
-                            </li>
-                        {% empty %}
-                            <li class="list-group-item text-center py-4">No tournaments</li>
-                        {% endfor %}
-                    </ul>
+                                {% else %}
+                                    <div>
+                                        <span class="badge bg-info text-dark rounded-pill px-3 py-2">Upcoming</span>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4">No tournaments</div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

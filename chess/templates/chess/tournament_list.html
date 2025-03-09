@@ -136,12 +136,12 @@
                                         {% if tournament.winner %}
                                             <div class="d-flex flex-column">
                                                 <div class="winner-name">
-                                                    <i class="fas fa-trophy text-warning me-1"></i>
+                                                    <i class="fas text-warning me-1"></i>
                                                     {{ tournament.winner.get_full_name|default:tournament.winner.username }}
                                                 </div>
                                                 {% if tournament.runner_up %}
                                                     <div class="runner-up-name small text-muted">
-                                                        <i class="fas fa-medal text-secondary me-1"></i>
+                                                        <i class="fas text-secondary me-1"></i>
                                                         {{ tournament.runner_up.get_full_name|default:tournament.runner_up.username }}
                                                     </div>
                                                 {% endif %}

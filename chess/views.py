@@ -85,10 +85,83 @@ class PlayerDetailView(DetailView):
         context['draws'] = draws
         context['total_games'] = wins + losses + draws
         
+        # Add performance by color stats
+        white_wins = white_matches.filter(result='white_win').count()
+        white_losses = white_matches.filter(result='black_win').count()
+        white_draws = white_matches.filter(result='draw').count()
+        
+        black_wins = black_matches.filter(result='black_win').count()
+        black_losses = black_matches.filter(result='white_win').count()
+        black_draws = black_matches.filter(result='draw').count()
+        
+        context['white_wins'] = white_wins
+        context['white_losses'] = white_losses
+        context['white_draws'] = white_draws
+        context['black_wins'] = black_wins
+        context['black_losses'] = black_losses
+        context['black_draws'] = black_draws
+        
         # Recent match history (most recent first - reversed order)
         combined_matches = list(white_matches) + list(black_matches)
         combined_matches.sort(key=lambda x: (x.round.tournament.date, x.round.number), reverse=True)
         context['recent_matches'] = combined_matches[:10]  # Keep only the 10 most recent
+        
+        # Calculate rating progression over last month
+        from django.utils import timezone
+        import datetime
+        one_month_ago = timezone.now() - datetime.timedelta(days=30)
+        
+        # Get the standings from tournaments in the last month
+        recent_tournaments = player.tournaments.filter(date__gte=one_month_ago).order_by('date')
+        recent_standings = []
+        for tournament in recent_tournaments:
+            try:
+                standing = tournament.standings.get(player=player)
+                recent_standings.append({
+                    'tournament': tournament.name,
+                    'date': tournament.date,
+                    'position': standing.rank,
+                    'score': standing.score
+                })
+            except:
+                pass
+        
+        context['recent_standings'] = recent_standings
+        
+        # Calculate rating change over the last month
+        rating_month_ago = 1500  # Default starting rating
+        
+        # Try to get the player's rating from one month ago using matches
+        oldest_matches = Match.objects.filter(
+            Q(white_player=player) | Q(black_player=player),
+            round__tournament__date__lt=one_month_ago
+        ).order_by('-round__tournament__date')
+        
+        if oldest_matches.exists():
+            # Use the last known rating before one month ago
+            # This is simplified - in a real app you'd want a rating history table
+            rating_month_ago = player.elo
+        
+        context['rating_change'] = player.elo - rating_month_ago
+        context['rating_month_ago'] = rating_month_ago
+        
+        # Add tournament placements chart data
+        tournaments_participated = player.tournaments.filter(is_completed=True).order_by('date')
+        placements = []
+        
+        for tournament in tournaments_participated:
+            try:
+                standing = tournament.standings.get(player=player)
+                placements.append({
+                    'tournament': tournament.name,
+                    'round': tournament.id,  # Using ID as a simple round number for the chart
+                    'position': standing.rank,
+                    'total_players': tournament.participants.count()
+                })
+            except:
+                continue
+        
+        context['placements'] = placements
         
         return context
 
@@ -150,15 +223,15 @@ class TournamentListView(ListView):
             is_completed=True
         ).order_by('-date')
         
-        # Process past tournaments to attach winners
+        # Process past tournaments to attach winners (CLEAN VERSION)
         processed_past = []
         for tournament in past_tournaments:
             # Get standings sorted by score
             standings = list(tournament.standings.all().order_by('-score'))
             
-            # Find winner and runner-up
-            if standings:
-                tournament.winner = standings[0].player
+            # Find winner and runner-up WITHOUT adding emoji
+            if standings and len(standings) > 0:
+                tournament.winner = standings[0].player  # Just assign the player object
                 tournament.runner_up = standings[1].player if len(standings) > 1 else None
             else:
                 tournament.winner = None
