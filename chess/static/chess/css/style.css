@@ -1998,3 +1998,29 @@ a:hover .next-tournament-box {
   background-color: #e6ccff;
   color: #5a009c;
 }
+
+.tournament-crosstable {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tournament-crosstable th,
+.tournament-crosstable td {
+  padding: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Make the diagonal cells more distinct */
+.tournament-crosstable .table-secondary {
+  background-color: #f8f9fa;
+}
+
+/* Add some hover effect for better readability */
+.tournament-crosstable tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Style for the badges */
+.tournament-crosstable .badge {
+  min-width: 24px;
+}

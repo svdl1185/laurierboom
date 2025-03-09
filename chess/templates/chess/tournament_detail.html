@@ -150,17 +150,40 @@
                                                 </span>
                                             </div>
                                         </li>
-                                        {% if tournament.is_swiss_type %}
-                                            <li class="list-group-item d-flex px-0">
-                                                <div class="icon-box me-2">
-                                                    <i class="fas fa-list-ol text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <span class="fw-bold">Rounds:</span>
-                                                    <span class="ms-2">{{ tournament.num_rounds }}</span>
-                                                </div>
-                                            </li>
-                                        {% endif %}
+                                        <li class="list-group-item d-flex px-0">
+                                            <div class="icon-box me-2">
+                                                <i class="fas fa-list-ol text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <span class="fw-bold">Rounds:</span>
+                                                <span class="ms-2">
+                                                    {% if tournament.is_swiss_type %}
+                                                        {{ tournament.num_rounds }}
+                                                    {% elif tournament.tournament_type == 'round_robin' %}
+                                                        {% with participant_count=tournament.participants.count %}
+                                                            {% if participant_count|divisibleby:2 %}
+                                                                {{ participant_count|add:"-1" }}
+                                                            {% else %}
+                                                                {{ participant_count }}
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% elif tournament.tournament_type == 'double_round_robin' %}
+                                                        {% with participant_count=tournament.participants.count %}
+                                                            {% if participant_count|divisibleby:2 %}
+                                                                {{ participant_count|add:"-1" }}×2
+                                                            {% else %}
+                                                                {{ participant_count }}×2
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% else %}
+                                                        TBD
+                                                    {% endif %}
+                                                    {% if current_round %}
+                                                        <span class="text-muted">(Total: {{ current_round.number }})</span>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </li>
                                         <li class="list-group-item d-flex px-0">
                                             <div class="icon-box me-2">
                                                 <i class="fas fa-users text-primary"></i>
@@ -256,7 +279,7 @@
                     <div class="card-header bg-dark text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <h2 class="card-title mb-0">
-                                <i class="fas fa-chess-board me-2"></i>Round {{ current_round.number }} - Current Matches
+                                <i class="fas fa-chess-board me-2"></i>Current Round
                             </h2>
                             {% if user.is_staff and not tournament.is_completed and current_round.matches.count > 0 %}
                                 <form method="post" action="{% url 'complete_round' tournament.id current_round.id %}" class="d-inline" 
@@ -540,6 +563,110 @@
         </div>
     {% endif %}
 </div>
+
+{% if tournament.is_completed or tournament.has_started %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-dark text-white">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-table me-2"></i>Tournament Crosstable
+                </h2>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered tournament-crosstable">
+                        <thead>
+                            <tr>
+                                <th class="bg-light">#</th>
+                                <th class="bg-light">Player</th>
+                                <th class="bg-light">Rating</th>
+                                {% for standing in standings %}
+                                    <!-- Skip staff users -->
+                                    {% if not standing.player.is_staff and not standing.player.is_superuser %}
+                                        <th class="text-center">{{ forloop.counter }}</th>
+                                    {% endif %}
+                                {% endfor %}
+                                <th class="bg-light text-center">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for standing in standings %}
+                                <!-- Skip staff users -->
+                                {% if not standing.player.is_staff and not standing.player.is_superuser %}
+                                    <tr>
+                                        <td class="bg-light fw-bold">{{ standing.rank }}</td>
+                                        <td class="bg-light">
+                                            <a href="{% url 'player_detail' standing.player.id %}" class="player-link">
+                                                {{ standing.player.get_full_name|default:standing.player.username }}
+                                            </a>
+                                        </td>
+                                        <td class="bg-light text-center">
+                                            <span class="badge bg-primary-subtle text-primary">
+                                                {% if tournament.time_control == 'bullet' %}
+                                                    {{ standing.player.bullet_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'blitz' %}
+                                                    {{ standing.player.blitz_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'rapid' %}
+                                                    {{ standing.player.rapid_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'classical' %}
+                                                    {{ standing.player.classical_elo|floatformat:0 }}
+                                                {% else %}
+                                                    {{ standing.player.elo|floatformat:0 }}
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        
+                                        {% for opponent_standing in standings %}
+                                            {% if not opponent_standing.player.is_staff and not opponent_standing.player.is_superuser %}
+                                                <td class="text-center {% if standing.player.id == opponent_standing.player.id %}table-secondary{% endif %}">
+                                                    {% if standing.player.id == opponent_standing.player.id %}
+                                                        <!-- Diagonal (self vs self) -->
+                                                        <span class="text-muted">×</span>
+                                                    {% else %}
+                                                        <!-- Find the match between these players -->
+                                                        {% for match in tournament.matches.all %}
+                                                            {% if match.white_player.id == standing.player.id and match.black_player.id == opponent_standing.player.id %}
+                                                                {% if match.result == 'white_win' %}
+                                                                    <span class="badge bg-success">1</span>
+                                                                {% elif match.result == 'black_win' %}
+                                                                    <span class="badge bg-danger">0</span>
+                                                                {% elif match.result == 'draw' %}
+                                                                    <span class="badge bg-warning text-dark">½</span>
+                                                                {% else %}
+                                                                    <span class="badge bg-secondary">?</span>
+                                                                {% endif %}
+                                                            {% elif match.white_player.id == opponent_standing.player.id and match.black_player.id == standing.player.id %}
+                                                                {% if match.result == 'white_win' %}
+                                                                    <span class="badge bg-danger">0</span>
+                                                                {% elif match.result == 'black_win' %}
+                                                                    <span class="badge bg-success">1</span>
+                                                                {% elif match.result == 'draw' %}
+                                                                    <span class="badge bg-warning text-dark">½</span>
+                                                                {% else %}
+                                                                    <span class="badge bg-secondary">?</span>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        
+                                                        <!-- If no match found, leave empty -->
+                                                    {% endif %}
+                                                </td>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        <td class="bg-light text-center fw-bold">{{ standing.score }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Add Player Modal -->
 {% if user.is_staff and not tournament.is_completed and current_round is None %}
