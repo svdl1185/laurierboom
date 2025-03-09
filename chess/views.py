@@ -217,14 +217,22 @@ class StartTournamentView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         
         # Generate pairings based on tournament type
         try:
-            if tournament.tournament_type == 'round_robin' or tournament.tournament_type == 'double_round_robin':
-                generate_round_robin_pairings(tournament, round_obj)
-            else:  # Swiss or Double Swiss
-                generate_swiss_pairings(tournament, round_obj)
-            
-            # Initialize tournament standings
-            for player in tournament.participants.all():
-                TournamentStanding.objects.create(tournament=tournament, player=player)
+            if tournament.tournament_type == 'round_robin':
+                participant_count = tournament.participants.count()
+                # For odd number of participants, we need exactly n rounds
+                if participant_count % 2 == 1:
+                    planned_rounds = participant_count
+                else:
+                    # For even number, we need n-1 rounds
+                    planned_rounds = participant_count - 1
+            elif tournament.tournament_type == 'double_round_robin':
+                participant_count = tournament.participants.count()
+                if participant_count % 2 == 1:
+                    planned_rounds = participant_count * 2
+                else:
+                    planned_rounds = (participant_count - 1) * 2
+            else:  # Swiss
+                planned_rounds = tournament.num_rounds
             
             messages.success(self.request, f"Tournament started! Round 1 pairings generated.")
         except Exception as e:
