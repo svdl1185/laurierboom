@@ -154,60 +154,88 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <h5 class="mb-3">Performance by Color</h5>
-                            <div class="d-flex mb-3 justify-content-between">
-                                <div class="fw-bold">As White:</div>
-                                <div>
-                                    <span class="text-success">{{ white_wins }}W</span> <span class="text-muted mx-1">/</span> 
-                                    <span class="text-warning">{{ white_draws }}D</span> <span class="text-muted mx-1">/</span> 
-                                    <span class="text-danger">{{ white_losses }}L</span>
+                            <div class="color-stats p-3 bg-light rounded">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="stat-icon me-3">
+                                        <span class="fs-4">♙</span> <!-- White pawn Unicode character -->
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">As White</div>
+                                        <div class="d-flex align-items-baseline">
+                                            <span class="fs-4 fw-bold">{{ white_wins }}</span>
+                                            <span class="text-success">W</span>
+                                            <span class="mx-2">/</span>
+                                            <span class="fs-4 fw-bold">{{ white_draws }}</span>
+                                            <span class="text-warning">D</span>
+                                            <span class="mx-2">/</span>
+                                            <span class="fs-4 fw-bold">{{ white_losses }}</span>
+                                            <span class="text-danger">L</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <div class="fw-bold">As Black:</div>
-                                <div>
-                                    <span class="text-success">{{ black_wins }}W</span> <span class="text-muted mx-1">/</span> 
-                                    <span class="text-warning">{{ black_draws }}D</span> <span class="text-muted mx-1">/</span> 
-                                    <span class="text-danger">{{ black_losses }}L</span>
+                                
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon me-3">
+                                        <span class="fs-4">♟</span> <!-- Black pawn Unicode character -->
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">As Black</div>
+                                        <div class="d-flex align-items-baseline">
+                                            <span class="fs-4 fw-bold">{{ black_wins }}</span>
+                                            <span class="text-success">W</span>
+                                            <span class="mx-2">/</span>
+                                            <span class="fs-4 fw-bold">{{ black_draws }}</span>
+                                            <span class="text-warning">D</span>
+                                            <span class="mx-2">/</span>
+                                            <span class="fs-4 fw-bold">{{ black_losses }}</span>
+                                            <span class="text-danger">L</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-2 pt-2 border-top">
+                                    <small class="text-muted">Win rate: 
+                                        {% if total_games > 0 %}
+                                            {{ white_win_rate|floatformat:0 }}% as White, {{ black_win_rate|floatformat:0 }}% as Black
+                                        {% else %}
+                                            No data
+                                        {% endif %}
+                                    </small>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="col-md-6 mb-4">
-                            <h5 class="mb-3">Recent Performance</h5>
-                            <div class="d-flex mb-2 justify-content-between">
-                                <div class="fw-bold">Win Rate:</div>
-                                <div>
-                                    {% if total_games > 0 %}
-                                        {% widthratio wins total_games 100 %}%
-                                    {% else %}
-                                        0%
-                                    {% endif %}
+                            <h5 class="mb-3">Tournament Performance</h5>
+                            <div class="tournament-stats p-3 bg-light rounded">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="stat-icon me-3">
+                                        <i class="fas fa-trophy text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">Average Position</div>
+                                        <div class="d-flex align-items-baseline">
+                                            <span class="fs-4 fw-bold">{{ avg_position|floatformat:1 }}</span>
+                                            <span class="text-muted ms-2">of {{ avg_total_players|floatformat:1 }}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <div class="fw-bold">Form (Last 5):</div>
-                                <div>
-                                    {% for match in recent_matches|slice:":5" %}
-                                        {% if match.white_player == player %}
-                                            {% if match.result == 'white_win' %}
-                                                <span class="badge rounded-circle bg-success">W</span>
-                                            {% elif match.result == 'black_win' %}
-                                                <span class="badge rounded-circle bg-danger">L</span>
-                                            {% else %}
-                                                <span class="badge rounded-circle bg-warning text-dark">D</span>
-                                            {% endif %}
-                                        {% else %}
-                                            {% if match.result == 'black_win' %}
-                                                <span class="badge rounded-circle bg-success">W</span>
-                                            {% elif match.result == 'white_win' %}
-                                                <span class="badge rounded-circle bg-danger">L</span>
-                                            {% else %}
-                                                <span class="badge rounded-circle bg-warning text-dark">D</span>
-                                            {% endif %}
-                                        {% endif %}
-                                    {% empty %}
-                                        <span class="text-muted">No recent games</span>
-                                    {% endfor %}
+                                
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon me-3">
+                                        <i class="fas fa-star text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">Average Points</div>
+                                        <div class="d-flex align-items-baseline">
+                                            <span class="fs-4 fw-bold">{{ avg_points|floatformat:1 }}</span>
+                                            <span class="text-muted ms-2">per tournament</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-2 pt-2 border-top">
+                                    <small class="text-muted">Based on {{ tournament_count }} tournament{{ tournament_count|pluralize }}</small>
                                 </div>
                             </div>
                         </div>

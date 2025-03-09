@@ -100,6 +100,19 @@ class PlayerDetailView(DetailView):
         context['black_wins'] = black_wins
         context['black_losses'] = black_losses
         context['black_draws'] = black_draws
+
+        # Calculate win rates by color
+        white_win_rate = 0
+        black_win_rate = 0
+
+        if (white_wins + white_draws + white_losses) > 0:
+            white_win_rate = (white_wins / (white_wins + white_draws + white_losses)) * 100
+
+        if (black_wins + black_draws + black_losses) > 0:
+            black_win_rate = (black_wins / (black_wins + black_draws + black_losses)) * 100
+
+        context['white_win_rate'] = white_win_rate
+        context['black_win_rate'] = black_win_rate
         
         # Recent match history (most recent first - reversed order)
         combined_matches = list(white_matches) + list(black_matches)
@@ -162,6 +175,24 @@ class PlayerDetailView(DetailView):
                 continue
         
         context['placements'] = placements
+
+        # Calculate average position and points from tournaments
+        avg_position = 0
+        avg_total_players = 0
+        if placements:
+            avg_position = sum(p['position'] for p in placements) / len(placements)
+            avg_total_players = sum(p['total_players'] for p in placements) / len(placements)
+            
+        context['avg_position'] = avg_position
+        context['avg_total_players'] = avg_total_players
+
+        # Calculate average points per tournament
+        avg_points = 0
+        if recent_standings:
+            avg_points = sum(s['score'] for s in recent_standings) / len(recent_standings)
+            
+        context['avg_points'] = avg_points
+        context['tournament_count'] = len(placements)
         
         return context
 
