@@ -9,6 +9,8 @@ class User(AbstractUser):
     is_player_only = models.BooleanField(default=True)
     lichess_account = models.CharField(max_length=100, blank=True, null=True)
     chesscom_account = models.CharField(max_length=100, blank=True, null=True)
+    
+    fide_id = models.CharField(max_length=20, blank=True, null=True)
     fide_rating = models.IntegerField(blank=True, null=True)
 
     bullet_elo = models.FloatField(default=1500)

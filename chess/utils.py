@@ -2,6 +2,10 @@
 from django.db.models import Q, F, Sum, Count, Case, When, Value, FloatField
 import random
 import math
+import requests
+from bs4 import BeautifulSoup
+import logging
+from .models import User
 
 def generate_swiss_pairings(tournament, round_obj):
     """
@@ -310,3 +314,28 @@ def update_tournament_standings(tournament):
         
         standing.rank = current_rank
         standing.save()
+
+def update_fide_ratings():
+    """Fetch and update FIDE ratings for all users with a FIDE ID"""
+    users_with_fide_id = User.objects.filter(fide_id__isnull=False).exclude(fide_id='')
+    
+    for user in users_with_fide_id:
+        try:
+            # Example using a hypothetical FIDE API service
+            response = requests.get(f"https://ratings.fide.com/profile/{user.fide_id}")
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                # Extract the rating from the page - this would depend on the specific HTML structure
+                rating_element = soup.select_one('div.profile-top-rating-data')
+                if rating_element:
+                    try:
+                        rating = int(rating_element.text.strip())
+                        user.fide_rating = rating
+                        user.save()
+                        logging.info(f"Updated FIDE rating for {user.username}: {rating}")
+                    except ValueError:
+                        logging.error(f"Could not parse FIDE rating for {user.username}")
+            else:
+                logging.error(f"Failed to fetch FIDE rating for {user.username}: Status code {response.status_code}")
+        except Exception as e:
+            logging.error(f"Error updating FIDE rating for {user.username}: {str(e)}")
