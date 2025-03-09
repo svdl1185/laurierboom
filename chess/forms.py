@@ -134,7 +134,8 @@ class SimplePlayerRegistrationForm(forms.ModelForm):
     """Simple form for registering players without login credentials"""
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'lichess_account', 'chesscom_account', 'fide_rating']
+        fields = ['first_name', 'last_name', 'lichess_account', 'chesscom_account', 'fide_rating']
+        # Removed 'email' from fields
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
