@@ -400,81 +400,187 @@
         </div>
     {% endif %}
 
-    <!-- Participants Card -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <h2 class="card-title mb-0">
-                        <i class="fas fa-users me-2"></i>Participants
-                    </h2>
-                    {% if user.is_staff and not tournament.is_completed and current_round is None %}
-                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
-                            <i class="fas fa-plus me-1"></i> Add
-                        </button>
-                    {% endif %}
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">#</th>
-                                    <th>Player</th>
-                                    <th>Rating</th>
-                                    {% if user.is_staff and not tournament.is_completed and current_round is None %}
-                                        <th class="text-end pe-3">Actions</th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for player in tournament.participants.all %}
+    {% if not tournament.has_started and not tournament.is_completed %}
+        <!-- Participants Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-users me-2"></i>Participants
+                        </h2>
+                        {% if user.is_staff and not tournament.is_completed and current_round is None %}
+                            <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <td class="ps-3">{{ forloop.counter }}</td>
-                                        <td>
-                                            <a href="{% url 'player_detail' player.id %}" class="player-link">
-                                                {{ player.get_full_name|default:player.username }}
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-primary-subtle text-primary">
-                                                {% if tournament.time_control == 'bullet' %}
-                                                    {{ player.bullet_elo|floatformat:0 }}
-                                                {% elif tournament.time_control == 'blitz' %}
-                                                    {{ player.blitz_elo|floatformat:0 }}
-                                                {% elif tournament.time_control == 'rapid' %}
-                                                    {{ player.rapid_elo|floatformat:0 }}
-                                                {% elif tournament.time_control == 'classical' %}
-                                                    {{ player.classical_elo|floatformat:0 }}
-                                                {% else %}
-                                                    {{ player.elo|floatformat:0 }}
-                                                {% endif %}
-                                            </span>
-                                        </td>
+                                        <th class="ps-3">#</th>
+                                        <th>Player</th>
+                                        <th>Rating</th>
                                         {% if user.is_staff and not tournament.is_completed and current_round is None %}
-                                            <td class="text-end pe-3">
-                                                <a href="{% url 'remove_player_from_tournament' tournament.id player.id %}" 
-                                                   class="btn btn-sm btn-outline-danger"
-                                                   onclick="return confirm('Are you sure you want to remove this player?');">
-                                                    <i class="fas fa-times"></i>
-                                                </a>
-                                            </td>
+                                            <th class="text-end pe-3">Actions</th>
                                         {% endif %}
                                     </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="{% if user.is_staff and not tournament.is_completed and current_round is None %}4{% else %}3{% endif %}" class="text-center py-4">
-                                            No participants yet
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {% for player in tournament.participants.all %}
+                                        <tr>
+                                            <td class="ps-3">{{ forloop.counter }}</td>
+                                            <td>
+                                                <a href="{% url 'player_detail' player.id %}" class="player-link">
+                                                    {{ player.get_full_name|default:player.username }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    {% if tournament.time_control == 'bullet' %}
+                                                        {{ player.bullet_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'blitz' %}
+                                                        {{ player.blitz_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'rapid' %}
+                                                        {{ player.rapid_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'classical' %}
+                                                        {{ player.classical_elo|floatformat:0 }}
+                                                    {% else %}
+                                                        {{ player.elo|floatformat:0 }}
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            {% if user.is_staff and not tournament.is_completed and current_round is None %}
+                                                <td class="text-end pe-3">
+                                                    <a href="{% url 'remove_player_from_tournament' tournament.id player.id %}" 
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Are you sure you want to remove this player?');">
+                                                        <i class="fas fa-times"></i>
+                                                    </a>
+                                                </td>
+                                            {% endif %}
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="{% if user.is_staff and not tournament.is_completed and current_round is None %}4{% else %}3{% endif %}" class="text-center py-4">
+                                                No participants yet
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% endif %}
+
+    {% if tournament.is_completed or tournament.has_started %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-table me-2"></i>Tournament Crosstable
+                        </h2>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered tournament-crosstable">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-light">#</th>
+                                        <th class="bg-light">Player</th>
+                                        <th class="bg-light">Rating</th>
+                                        {% for standing in standings %}
+                                            <!-- Skip staff users -->
+                                            {% if not standing.player.is_staff and not standing.player.is_superuser %}
+                                                <th class="text-center">{{ forloop.counter }}</th>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <th class="bg-light text-center">Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for standing in standings %}
+                                        <!-- Skip staff users -->
+                                        {% if not standing.player.is_staff and not standing.player.is_superuser %}
+                                            <tr>
+                                                <td class="bg-light fw-bold">{{ standing.rank }}</td>
+                                                <td class="bg-light">
+                                                    <a href="{% url 'player_detail' standing.player.id %}" class="player-link">
+                                                        {{ standing.player.get_full_name|default:standing.player.username }}
+                                                    </a>
+                                                </td>
+                                                <td class="bg-light text-center">
+                                                    <span class="badge bg-primary-subtle text-primary">
+                                                        {% if tournament.time_control == 'bullet' %}
+                                                            {{ standing.player.bullet_elo|floatformat:0 }}
+                                                        {% elif tournament.time_control == 'blitz' %}
+                                                            {{ standing.player.blitz_elo|floatformat:0 }}
+                                                        {% elif tournament.time_control == 'rapid' %}
+                                                            {{ standing.player.rapid_elo|floatformat:0 }}
+                                                        {% elif tournament.time_control == 'classical' %}
+                                                            {{ standing.player.classical_elo|floatformat:0 }}
+                                                        {% else %}
+                                                            {{ standing.player.elo|floatformat:0 }}
+                                                        {% endif %}
+                                                    </span>
+                                                </td>
+                                                
+                                                {% for opponent_standing in standings %}
+                                                    {% if not opponent_standing.player.is_staff and not opponent_standing.player.is_superuser %}
+                                                        <td class="text-center {% if standing.player.id == opponent_standing.player.id %}table-secondary{% endif %}">
+                                                            {% if standing.player.id == opponent_standing.player.id %}
+                                                                <!-- Diagonal (self vs self) -->
+                                                                <span class="text-muted">×</span>
+                                                            {% else %}
+                                                                <!-- Find the match between these players -->
+                                                                {% for match in tournament.matches.all %}
+                                                                    {% if match.white_player.id == standing.player.id and match.black_player.id == opponent_standing.player.id %}
+                                                                        {% if match.result == 'white_win' %}
+                                                                            <span class="badge bg-success">1</span>
+                                                                        {% elif match.result == 'black_win' %}
+                                                                            <span class="badge bg-danger">0</span>
+                                                                        {% elif match.result == 'draw' %}
+                                                                            <span class="badge bg-warning text-dark">½</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-secondary">?</span>
+                                                                        {% endif %}
+                                                                    {% elif match.white_player.id == opponent_standing.player.id and match.black_player.id == standing.player.id %}
+                                                                        {% if match.result == 'white_win' %}
+                                                                            <span class="badge bg-danger">0</span>
+                                                                        {% elif match.result == 'black_win' %}
+                                                                            <span class="badge bg-success">1</span>
+                                                                        {% elif match.result == 'draw' %}
+                                                                            <span class="badge bg-warning text-dark">½</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-secondary">?</span>
+                                                                        {% endif %}
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                                
+                                                                <!-- If no match found, leave empty -->
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                
+                                                <td class="bg-light text-center fw-bold">{{ standing.score }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
     
     <!-- Completed Matches Card -->
     {% if completed_matches %}
@@ -566,110 +672,6 @@
         </div>
     {% endif %}
 </div>
-
-{% if tournament.is_completed or tournament.has_started %}
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card border-0 shadow">
-            <div class="card-header bg-dark text-white">
-                <h2 class="card-title mb-0">
-                    <i class="fas fa-table me-2"></i>Tournament Crosstable
-                </h2>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-bordered tournament-crosstable">
-                        <thead>
-                            <tr>
-                                <th class="bg-light">#</th>
-                                <th class="bg-light">Player</th>
-                                <th class="bg-light">Rating</th>
-                                {% for standing in standings %}
-                                    <!-- Skip staff users -->
-                                    {% if not standing.player.is_staff and not standing.player.is_superuser %}
-                                        <th class="text-center">{{ forloop.counter }}</th>
-                                    {% endif %}
-                                {% endfor %}
-                                <th class="bg-light text-center">Score</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for standing in standings %}
-                                <!-- Skip staff users -->
-                                {% if not standing.player.is_staff and not standing.player.is_superuser %}
-                                    <tr>
-                                        <td class="bg-light fw-bold">{{ standing.rank }}</td>
-                                        <td class="bg-light">
-                                            <a href="{% url 'player_detail' standing.player.id %}" class="player-link">
-                                                {{ standing.player.get_full_name|default:standing.player.username }}
-                                            </a>
-                                        </td>
-                                        <td class="bg-light text-center">
-                                            <span class="badge bg-primary-subtle text-primary">
-                                                {% if tournament.time_control == 'bullet' %}
-                                                    {{ standing.player.bullet_elo|floatformat:0 }}
-                                                {% elif tournament.time_control == 'blitz' %}
-                                                    {{ standing.player.blitz_elo|floatformat:0 }}
-                                                {% elif tournament.time_control == 'rapid' %}
-                                                    {{ standing.player.rapid_elo|floatformat:0 }}
-                                                {% elif tournament.time_control == 'classical' %}
-                                                    {{ standing.player.classical_elo|floatformat:0 }}
-                                                {% else %}
-                                                    {{ standing.player.elo|floatformat:0 }}
-                                                {% endif %}
-                                            </span>
-                                        </td>
-                                        
-                                        {% for opponent_standing in standings %}
-                                            {% if not opponent_standing.player.is_staff and not opponent_standing.player.is_superuser %}
-                                                <td class="text-center {% if standing.player.id == opponent_standing.player.id %}table-secondary{% endif %}">
-                                                    {% if standing.player.id == opponent_standing.player.id %}
-                                                        <!-- Diagonal (self vs self) -->
-                                                        <span class="text-muted">×</span>
-                                                    {% else %}
-                                                        <!-- Find the match between these players -->
-                                                        {% for match in tournament.matches.all %}
-                                                            {% if match.white_player.id == standing.player.id and match.black_player.id == opponent_standing.player.id %}
-                                                                {% if match.result == 'white_win' %}
-                                                                    <span class="badge bg-success">1</span>
-                                                                {% elif match.result == 'black_win' %}
-                                                                    <span class="badge bg-danger">0</span>
-                                                                {% elif match.result == 'draw' %}
-                                                                    <span class="badge bg-warning text-dark">½</span>
-                                                                {% else %}
-                                                                    <span class="badge bg-secondary">?</span>
-                                                                {% endif %}
-                                                            {% elif match.white_player.id == opponent_standing.player.id and match.black_player.id == standing.player.id %}
-                                                                {% if match.result == 'white_win' %}
-                                                                    <span class="badge bg-danger">0</span>
-                                                                {% elif match.result == 'black_win' %}
-                                                                    <span class="badge bg-success">1</span>
-                                                                {% elif match.result == 'draw' %}
-                                                                    <span class="badge bg-warning text-dark">½</span>
-                                                                {% else %}
-                                                                    <span class="badge bg-secondary">?</span>
-                                                                {% endif %}
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                        
-                                                        <!-- If no match found, leave empty -->
-                                                    {% endif %}
-                                                </td>
-                                            {% endif %}
-                                        {% endfor %}
-                                        
-                                        <td class="bg-light text-center fw-bold">{{ standing.score }}</td>
-                                    </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 <!-- Add Player Modal -->
 {% if user.is_staff and not tournament.is_completed and current_round is None %}
