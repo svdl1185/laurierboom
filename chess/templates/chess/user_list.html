@@ -66,7 +66,22 @@
                                         <td>{{ user.get_full_name }}</td>
                                         <td>{{ user.email|default:"-" }}</td>
                                         <td>
-                                            <span class="badge bg-primary-subtle text-primary">{{ user.elo|floatformat:0 }}</span>
+                                            <div class="ratings-container">
+                                                <span class="badge bg-primary-subtle text-primary mb-1">{{ user.blitz_elo|floatformat:0 }} <small>Blitz</small></span>
+                                                {% if user.bullet_elo != 1500 or user.rapid_elo != 1500 or user.classical_elo != 1500 %}
+                                                    <div class="additional-ratings small">
+                                                        {% if user.bullet_elo != 1500 %}
+                                                            <span class="badge bg-light text-dark me-1">{{ user.bullet_elo|floatformat:0 }} <small>Bullet</small></span>
+                                                        {% endif %}
+                                                        {% if user.rapid_elo != 1500 %}
+                                                            <span class="badge bg-light text-dark me-1">{{ user.rapid_elo|floatformat:0 }} <small>Rapid</small></span>
+                                                        {% endif %}
+                                                        {% if user.classical_elo != 1500 %}
+                                                            <span class="badge bg-light text-dark">{{ user.classical_elo|floatformat:0 }} <small>Classical</small></span>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="chess-accounts">

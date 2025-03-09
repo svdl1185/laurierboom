@@ -118,6 +118,19 @@
                               </div>
                             {% endif %}
                           </div>
+
+                          <div class="col-md-6 mb-3">
+                            <label for="{{ form.time_control.id_for_label }}" class="form-label">Time Control <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                              <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                              {{ form.time_control }}
+                            </div>
+                            {% if form.time_control.errors %}
+                              <div class="text-danger mt-1 small">
+                                {{ form.time_control.errors }}
+                              </div>
+                            {% endif %}
+                          </div>
                         </div>
                         
                         <!-- Number of Rounds - this div should initially be hidden via JS -->

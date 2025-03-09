@@ -52,9 +52,15 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <span class="badge bg-primary-subtle text-primary">{{ player.elo|floatformat:0 }}</span>
+                                            <span class="badge bg-primary-subtle text-primary">{{ player.blitz_elo|floatformat:0 }} Blitz</span>
                                         </td>
-                                        <td>{{ player.fide_rating|default:"-" }}</td>
+                                        <td>
+                                            {% if player.fide_rating %}
+                                                <span class="badge bg-light text-dark">{{ player.fide_rating }}</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
                                         <td>
                                             <div class="chess-accounts">
                                                 {% if player.lichess_account %}

@@ -32,7 +32,21 @@
                                     {% elif tournament.tournament_type == 'swiss' %}
                                         Swiss
                                     {% else %}
-                                        {{ tournament.tournament_type|title }}
+                                        Type TBD
+                                    {% endif %}
+                                </span>
+                                
+                                <span class="badge time-{% if tournament.time_control %}{{ tournament.time_control }}{% else %}tbd{% endif %} ms-2">
+                                    {% if tournament.time_control == 'bullet' %}
+                                        Bullet
+                                    {% elif tournament.time_control == 'blitz' %}
+                                        Blitz
+                                    {% elif tournament.time_control == 'rapid' %}
+                                        Rapid
+                                    {% elif tournament.time_control == 'classical' %}
+                                        Classical
+                                    {% else %}
+                                        Time TBD
                                     {% endif %}
                                 </span>
                             </div>
@@ -61,6 +75,7 @@
                 
                 <div class="card-body p-4">
                     <div class="row">
+                        <!-- Tournament Information - Left Side -->
                         <div class="col-lg-8">
                             <div class="row">
                                 <div class="col-md-6">
@@ -84,8 +99,7 @@
                                                     <span class="fw-bold">Time:</span>
                                                     <span class="ms-2">{{ tournament.start_time }}</span>
                                                 </div>
-                                            </div>
-                                        </li>
+                                            </li>
                                         {% endif %}
                                         <li class="list-group-item d-flex px-0">
                                             <div class="icon-box me-2">
@@ -110,7 +124,28 @@
                                                     {% elif tournament.tournament_type == 'swiss' %}
                                                         Swiss
                                                     {% else %}
-                                                        {{ tournament.tournament_type|title }}
+                                                        Type TBD
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item d-flex px-0">
+                                            <div class="icon-box me-2">
+                                                <i class="fas fa-stopwatch text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <span class="fw-bold">Time Control:</span>
+                                                <span class="ms-2">
+                                                    {% if tournament.time_control == 'bullet' %}
+                                                        Bullet
+                                                    {% elif tournament.time_control == 'blitz' %}
+                                                        Blitz
+                                                    {% elif tournament.time_control == 'rapid' %}
+                                                        Rapid
+                                                    {% elif tournament.time_control == 'classical' %}
+                                                        Classical
+                                                    {% else %}
+                                                        Time TBD
                                                     {% endif %}
                                                 </span>
                                             </div>
@@ -124,8 +159,7 @@
                                                     <span class="fw-bold">Rounds:</span>
                                                     <span class="ms-2">{{ tournament.num_rounds }}</span>
                                                 </div>
-                                            </div>
-                                        </li>
+                                            </li>
                                         {% endif %}
                                         <li class="list-group-item d-flex px-0">
                                             <div class="icon-box me-2">
@@ -164,7 +198,7 @@
                             </div>
                         </div>
                         
-                        <!-- Standings Card (in the main card) -->
+                        <!-- Tournament Standings - Right Side -->
                         <div class="col-lg-4 mt-4 mt-lg-0">
                             <h4 class="mb-3">Tournament Standings</h4>
                             <div class="table-responsive">
@@ -259,13 +293,37 @@
                                                 <a href="{% url 'player_detail' match.white_player.id %}" class="player-link">
                                                     {{ match.white_player.get_full_name|default:match.white_player.username }}
                                                 </a>
-                                                <span class="badge bg-light text-dark ms-1">{{ match.white_player.elo|floatformat:0 }}</span>
+                                                <span class="badge bg-light text-dark ms-1">
+                                                    {% if tournament.time_control == 'bullet' %}
+                                                        {{ match.white_player.bullet_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'blitz' %}
+                                                        {{ match.white_player.blitz_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'rapid' %}
+                                                        {{ match.white_player.rapid_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'classical' %}
+                                                        {{ match.white_player.classical_elo|floatformat:0 }}
+                                                    {% else %}
+                                                        {{ match.white_player.elo|floatformat:0 }}
+                                                    {% endif %}
+                                                </span>
                                             </td>
                                             <td>
                                                 <a href="{% url 'player_detail' match.black_player.id %}" class="player-link">
                                                     {{ match.black_player.get_full_name|default:match.black_player.username }}
                                                 </a>
-                                                <span class="badge bg-light text-dark ms-1">{{ match.black_player.elo|floatformat:0 }}</span>
+                                                <span class="badge bg-light text-dark ms-1">
+                                                    {% if tournament.time_control == 'bullet' %}
+                                                        {{ match.black_player.bullet_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'blitz' %}
+                                                        {{ match.black_player.blitz_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'rapid' %}
+                                                        {{ match.black_player.rapid_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'classical' %}
+                                                        {{ match.black_player.classical_elo|floatformat:0 }}
+                                                    {% else %}
+                                                        {{ match.black_player.elo|floatformat:0 }}
+                                                    {% endif %}
+                                                </span>
                                             </td>
                                             <td>
                                                 {% if user.is_staff and not tournament.is_completed %}
@@ -353,7 +411,19 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <span class="badge bg-primary-subtle text-primary">{{ player.elo|floatformat:0 }}</span>
+                                            <span class="badge bg-primary-subtle text-primary">
+                                                {% if tournament.time_control == 'bullet' %}
+                                                    {{ player.bullet_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'blitz' %}
+                                                    {{ player.blitz_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'rapid' %}
+                                                    {{ player.rapid_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'classical' %}
+                                                    {{ player.classical_elo|floatformat:0 }}
+                                                {% else %}
+                                                    {{ player.elo|floatformat:0 }}
+                                                {% endif %}
+                                            </span>
                                         </td>
                                         {% if user.is_staff and not tournament.is_completed and current_round is None %}
                                             <td class="text-end pe-3">

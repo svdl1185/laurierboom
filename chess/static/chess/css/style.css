@@ -1978,3 +1978,23 @@ a:hover .next-tournament-box {
     white-space: nowrap;
   }
 }
+
+.time-bullet {
+  background-color: #ffecb3;
+  color: #856404;
+}
+
+.time-blitz {
+  background-color: #d0f0fd;
+  color: #055160;
+}
+
+.time-rapid {
+  background-color: #d8f3dc;
+  color: #155724;
+}
+
+.time-classical {
+  background-color: #e6ccff;
+  color: #5a009c;
+}

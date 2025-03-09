@@ -181,3 +181,27 @@ tournamentItems.forEach(item => {
     });
 });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const tournaments = document.querySelectorAll('.tournament-table-row');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Update active button
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.getAttribute('data-filter');
+        
+        tournaments.forEach(tournament => {
+          const timeControl = tournament.getAttribute('data-time-control');
+          if (filter === 'all' || timeControl === filter) {
+            tournament.style.display = '';
+          } else {
+            tournament.style.display = 'none';
+          }
+        });
+      });
+    });
+  });

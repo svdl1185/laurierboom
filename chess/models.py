@@ -10,12 +10,39 @@ class User(AbstractUser):
     lichess_account = models.CharField(max_length=100, blank=True, null=True)
     chesscom_account = models.CharField(max_length=100, blank=True, null=True)
     fide_rating = models.IntegerField(blank=True, null=True)
+
+    bullet_elo = models.FloatField(default=1500)
+    bullet_rd = models.FloatField(default=350)
+    bullet_volatility = models.FloatField(default=0.06)
     
-    # Glicko-2 parameters
+    blitz_elo = models.FloatField(default=1500)
+    blitz_rd = models.FloatField(default=350)
+    blitz_volatility = models.FloatField(default=0.06)
+    
+    rapid_elo = models.FloatField(default=1500)
+    rapid_rd = models.FloatField(default=350)
+    rapid_volatility = models.FloatField(default=0.06)
+    
+    classical_elo = models.FloatField(default=1500)
+    classical_rd = models.FloatField(default=350)
+    classical_volatility = models.FloatField(default=0.06)
+    
+    # Keep the original elo field as an overall rating or fallback
     elo = models.FloatField(default=1500)
-    rd = models.FloatField(default=350)  # Rating deviation
+    rd = models.FloatField(default=350)
     volatility = models.FloatField(default=0.06)
     last_played = models.DateTimeField(auto_now=True)
+
+    def get_rating_for_time_control(self, time_control):
+        if time_control == 'bullet':
+            return self.bullet_elo
+        elif time_control == 'blitz':
+            return self.blitz_elo
+        elif time_control == 'rapid':
+            return self.rapid_elo
+        elif time_control == 'classical':
+            return self.classical_elo
+        return self.elo  # Fallback to general rating
     
     def save(self, *args, **kwargs):
         # If it's a new player-only user without a username, create one
@@ -41,6 +68,13 @@ class User(AbstractUser):
         return self.username
 
 class Tournament(models.Model):
+    TIME_CONTROL_CHOICES = [
+        ('bullet', 'Bullet'),
+        ('blitz', 'Blitz'),
+        ('rapid', 'Rapid'),
+        ('classical', 'Classical'),
+    ]
+
     TOURNAMENT_TYPES = [
         ('swiss', 'Swiss'),
         ('round_robin', 'Round Robin'),
@@ -57,6 +91,7 @@ class Tournament(models.Model):
     participants = models.ManyToManyField(User, related_name='tournaments')
     is_completed = models.BooleanField(default=False)
     has_started = models.BooleanField(default=False)  # Add this field to track if tournament has started
+    time_control = models.CharField(max_length=20, choices=TIME_CONTROL_CHOICES, default='blitz')
     
     def __str__(self):
         return self.name
@@ -75,7 +110,9 @@ class Tournament(models.Model):
     
     def get_tournament_type_display(self):
         """Return a properly formatted tournament type for display"""
-        if self.tournament_type == 'round_robin':
+        if not self.tournament_type:
+            return "Type TBD"
+        elif self.tournament_type == 'round_robin':
             return "Round Robin"
         elif self.tournament_type == 'double_round_robin':
             return "Double Round Robin"
@@ -135,15 +172,38 @@ class TournamentStanding(models.Model):
 
 # Glicko-2 implementation functions
 def update_glicko2_ratings(match):
-    """Update Glicko-2 ratings based on match result"""
+    """Update Glicko-2 ratings based on match result and time control"""
     white_player = match.white_player
     black_player = match.black_player
+    time_control = match.tournament.time_control
     
-    # Convert ratings and RDs to Glicko-2 scale
-    white_rating = (white_player.elo - 1500) / 173.7178
-    white_rd = white_player.rd / 173.7178
-    black_rating = (black_player.elo - 1500) / 173.7178
-    black_rd = black_player.rd / 173.7178
+    # Determine which rating fields to use
+    if time_control == 'bullet':
+        white_rating = (white_player.bullet_elo - 1500) / 173.7178
+        white_rd = white_player.bullet_rd / 173.7178
+        black_rating = (black_player.bullet_elo - 1500) / 173.7178
+        black_rd = black_player.bullet_rd / 173.7178
+    elif time_control == 'blitz':
+        white_rating = (white_player.blitz_elo - 1500) / 173.7178
+        white_rd = white_player.blitz_rd / 173.7178
+        black_rating = (black_player.blitz_elo - 1500) / 173.7178
+        black_rd = black_player.blitz_rd / 173.7178
+    elif time_control == 'rapid':
+        white_rating = (white_player.rapid_elo - 1500) / 173.7178
+        white_rd = white_player.rapid_rd / 173.7178
+        black_rating = (black_player.rapid_elo - 1500) / 173.7178
+        black_rd = black_player.rapid_rd / 173.7178
+    elif time_control == 'classical':
+        white_rating = (white_player.classical_elo - 1500) / 173.7178
+        white_rd = white_player.classical_rd / 173.7178
+        black_rating = (black_player.classical_elo - 1500) / 173.7178
+        black_rd = black_player.classical_rd / 173.7178
+    else:
+        # Fallback to general rating
+        white_rating = (white_player.elo - 1500) / 173.7178
+        white_rd = white_player.rd / 173.7178
+        black_rating = (black_player.elo - 1500) / 173.7178
+        black_rd = black_player.rd / 173.7178
     
     # System constants
     tau = 0.5  # Volatility parameter
@@ -204,13 +264,49 @@ def update_glicko2_ratings(match):
     # Calculate new rating for black
     new_black_rating = black_rating + new_black_rd**2 * g_white_rd * (black_outcome - E_black)
     
-    # Convert back to original scale and update
+    # Update the appropriate rating fields based on time control
+    if time_control == 'bullet':
+        white_player.bullet_elo = (new_white_rating * 173.7178) + 1500
+        white_player.bullet_rd = new_white_rd * 173.7178
+        white_player.bullet_volatility = new_white_volatility
+        
+        black_player.bullet_elo = (new_black_rating * 173.7178) + 1500
+        black_player.bullet_rd = new_black_rd * 173.7178
+        black_player.bullet_volatility = new_black_volatility
+    elif time_control == 'blitz':
+        white_player.blitz_elo = (new_white_rating * 173.7178) + 1500
+        white_player.blitz_rd = new_white_rd * 173.7178
+        white_player.blitz_volatility = new_white_volatility
+        
+        black_player.blitz_elo = (new_black_rating * 173.7178) + 1500
+        black_player.blitz_rd = new_black_rd * 173.7178
+        black_player.bullet_volatility = new_black_volatility
+    elif time_control == 'rapid':
+        white_player.rapid_elo = (new_white_rating * 173.7178) + 1500
+        white_player.rapid_rd = new_white_rd * 173.7178
+        white_player.rapid_volatility = new_white_volatility
+
+        black_player.rapid_elo = (new_black_rating * 173.7178) + 1500
+        black_player.rapid_rd = new_black_rd * 173.7178
+        black_player.rapid_volatility = new_black_volatility
+    elif time_control == 'classical':
+        white_player.classical_elo = (new_white_rating * 173.7178) + 1500
+        white_player.classical_rd = new_white_rd * 173.7178
+        white_player.classical_volatility = new_white_volatility
+
+        black_player.classical_elo = (new_black_rating * 173.7178) + 1500
+        black_player.classical_rd = new_black_rd * 173.7178
+        black_player.classical_volatility = new_black_volatility
+
+    
+    # Also update the general rating for backward compatibility
     white_player.elo = (new_white_rating * 173.7178) + 1500
     white_player.rd = new_white_rd * 173.7178
     white_player.volatility = new_white_volatility
-    white_player.save()
     
     black_player.elo = (new_black_rating * 173.7178) + 1500
     black_player.rd = new_black_rd * 173.7178
     black_player.volatility = new_black_volatility
+    
+    white_player.save()
     black_player.save()

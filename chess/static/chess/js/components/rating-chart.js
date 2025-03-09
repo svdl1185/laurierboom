@@ -1,120 +1,202 @@
 // static/chess/js/components/rating-chart.js
 document.addEventListener('DOMContentLoaded', function() {
-    const chartContainer = document.getElementById('rating-history-chart');
-    if (!chartContainer) return;
-    
-    // Clear existing content to prevent duplicates
-    chartContainer.innerHTML = '';
-    
-    // Create a canvas element for Chart.js
-    const canvas = document.createElement('canvas');
-    chartContainer.appendChild(canvas);
-    
-    // Get player ID from data attribute
-    const playerId = chartContainer.getAttribute('data-player-id');
-    
-    // Fetch rating history data from your backend
-    fetch(`/player/${playerId}/rating-history/`)
-      .then(response => response.json())
-      .then(data => {
-        if (!data || data.length === 0) {
-          chartContainer.innerHTML = '<div class="text-center py-4">No rating history available</div>';
-          return;
-        }
-        
-        // Group data by date and take the last rating for each date
-        const groupedData = {};
-        data.forEach(item => {
-          // Use date as the key
-          const date = item.date;
-          
-          // If this date already exists in our grouped data,
-          // update it only if this is a newer entry (assuming data is chronological)
-          groupedData[date] = item;
-        });
-        
-        // Convert back to array
-        const aggregatedData = Object.values(groupedData);
-        
-        // Sort by date (just to be safe)
-        aggregatedData.sort((a, b) => new Date(a.date) - new Date(b.date));
-        
-        // Extract the dates and ratings from the aggregated data
-        const dates = aggregatedData.map(item => item.date);
-        const ratings = aggregatedData.map(item => item.rating);
-        const tournaments = aggregatedData.map(item => item.tournament);
-        const opponents = aggregatedData.map(item => item.opponent);
-        
-        // Find minimum and maximum ratings to set y-axis scale
-        const minRating = Math.min(...ratings) - 20;
-        const maxRating = Math.max(1500, ...ratings) + 20;
-        
-        // Create the chart
-        const ctx = canvas.getContext('2d');
-        const chart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: dates,
-            datasets: [{
-              label: 'Rating',
-              data: ratings,
-              backgroundColor: 'rgba(58, 92, 170, 0.2)',
-              borderColor: 'rgba(58, 92, 170, 1)',
+  const chartContainer = document.getElementById('rating-history-chart');
+  if (!chartContainer) return;
+  
+  // Clear existing content to prevent duplicates
+  chartContainer.innerHTML = '';
+  
+  // Create a canvas element for Chart.js
+  const canvas = document.createElement('canvas');
+  chartContainer.appendChild(canvas);
+  
+  // Get player ID from data attribute
+  const playerId = chartContainer.getAttribute('data-player-id');
+  
+  // Fetch rating history data from your backend
+  fetch(`/player/${playerId}/rating-history/`)
+    .then(response => response.json())
+    .then(data => {
+      if (!data || data.length === 0) {
+        chartContainer.innerHTML = '<div class="text-center py-4">No rating history available</div>';
+        return;
+      }
+      
+      // Group data by time control
+      const bulletData = data.filter(item => item.time_control === 'bullet');
+      const blitzData = data.filter(item => item.time_control === 'blitz');
+      const rapidData = data.filter(item => item.time_control === 'rapid');
+      const classicalData = data.filter(item => item.time_control === 'classical');
+      
+      // Process data for each time control
+      const processedData = {
+        bullet: processByDateWithFallback(bulletData),
+        blitz: processByDateWithFallback(blitzData),
+        rapid: processByDateWithFallback(rapidData),
+        classical: processByDateWithFallback(classicalData),
+      };
+      
+      // Extract all dates for x-axis
+      const allDates = [...new Set(data.map(item => item.date))].sort();
+      
+      // Find global min and max ratings for y-axis scale
+      const allRatings = [
+        ...processedData.bullet.map(item => item.rating),
+        ...processedData.blitz.map(item => item.rating),
+        ...processedData.rapid.map(item => item.rating),
+        ...processedData.classical.map(item => item.rating),
+      ].filter(rating => rating !== null);
+      
+      const minRating = Math.min(...allRatings, 1400) - 50;
+      const maxRating = Math.max(...allRatings, 1600) + 50;
+      
+      // Create the chart
+      const ctx = canvas.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: allDates,
+          datasets: [
+            {
+              label: 'Bullet',
+              data: processedData.bullet,
+              borderColor: 'rgba(255, 99, 132, 1)',
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
               borderWidth: 2,
-              pointBackgroundColor: 'rgba(58, 92, 170, 1)',
+              pointBackgroundColor: 'rgba(255, 99, 132, 1)',
               pointBorderColor: '#fff',
               pointBorderWidth: 1,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-              tension: 0.1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                callbacks: {
-                  afterLabel: function(context) {
-                    const index = context.dataIndex;
-                    return [
-                      `Tournament: ${tournaments[index]}`
-                    ];
-                  }
-                }
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.1,
+              parsing: {
+                xAxisKey: 'date',
+                yAxisKey: 'rating'
               }
             },
-            scales: {
-              y: {
-                min: minRating,
-                max: maxRating,
-                title: {
-                  display: true,
-                  text: 'Rating'
-                }
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: 'Date'
-                },
-                ticks: {
-                  maxRotation: 45,
-                  minRotation: 45
+            {
+              label: 'Blitz',
+              data: processedData.blitz,
+              borderColor: 'rgba(54, 162, 235, 1)',
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              borderWidth: 2,
+              pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.1,
+              parsing: {
+                xAxisKey: 'date',
+                yAxisKey: 'rating'
+              }
+            },
+            {
+              label: 'Rapid',
+              data: processedData.rapid,
+              borderColor: 'rgba(75, 192, 192, 1)',
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderWidth: 2,
+              pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.1,
+              parsing: {
+                xAxisKey: 'date',
+                yAxisKey: 'rating'
+              }
+            },
+            {
+              label: 'Classical',
+              data: processedData.classical,
+              borderColor: 'rgba(153, 102, 255, 1)',
+              backgroundColor: 'rgba(153, 102, 255, 0.2)',
+              borderWidth: 2,
+              pointBackgroundColor: 'rgba(153, 102, 255, 1)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.1,
+              parsing: {
+                xAxisKey: 'date',
+                yAxisKey: 'rating'
+              }
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                afterLabel: function(context) {
+                  const dataIndex = context.dataIndex;
+                  const datasetIndex = context.datasetIndex;
+                  const datasetLabel = context.dataset.label.toLowerCase();
+                  const dataArray = processedData[datasetLabel];
+                  
+                  if (!dataArray[dataIndex] || !dataArray[dataIndex].tournament) {
+                    return [];
+                  }
+                  
+                  return [
+                    `Tournament: ${dataArray[dataIndex].tournament}`,
+                    dataArray[dataIndex].opponent ? `Opponent: ${dataArray[dataIndex].opponent}` : ''
+                  ].filter(line => line);
                 }
               }
             }
+          },
+          scales: {
+            y: {
+              min: minRating,
+              max: maxRating,
+              title: {
+                display: true,
+                text: 'Rating'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Date'
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
           }
-        });
-        
-        // Set a fixed height for the container
-        chartContainer.style.height = '300px';
-      })
-      .catch(error => {
-        console.error('Error fetching rating history:', error);
-        chartContainer.innerHTML = '<div class="text-center py-4">Error loading rating history</div>';
+        }
       });
-  });
+      
+      // Set a fixed height for the container
+      chartContainer.style.height = '300px';
+    })
+    .catch(error => {
+      console.error('Error fetching rating history:', error);
+      chartContainer.innerHTML = '<div class="text-center py-4">Error loading rating history</div>';
+    });
+    
+  // Helper function to process data by date and fill in gaps
+  function processByDateWithFallback(data) {
+    if (!data || data.length === 0) return [];
+    
+    // Group data by date and take the last rating for each date
+    const groupedData = {};
+    data.forEach(item => {
+      const date = item.date;
+      groupedData[date] = item;
+    });
+    
+    // Convert back to array
+    return Object.values(groupedData);
+  }
+});

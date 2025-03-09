@@ -17,6 +17,19 @@
     </div>
 </div>
 
+<!-- Time Control Filter -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary active" data-filter="all">All Time Controls</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="bullet">Bullet</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="blitz">Blitz</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="rapid">Rapid</button>
+            <button type="button" class="btn btn-outline-primary" data-filter="classical">Classical</button>
+        </div>
+    </div>
+</div>
+
 <!-- Upcoming Tournaments -->
 <div class="row mb-4">
     <div class="col-12">
@@ -33,14 +46,17 @@
                             <tr>
                                 <th>Tournament</th>
                                 <th>Date</th>
-                                <th>Type</th>
+                                <th>Format</th>
+                                <th>Time Control</th>
                                 <th class="text-center">Players</th>
                                 <th class="text-end"></th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for tournament in upcoming_tournaments %}
-                                <tr class="tournament-table-row" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
+                                <tr class="tournament-table-row" 
+                                    onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'"
+                                    data-time-control="{% if tournament.time_control %}{{ tournament.time_control }}{% else %}all{% endif %}">
                                     <td class="tournament-name">
                                         <strong>{{ tournament.name }}</strong>
                                         {% if tournament.description %}
@@ -68,6 +84,21 @@
                                             {% endif %}
                                         </span>
                                     </td>
+                                    <td>
+                                        <span class="tournament-type-badge time-{% if tournament.time_control %}{{ tournament.time_control }}{% else %}tbd{% endif %}">
+                                            {% if tournament.time_control == 'bullet' %}
+                                                Bullet
+                                            {% elif tournament.time_control == 'blitz' %}
+                                                Blitz
+                                            {% elif tournament.time_control == 'rapid' %}
+                                                Rapid
+                                            {% elif tournament.time_control == 'classical' %}
+                                                Classical
+                                            {% else %}
+                                                Time TBD
+                                            {% endif %}
+                                        </span>
+                                    </td>
                                     <td class="text-center">
                                         <span class="player-count">
                                             <i class="fas fa-users me-1"></i>{{ tournament.num_participants }}
@@ -79,7 +110,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="5" class="text-center py-4">No upcoming tournaments scheduled</td>
+                                    <td colspan="6" class="text-center py-4">No upcoming tournaments scheduled</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -106,7 +137,8 @@
                             <tr>
                                 <th>Tournament</th>
                                 <th>Date</th>
-                                <th>Type</th>
+                                <th>Format</th>
+                                <th>Time Control</th>
                                 <th>Winner</th>
                                 <th class="text-center">Players</th>
                                 <th class="text-end"></th>
@@ -114,7 +146,9 @@
                         </thead>
                         <tbody>
                             {% for tournament in past_tournaments %}
-                                <tr class="tournament-table-row" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
+                                <tr class="tournament-table-row" 
+                                    onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'"
+                                    data-time-control="{% if tournament.time_control %}{{ tournament.time_control }}{% else %}all{% endif %}">
                                     <td class="tournament-name">
                                         <strong>{{ tournament.name }}</strong>
                                     </td>
@@ -129,6 +163,21 @@
                                                 Swiss
                                             {% else %}
                                                 Type TBD
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="tournament-type-badge time-{% if tournament.time_control %}{{ tournament.time_control }}{% else %}tbd{% endif %}">
+                                            {% if tournament.time_control == 'bullet' %}
+                                                Bullet
+                                            {% elif tournament.time_control == 'blitz' %}
+                                                Blitz
+                                            {% elif tournament.time_control == 'rapid' %}
+                                                Rapid
+                                            {% elif tournament.time_control == 'classical' %}
+                                                Classical
+                                            {% else %}
+                                                Time TBD
                                             {% endif %}
                                         </span>
                                     </td>
@@ -161,7 +210,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="6" class="text-center py-4">No past tournaments</td>
+                                    <td colspan="7" class="text-center py-4">No past tournaments</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -171,4 +220,33 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Time control filters
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const tournaments = document.querySelectorAll('.tournament-table-row');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            
+            tournaments.forEach(tournament => {
+                const timeControl = tournament.getAttribute('data-time-control');
+                if (filter === 'all' || timeControl === filter) {
+                    tournament.style.display = '';
+                } else {
+                    tournament.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}

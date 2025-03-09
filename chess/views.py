@@ -47,6 +47,24 @@ class HomeView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # Sort players by each time control rating
+        context['bullet_players'] = list(User.objects.filter(
+            is_active=True, is_staff=False, is_superuser=False
+        ).order_by('-bullet_elo')[:20])
+        
+        context['blitz_players'] = list(User.objects.filter(
+            is_active=True, is_staff=False, is_superuser=False
+        ).order_by('-blitz_elo')[:20])
+        
+        context['rapid_players'] = list(User.objects.filter(
+            is_active=True, is_staff=False, is_superuser=False
+        ).order_by('-rapid_elo')[:20])
+        
+        context['classical_players'] = list(User.objects.filter(
+            is_active=True, is_staff=False, is_superuser=False
+        ).order_by('-classical_elo')[:20])
+        
         # Make sure we're getting tournaments from today onward and they're not completed
         from django.utils import timezone
         today = timezone.now().date()
@@ -921,35 +939,39 @@ def player_rating_history(request, player_id):
             result__in=['white_win', 'black_win', 'draw']  # Only completed matches
         ).order_by('round__tournament__date', 'round__number')
         
-        # We'll need to calculate rating after each match
-        # For the demo, we'll use a simplified approach with starting rating of 1500
+        # Track ratings by time control
+        ratings = {
+            'bullet': 1500,
+            'blitz': 1500, 
+            'rapid': 1500,
+            'classical': 1500
+        }
+        
         data = []
-        current_rating = 1500  # Initial rating
         
         for match in matches:
-            # Get tournament details
             tournament_name = match.tournament.name
             date = match.tournament.date.strftime('%b %d, %Y')
+            time_control = match.tournament.time_control or 'blitz'  # Default to blitz
             
             # Determine if player won or lost
             if (match.white_player == player and match.result == 'white_win') or \
                (match.black_player == player and match.result == 'black_win'):
-                # Player won, rating increases
                 rating_change = 10
             elif (match.white_player == player and match.result == 'black_win') or \
                  (match.black_player == player and match.result == 'white_win'):
-                # Player lost, rating decreases
                 rating_change = -10
             else:
-                # Draw
                 rating_change = 0
             
-            current_rating += rating_change
+            # Update the appropriate rating
+            ratings[time_control] += rating_change
             
             # Add data point
             data.append({
                 'date': date,
-                'rating': current_rating,
+                'rating': ratings[time_control],
+                'time_control': time_control,
                 'tournament': tournament_name,
                 'opponent': match.white_player.username if match.black_player == player else match.black_player.username
             })
@@ -958,4 +980,3 @@ def player_rating_history(request, player_id):
     
     except User.DoesNotExist:
         return JsonResponse({'error': 'Player not found'}, status=404)
-    

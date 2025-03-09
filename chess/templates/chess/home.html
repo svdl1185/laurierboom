@@ -27,6 +27,10 @@
                                 <h3>{{ next_tournament.name }}</h3>
                                 <p class="mb-3"><i class="far fa-calendar-alt me-2"></i>{{ next_tournament.date }}</p>
                                 <p class="mb-3"><i class="far fa-clock me-2"></i>{% if next_tournament.start_time %}{{ next_tournament.start_time }}{% else %}8:00 PM{% endif %}</p>
+                                <p class="mb-3">
+                                    <i class="fas fa-stopwatch me-2"></i>
+                                    {{ next_tournament.get_time_control_display }}
+                                </p>
                             </div>
                         </a>
                         {% else %}
@@ -44,7 +48,7 @@
 </section>
 
 <div class="row">
-    <!-- Player Rankings -->
+    <!-- Player Rankings Tabs -->
     <div class="col-12 mb-4">
         <div class="card border-0 shadow h-100">
             <div class="card-header bg-dark text-white py-3">
@@ -53,73 +57,338 @@
                 </h2>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover rankings-table mb-0">
-                        <thead class="table-light">
-                          <tr>
-                            <th class="ps-3">Rank</th>
-                            <th>Player</th>
-                            <th>Laurier Rating</th>
-                            <th>Games</th>
-                            <th>Record</th>
-                            <th>FIDE</th>
-                            <th>Online Profiles</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {% for player in players %}
-                            <tr>
-                              <td class="ps-3">
-                                <div class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-other{% endif %}">{{ forloop.counter }}</div>
-                              </td>
-                              <td>
-                                <a href="{% url 'player_detail' player.id %}" class="player-name">
-                                  {{ player.get_full_name|default:player.username }}
-                                </a>
-                              </td>
-                              <td>
-                                <span class="rating-badge laurier">{{ player.elo|floatformat:0 }}</span>
-                              </td>
-                              <td>
-                                {{ player.total_games }}
-                              </td>
-                              <td>
-                                <small class="text-nowrap">
-                                  <span class="text-success">{{ player.wins }}</span>-<span class="text-danger">{{ player.losses }}</span>-<span class="text-warning">{{ player.draws }}</span>
-                                </small>
-                              </td>
-                              <td>
-                                {% if player.fide_rating %}
-                                  <span class="rating-badge fide">{{ player.fide_rating }}</span>
-                                {% else %}
-                                  <span class="text-muted">-</span>
-                                {% endif %}
-                              </td>
-                              <td>
-                                <div class="online-accounts">
-                                  {% if player.lichess_account %}
-                                    <a href="https://lichess.org/@/{{ player.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess">
-                                      <i class="fas fa-chess-knight"></i>
-                                    </a>
-                                  {% endif %}
-                                  {% if player.chesscom_account %}
-                                    <a href="https://chess.com/member/{{ player.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com">
-                                      <i class="fas fa-chess-rook"></i>
-                                    </a>
-                                  {% endif %}
-                                </div>
-                              </td>
-                            </tr>
-                          {% empty %}
-                            <tr>
-                              <td colspan="7" class="text-center py-4">No players yet!</td>
-                            </tr>
-                          {% endfor %}
-                        </tbody>
-                    </table>
+                <!-- Time Control Tabs -->
+                <ul class="nav nav-tabs" id="ratingTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="blitz-tab" data-bs-toggle="tab" data-bs-target="#blitz-content" type="button" role="tab" aria-controls="blitz-content" aria-selected="true">
+                            <i class="fas fa-bolt me-1"></i> Blitz
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="bullet-tab" data-bs-toggle="tab" data-bs-target="#bullet-content" type="button" role="tab" aria-controls="bullet-content" aria-selected="false">
+                            <i class="fas fa-tachometer-alt me-1"></i> Bullet
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="rapid-tab" data-bs-toggle="tab" data-bs-target="#rapid-content" type="button" role="tab" aria-controls="rapid-content" aria-selected="false">
+                            <i class="fas fa-stopwatch me-1"></i> Rapid
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="classical-tab" data-bs-toggle="tab" data-bs-target="#classical-content" type="button" role="tab" aria-controls="classical-content" aria-selected="false">
+                            <i class="fas fa-chess-clock me-1"></i> Classical
+                        </button>
+                    </li>
+                </ul>
+                
+                <!-- Tab Content -->
+                <div class="tab-content" id="ratingTabContent">
+                    <!-- Blitz Rankings -->
+                    <div class="tab-pane fade show active" id="blitz-content" role="tabpanel" aria-labelledby="blitz-tab">
+                        <div class="table-responsive">
+                            <table class="table table-hover rankings-table mb-0">
+                                <thead class="table-light">
+                                  <tr>
+                                    <th class="ps-3">Rank</th>
+                                    <th>Player</th>
+                                    <th>Blitz Rating</th>
+                                    <th>Games</th>
+                                    <th>Record</th>
+                                    <th>FIDE</th>
+                                    <th>Online Profiles</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {% for player in blitz_players %}
+                                    <tr>
+                                      <td class="ps-3">
+                                        <div class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-other{% endif %}">{{ forloop.counter }}</div>
+                                      </td>
+                                      <td>
+                                        <a href="{% url 'player_detail' player.id %}" class="player-name">
+                                          {{ player.get_full_name|default:player.username }}
+                                        </a>
+                                      </td>
+                                      <td>
+                                        <span class="rating-badge laurier">{{ player.blitz_elo|floatformat:0 }}</span>
+                                      </td>
+                                      <td>
+                                        {{ player.total_games }}
+                                      </td>
+                                      <td>
+                                        <small class="text-nowrap">
+                                          <span class="text-success">{{ player.wins }}</span>-<span class="text-danger">{{ player.losses }}</span>-<span class="text-warning">{{ player.draws }}</span>
+                                        </small>
+                                      </td>
+                                      <td>
+                                        {% if player.fide_rating %}
+                                          <span class="rating-badge fide">{{ player.fide_rating }}</span>
+                                        {% else %}
+                                          <span class="text-muted">-</span>
+                                        {% endif %}
+                                      </td>
+                                      <td>
+                                        <div class="online-accounts">
+                                          {% if player.lichess_account %}
+                                            <a href="https://lichess.org/@/{{ player.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess">
+                                              <i class="fas fa-chess-knight"></i>
+                                            </a>
+                                          {% endif %}
+                                          {% if player.chesscom_account %}
+                                            <a href="https://chess.com/member/{{ player.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com">
+                                              <i class="fas fa-chess-rook"></i>
+                                            </a>
+                                          {% endif %}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  {% empty %}
+                                    <tr>
+                                      <td colspan="7" class="text-center py-4">No players yet!</td>
+                                    </tr>
+                                  {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Bullet Rankings -->
+                    <div class="tab-pane fade" id="bullet-content" role="tabpanel" aria-labelledby="bullet-tab">
+                        <div class="table-responsive">
+                            <table class="table table-hover rankings-table mb-0">
+                                <thead class="table-light">
+                                  <tr>
+                                    <th class="ps-3">Rank</th>
+                                    <th>Player</th>
+                                    <th>Bullet Rating</th>
+                                    <th>Games</th>
+                                    <th>Record</th>
+                                    <th>FIDE</th>
+                                    <th>Online Profiles</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {% for player in bullet_players %}
+                                    <tr>
+                                      <td class="ps-3">
+                                        <div class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-other{% endif %}">{{ forloop.counter }}</div>
+                                      </td>
+                                      <td>
+                                        <a href="{% url 'player_detail' player.id %}" class="player-name">
+                                          {{ player.get_full_name|default:player.username }}
+                                        </a>
+                                      </td>
+                                      <td>
+                                        <span class="rating-badge laurier">{{ player.bullet_elo|floatformat:0 }}</span>
+                                      </td>
+                                      <td>
+                                        {{ player.total_games }}
+                                      </td>
+                                      <td>
+                                        <small class="text-nowrap">
+                                          <span class="text-success">{{ player.wins }}</span>-<span class="text-danger">{{ player.losses }}</span>-<span class="text-warning">{{ player.draws }}</span>
+                                        </small>
+                                      </td>
+                                      <td>
+                                        {% if player.fide_rating %}
+                                          <span class="rating-badge fide">{{ player.fide_rating }}</span>
+                                        {% else %}
+                                          <span class="text-muted">-</span>
+                                        {% endif %}
+                                      </td>
+                                      <td>
+                                        <div class="online-accounts">
+                                          {% if player.lichess_account %}
+                                            <a href="https://lichess.org/@/{{ player.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess">
+                                              <i class="fas fa-chess-knight"></i>
+                                            </a>
+                                          {% endif %}
+                                          {% if player.chesscom_account %}
+                                            <a href="https://chess.com/member/{{ player.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com">
+                                              <i class="fas fa-chess-rook"></i>
+                                            </a>
+                                          {% endif %}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  {% empty %}
+                                    <tr>
+                                      <td colspan="7" class="text-center py-4">No players yet!</td>
+                                    </tr>
+                                  {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Rapid Rankings -->
+                    <div class="tab-pane fade" id="rapid-content" role="tabpanel" aria-labelledby="rapid-tab">
+                        <div class="table-responsive">
+                            <table class="table table-hover rankings-table mb-0">
+                                <thead class="table-light">
+                                  <tr>
+                                    <th class="ps-3">Rank</th>
+                                    <th>Player</th>
+                                    <th>Rapid Rating</th>
+                                    <th>Games</th>
+                                    <th>Record</th>
+                                    <th>FIDE</th>
+                                    <th>Online Profiles</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {% for player in rapid_players %}
+                                    <tr>
+                                      <td class="ps-3">
+                                        <div class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-other{% endif %}">{{ forloop.counter }}</div>
+                                      </td>
+                                      <td>
+                                        <a href="{% url 'player_detail' player.id %}" class="player-name">
+                                          {{ player.get_full_name|default:player.username }}
+                                        </a>
+                                      </td>
+                                      <td>
+                                        <span class="rating-badge laurier">{{ player.rapid_elo|floatformat:0 }}</span>
+                                      </td>
+                                      <td>
+                                        {{ player.total_games }}
+                                      </td>
+                                      <td>
+                                        <small class="text-nowrap">
+                                          <span class="text-success">{{ player.wins }}</span>-<span class="text-danger">{{ player.losses }}</span>-<span class="text-warning">{{ player.draws }}</span>
+                                        </small>
+                                      </td>
+                                      <td>
+                                        {% if player.fide_rating %}
+                                          <span class="rating-badge fide">{{ player.fide_rating }}</span>
+                                        {% else %}
+                                          <span class="text-muted">-</span>
+                                        {% endif %}
+                                      </td>
+                                      <td>
+                                        <div class="online-accounts">
+                                          {% if player.lichess_account %}
+                                            <a href="https://lichess.org/@/{{ player.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess">
+                                              <i class="fas fa-chess-knight"></i>
+                                            </a>
+                                          {% endif %}
+                                          {% if player.chesscom_account %}
+                                            <a href="https://chess.com/member/{{ player.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com">
+                                              <i class="fas fa-chess-rook"></i>
+                                            </a>
+                                          {% endif %}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  {% empty %}
+                                    <tr>
+                                      <td colspan="7" class="text-center py-4">No players yet!</td>
+                                    </tr>
+                                  {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Classical Rankings -->
+                    <div class="tab-pane fade" id="classical-content" role="tabpanel" aria-labelledby="classical-tab">
+                        <div class="table-responsive">
+                            <table class="table table-hover rankings-table mb-0">
+                                <thead class="table-light">
+                                  <tr>
+                                    <th class="ps-3">Rank</th>
+                                    <th>Player</th>
+                                    <th>Classical Rating</th>
+                                    <th>Games</th>
+                                    <th>Record</th>
+                                    <th>FIDE</th>
+                                    <th>Online Profiles</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {% for player in classical_players %}
+                                    <tr>
+                                      <td class="ps-3">
+                                        <div class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-other{% endif %}">{{ forloop.counter }}</div>
+                                      </td>
+                                      <td>
+                                        <a href="{% url 'player_detail' player.id %}" class="player-name">
+                                          {{ player.get_full_name|default:player.username }}
+                                        </a>
+                                      </td>
+                                      <td>
+                                        <span class="rating-badge laurier">{{ player.classical_elo|floatformat:0 }}</span>
+                                      </td>
+                                      <td>
+                                        {{ player.total_games }}
+                                      </td>
+                                      <td>
+                                        <small class="text-nowrap">
+                                          <span class="text-success">{{ player.wins }}</span>-<span class="text-danger">{{ player.losses }}</span>-<span class="text-warning">{{ player.draws }}</span>
+                                        </small>
+                                      </td>
+                                      <td>
+                                        {% if player.fide_rating %}
+                                          <span class="rating-badge fide">{{ player.fide_rating }}</span>
+                                        {% else %}
+                                          <span class="text-muted">-</span>
+                                        {% endif %}
+                                      </td>
+                                      <td>
+                                        <div class="online-accounts">
+                                          {% if player.lichess_account %}
+                                            <a href="https://lichess.org/@/{{ player.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess">
+                                              <i class="fas fa-chess-knight"></i>
+                                            </a>
+                                          {% endif %}
+                                          {% if player.chesscom_account %}
+                                            <a href="https://chess.com/member/{{ player.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com">
+                                              <i class="fas fa-chess-rook"></i>
+                                            </a>
+                                          {% endif %}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  {% empty %}
+                                    <tr>
+                                      <td colspan="7" class="text-center py-4">No players yet!</td>
+                                    </tr>
+                                  {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enable Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Enable clickable rows
+    const clickableRows = document.querySelectorAll('.clickable-row');
+    clickableRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Don't navigate if the user clicked on a button or link
+            if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || 
+                e.target.closest('a') || e.target.closest('button')) {
+                return;
+            }
+            
+            window.location = this.dataset.href;
+        });
+    });
+});
+</script>
 {% endblock %}

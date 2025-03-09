@@ -9,7 +9,7 @@ class TournamentForm(forms.ModelForm):
     """Form for creating and updating tournaments"""
     class Meta:
         model = Tournament
-        fields = ['name', 'date', 'start_time', 'location', 'tournament_type', 'num_rounds', 'description']
+        fields = ['name', 'date', 'start_time', 'location', 'tournament_type', 'time_control', 'num_rounds', 'description']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'start_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
@@ -18,6 +18,7 @@ class TournamentForm(forms.ModelForm):
             'location': forms.TextInput(attrs={'class': 'form-control'}),
             'tournament_type': forms.Select(attrs={'class': 'form-select', 'required': False}),
             'num_rounds': forms.NumberInput(attrs={'class': 'form-control'}),
+            'time_control': forms.Select(attrs={'class': 'form-select', 'required': True}),
         }
     
     def clean(self):
