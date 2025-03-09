@@ -418,8 +418,8 @@ def add_player_to_tournament(request, tournament_id):
     
     tournament = get_object_or_404(Tournament, pk=tournament_id)
     
-    if tournament.is_completed:
-        messages.error(request, "Cannot add players to completed tournaments")
+    if tournament.is_completed or tournament.has_started:
+        messages.error(request, "Cannot add players after tournament has started")
         return redirect('tournament_detail', pk=tournament_id)
     
     if request.method == 'POST':
