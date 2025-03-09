@@ -287,6 +287,28 @@ class TournamentDetailView(DetailView):
             
             context['available_players'] = available_players
         
+        # For board numbers assignment:
+        if context['current_round']:
+            current_matches = list(context['current_matches'])
+            
+            # Get player rankings from standings
+            player_rankings = {}
+            for standing in context['standings']:
+                player_rankings[standing.player.id] = standing.rank or 999
+            
+            # Calculate board values and assign board numbers
+            for match in current_matches:
+                white_rank = player_rankings.get(match.white_player.id, 999)
+                black_rank = player_rankings.get(match.black_player.id, 999)
+                match.board_value = white_rank + black_rank
+            
+            # Sort matches by board value and assign board numbers
+            current_matches.sort(key=lambda m: m.board_value)
+            for i, match in enumerate(current_matches):
+                match.board_number = i + 1
+            
+            context['current_matches'] = current_matches
+        
         return context
 
 class CreateTournamentView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
