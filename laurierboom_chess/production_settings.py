@@ -130,4 +130,6 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_DOMAIN = '.laurierboom.com'
+    CSRF_TRUSTED_ORIGINS = ['https://laurierboom.com', 'https://www.laurierboom.com']
     
