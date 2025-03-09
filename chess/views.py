@@ -43,7 +43,7 @@ class PlayerDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         player = self.get_object()
         
-        # Get player's tournaments
+        # Get player's tournaments (most recent first)
         context['tournaments'] = player.tournaments.all().order_by('-date')
         
         # Get player's match history
@@ -60,8 +60,10 @@ class PlayerDetailView(DetailView):
         context['draws'] = draws
         context['total_games'] = wins + losses + draws
         
-        # Recent match history
-        context['recent_matches'] = (list(white_matches) + list(black_matches))[-10:]
+        # Recent match history (most recent first - reversed order)
+        combined_matches = list(white_matches) + list(black_matches)
+        combined_matches.sort(key=lambda x: (x.round.tournament.date, x.round.number), reverse=True)
+        context['recent_matches'] = combined_matches[:10]  # Keep only the 10 most recent
         
         return context
 
@@ -738,3 +740,4 @@ def player_rating_history(request, player_id):
     
     except User.DoesNotExist:
         return JsonResponse({'error': 'Player not found'}, status=404)
+    
