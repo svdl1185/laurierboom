@@ -321,7 +321,7 @@
                         <div class="p-3 {% if not forloop.last %}border-bottom{% endif %}">
                             <div class="mb-2">
                                 <a href="{% url 'tournament_detail' tournament.id %}" class="text-decoration-none">
-                                    <h5 class="text-primary mb-1">Bi-monthly blitz tournament</h5>
+                                    <h5 class="text-primary mb-1"> {{tournament.name}} </h5>
                                 </a>
                             </div>
                             <div class="mb-3">
