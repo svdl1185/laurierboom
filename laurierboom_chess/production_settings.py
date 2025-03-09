@@ -38,9 +38,19 @@ INSTALLED_APPS = [
 # Configure the custom user model
 AUTH_USER_MODEL = 'chess.User'
 
+# Define the custom CSP middleware
+class CSPMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        # Permissive policy for development - NOT recommended for production long-term
+        response['Content-Security-Policy'] = "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
+        return response
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'csp.middleware.CSPMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add whitenoise middleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -48,13 +58,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'laurierboom_chess.production_settings.CSPMiddleware',  # Add the custom CSP middleware
 ]
-
-# Add CSP settings
-CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net", "cdnjs.cloudflare.com")
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "cdnjs.cloudflare.com", "fonts.googleapis.com")
-CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com")
 
 ROOT_URLCONF = 'laurierboom_chess.urls'
 
@@ -139,4 +144,3 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_DOMAIN = '.laurierboom.com'
     CSRF_TRUSTED_ORIGINS = ['https://laurierboom.com', 'https://www.laurierboom.com']
-    
