@@ -16,7 +16,7 @@ class TournamentForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'location': forms.TextInput(attrs={'class': 'form-control'}),
-            'tournament_type': forms.Select(attrs={'class': 'form-select'}),
+            'tournament_type': forms.Select(attrs={'class': 'form-select', 'required': False}),
             'num_rounds': forms.NumberInput(attrs={'class': 'form-control'}),
         }
     
@@ -25,14 +25,16 @@ class TournamentForm(forms.ModelForm):
         tournament_type = cleaned_data.get('tournament_type')
         num_rounds = cleaned_data.get('num_rounds')
         
-        # Only validate if tournament_type is provided and is Swiss type
-        if tournament_type == 'swiss' and not num_rounds:
-            self.add_error('num_rounds', 'Number of rounds is required for Swiss tournaments')
-        
-        # For round robin types, num_rounds is automatically calculated
-        if tournament_type in ['round_robin', 'double_round_robin'] and num_rounds:
-            # Clear the num_rounds as it's calculated automatically
-            cleaned_data['num_rounds'] = None
+        # If tournament_type is provided, validate it
+        if tournament_type:
+            # Only validate if tournament_type is provided and is Swiss type
+            if tournament_type == 'swiss' and not num_rounds:
+                self.add_error('num_rounds', 'Number of rounds is required for Swiss tournaments')
+            
+            # For round robin types, num_rounds is automatically calculated
+            if tournament_type in ['round_robin', 'double_round_robin'] and num_rounds:
+                # Clear the num_rounds as it's calculated automatically
+                cleaned_data['num_rounds'] = None
         
         return cleaned_data
 
@@ -153,6 +155,8 @@ class SimplePlayerRegistrationForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
 
 class EmptyForm(forms.Form):
     """Form with no fields, used for CSRF protection only"""
