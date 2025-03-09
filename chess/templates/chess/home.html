@@ -19,30 +19,33 @@
                     </div>
                 </div>
                 <div class="col-lg-4 mt-4 mt-lg-0 text-center">
-                    <div class="next-tournament-box p-4">
-                        <h4 class="mb-3">Next Tournament</h4>
-                        {% with next_tournament=upcoming_tournaments|first %}
-                            {% if next_tournament %}
+                    {% with next_tournament=upcoming_tournaments|first %}
+                        {% if next_tournament %}
+                        <a href="{% url 'tournament_detail' next_tournament.id %}" class="text-decoration-none">
+                            <div class="next-tournament-box p-4">
+                                <h4 class="mb-3">Next Tournament</h4>
                                 <h3>{{ next_tournament.name }}</h3>
                                 <p class="mb-3"><i class="far fa-calendar-alt me-2"></i>{{ next_tournament.date }}</p>
                                 <p class="mb-3"><i class="far fa-clock me-2"></i>{% if next_tournament.start_time %}{{ next_tournament.start_time }}{% else %}8:00 PM{% endif %}</p>
-                            {% else %}
-                                <p>No upcoming tournaments scheduled.</p>
-                                <p>Check back soon for new events!</p>
-                            {% endif %}
-                        {% endwith %}
-                    </div>
+                            </div>
+                        </a>
+                        {% else %}
+                        <div class="next-tournament-box p-4">
+                            <h4 class="mb-3">Next Tournament</h4>
+                            <p>No upcoming tournaments scheduled.</p>
+                            <p>Check back soon for new events!</p>
+                        </div>
+                        {% endif %}
+                    {% endwith %}
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-
-
 <div class="row">
     <!-- Player Rankings -->
-    <div class="col-lg-8 mb-4">
+    <div class="col-12 mb-4">
         <div class="card border-0 shadow h-100">
             <div class="card-header bg-dark text-white py-3">
                 <h2 class="card-title mb-0">
@@ -53,137 +56,68 @@
                 <div class="table-responsive">
                     <table class="table table-hover rankings-table mb-0">
                         <thead class="table-light">
-                            <tr>
-                                <th class="ps-3">Rank</th>
-                                <th>Player</th>
-                                <th>Laurier Rating</th>
-                                <th>FIDE</th>
-                                <th>Online Profiles</th>
-                            </tr>
+                          <tr>
+                            <th class="ps-3">Rank</th>
+                            <th>Player</th>
+                            <th>Laurier Rating</th>
+                            <th>Games</th>
+                            <th>Record</th>
+                            <th>FIDE</th>
+                            <th>Online Profiles</th>
+                          </tr>
                         </thead>
                         <tbody>
-                            {% for player in players %}
-                                <tr>
-                                    <td class="ps-3">
-                                        <div class="rank-badge">{{ forloop.counter }}</div>
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'player_detail' player.id %}" class="player-name">
-                                            {{ player.get_full_name|default:player.username }}
-                                        </a>
-                                    </td>
-                                    <td><span class="badge bg-primary-subtle text-primary rating-badge">{{ player.elo|floatformat:0 }}</span></td>
-                                    <td>{{ player.fide_rating|default:"-" }}</td>
-                                    <td>
-                                        <div class="online-accounts">
-                                            {% if player.lichess_account %}
-                                                <a href="https://lichess.org/@/{{ player.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess">
-                                                    <i class="fas fa-chess-knight"></i>
-                                                </a>
-                                            {% endif %}
-                                            {% if player.chesscom_account %}
-                                                <a href="https://chess.com/member/{{ player.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com">
-                                                    <i class="fas fa-chess-rook"></i>
-                                                </a>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-4">No players yet!</td>
-                                </tr>
-                            {% endfor %}
+                          {% for player in players %}
+                            <tr>
+                              <td class="ps-3">
+                                <div class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-other{% endif %}">{{ forloop.counter }}</div>
+                              </td>
+                              <td>
+                                <a href="{% url 'player_detail' player.id %}" class="player-name">
+                                  {{ player.get_full_name|default:player.username }}
+                                </a>
+                              </td>
+                              <td>
+                                <span class="rating-badge laurier">{{ player.elo|floatformat:0 }}</span>
+                              </td>
+                              <td>
+                                {{ player.total_games }}
+                              </td>
+                              <td>
+                                <small class="text-nowrap">
+                                  <span class="text-success">{{ player.wins }}</span>-<span class="text-danger">{{ player.losses }}</span>-<span class="text-warning">{{ player.draws }}</span>
+                                </small>
+                              </td>
+                              <td>
+                                {% if player.fide_rating %}
+                                  <span class="rating-badge fide">{{ player.fide_rating }}</span>
+                                {% else %}
+                                  <span class="text-muted">-</span>
+                                {% endif %}
+                              </td>
+                              <td>
+                                <div class="online-accounts">
+                                  {% if player.lichess_account %}
+                                    <a href="https://lichess.org/@/{{ player.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess">
+                                      <i class="fas fa-chess-knight"></i>
+                                    </a>
+                                  {% endif %}
+                                  {% if player.chesscom_account %}
+                                    <a href="https://chess.com/member/{{ player.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com">
+                                      <i class="fas fa-chess-rook"></i>
+                                    </a>
+                                  {% endif %}
+                                </div>
+                              </td>
+                            </tr>
+                          {% empty %}
+                            <tr>
+                              <td colspan="7" class="text-center py-4">No players yet!</td>
+                            </tr>
+                          {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Tournaments Section -->
-    <div class="col-lg-4">
-        <!-- Upcoming Tournaments -->
-        <div class="card border-0 shadow mb-4">
-            <div class="card-header bg-dark text-white py-3">
-                <h3 class="card-title mb-0">
-                    <i class="fas fa-calendar-alt me-2"></i>Upcoming Tournaments
-                </h3>
-            </div>
-            <div class="card-body p-0">
-                <ul class="tournament-list list-group list-group-flush">
-                    {% for tournament in upcoming_tournaments %}
-                        <li class="list-group-item p-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <a href="{% url 'tournament_detail' tournament.id %}" class="tournament-link">
-                                        <h5 class="mb-1">{{ tournament.name }}</h5>
-                                    </a>
-                                    <div class="tournament-info">
-                                        <span class="me-3"><i class="far fa-calendar me-1"></i>{{ tournament.date }}</span>
-                                        {% if tournament.start_time %}
-                                            <span><i class="far fa-clock me-1"></i>{{ tournament.start_time }}</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <span class="tournament-type-badge
-                                    {% if tournament.tournament_type == 'swiss' %}bg-info{% elif tournament.tournament_type == 'round_robin' %}bg-warning{% else %}bg-primary{% endif %}">
-                                    {% if tournament.tournament_type == 'round_robin' %}
-                                        Round Robin
-                                    {% elif tournament.tournament_type == 'double_round_robin' %}
-                                        Double Round Robin
-                                    {% elif tournament.tournament_type == 'swiss' %}
-                                        Swiss
-                                    {% else %}
-                                        {{ tournament.tournament_type|title }}
-                                    {% endif %}
-                                </span>
-                            </div>
-                        </li>
-                    {% empty %}
-                        <li class="list-group-item p-4 text-center">
-                            <p class="text-muted mb-0">No upcoming tournaments</p>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-        
-        <!-- Recent Tournaments -->
-        <div class="card border-0 shadow">
-            <div class="card-header bg-dark text-white py-3">
-                <h3 class="card-title mb-0">
-                    <i class="fas fa-history me-2"></i>Recent Tournaments
-                </h3>
-            </div>
-            <div class="card-body p-0">
-                <ul class="tournament-list list-group list-group-flush">
-                    {% for tournament in recent_tournaments %}
-                        <li class="list-group-item p-3">
-                            <a href="{% url 'tournament_detail' tournament.id %}" class="tournament-link">
-                                <h5 class="mb-1">{{ tournament.name }}</h5>
-                            </a>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted"><i class="far fa-calendar me-1"></i>{{ tournament.date }}</small>
-                                
-                                {% with winner=tournament.standings.all|dictsort:"-score"|first %}
-                                    {% if winner %}
-                                        <div class="winner-badge">
-                                            <i class="fas fa-trophy text-warning me-1"></i>
-                                            <a href="{% url 'player_detail' winner.player.id %}" class="winner-name">
-                                                {{ winner.player.get_full_name|default:winner.player.username }}
-                                            </a>
-                                        </div>
-                                    {% endif %}
-                                {% endwith %}
-                            </div>
-                        </li>
-                    {% empty %}
-                        <li class="list-group-item p-4 text-center">
-                            <p class="text-muted mb-0">No completed tournaments</p>
-                        </li>
-                    {% endfor %}
-                </ul>
             </div>
         </div>
     </div>

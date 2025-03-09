@@ -80,22 +80,104 @@ document.addEventListener('DOMContentLoaded', function() {
             resultSelect.dispatchEvent(new Event('change'));
         }
     }
+    
+    // Initialize any select2 dropdowns for better UX
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('#player-select').select2({
+            dropdownParent: $('#player-select').closest('.dropdown-menu'),
+            width: '100%',
+            placeholder: 'Select a player',
+            allowClear: true
+        });
+    }
+
+    // Handle clicking inside dropdown without closing it
+    $('.dropdown-menu.p-3').on('click', function(e) {
+        e.stopPropagation();
+    });
+    
+    // Tournament form - handle showing/hiding the rounds field
+    const tournamentTypeSelect = document.getElementById('id_tournament_type');
+    const roundsFieldContainer = document.getElementById('rounds-field-container');
+    
+    // Function to toggle rounds field visibility based on tournament type
+    function toggleRoundsField() {
+        if (!tournamentTypeSelect || !roundsFieldContainer) return;
+        
+        const selectedType = tournamentTypeSelect.value;
+        
+        // Hide rounds field if no type is selected or if type is round robin
+        if (selectedType === '' || selectedType === 'round_robin' || selectedType === 'double_round_robin') {
+            roundsFieldContainer.style.display = 'none';
+            
+            // Clear the input value when hidden for round robin types
+            if (selectedType === 'round_robin' || selectedType === 'double_round_robin') {
+                const roundsInput = document.getElementById('id_num_rounds');
+                if (roundsInput) roundsInput.value = '';
+            }
+        } else {
+            // Show for Swiss tournaments
+            roundsFieldContainer.style.display = 'block';
+            
+            // Set default value if empty
+            const roundsInput = document.getElementById('id_num_rounds');
+            if (roundsInput && roundsInput.value === '') {
+                roundsInput.value = '10';
+            }
+        }
+    }
+    
+    // Run on initial load
+    if (tournamentTypeSelect) {
+        // Set a short timeout to ensure the DOM is fully ready
+        setTimeout(toggleRoundsField, 0);
+        
+        // Add event listener for changes
+        tournamentTypeSelect.addEventListener('change', toggleRoundsField);
+    }
 });
 
-/* Add this to your static/chess/js/main.js file */
 document.addEventListener('DOMContentLoaded', function() {
-// Initialize any select2 dropdowns for better UX
-if (typeof $.fn.select2 !== 'undefined') {
-    $('#player-select').select2({
-    dropdownParent: $('#player-select').closest('.dropdown-menu'),
-    width: '100%',
-    placeholder: 'Select a player',
-    allowClear: true
+    // Make tournament table rows clickable
+    const clickableRows = document.querySelectorAll('.tournaments-table tbody tr.clickable-row');
+    
+    clickableRows.forEach(row => {
+      row.addEventListener('click', function(e) {
+        // Prevent clicking on buttons or links within the row from triggering the row click
+        if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || 
+            e.target.closest('a') || e.target.closest('button')) {
+          return;
+        }
+        
+        // Get the URL from data attribute
+        const url = this.dataset.href;
+        if (url) {
+          window.location.href = url;
+        }
+      });
+      
+      // Add hover styling for the cursor
+      row.style.cursor = 'pointer';
     });
-}
+  });
 
-// Handle clicking inside dropdown without closing it
-$('.dropdown-menu.p-3').on('click', function(e) {
-    e.stopPropagation();
+document.addEventListener('DOMContentLoaded', function() {
+// Make tournament items clickable
+const tournamentItems = document.querySelectorAll('.simple-tournament-item');
+
+tournamentItems.forEach(item => {
+    item.addEventListener('click', function(e) {
+    // Don't redirect if user clicked on a link or button inside the item
+    if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || 
+        e.target.closest('a') || e.target.closest('button')) {
+        return;
+    }
+    
+    // Get the URL from onclick attribute
+    const url = this.getAttribute('onclick').replace("window.location.href='", "").replace("'", "");
+    if (url) {
+        window.location.href = url;
+    }
+    });
 });
 });

@@ -14,23 +14,48 @@ from .utils import generate_swiss_pairings, generate_round_robin_pairings, updat
 
 
 class HomeView(ListView):
-    """Homepage view showing the top rated players"""
+    """Homepage view showing the top rated players and upcoming tournaments"""
     model = User
     template_name = 'chess/home.html'
     context_object_name = 'players'
     
     def get_queryset(self):
         # Get users ordered by Elo rating, excluding superusers/staff
-        return User.objects.filter(is_active=True, is_staff=False, is_superuser=False).order_by('-elo')[:20]
+        players = list(User.objects.filter(
+            is_active=True, 
+            is_staff=False, 
+            is_superuser=False
+        ).order_by('-elo')[:20])
+        
+        # Calculate match statistics for each player
+        for player in players:
+            # Get player's match history
+            white_matches = player.white_matches.exclude(result='pending')
+            black_matches = player.black_matches.exclude(result='pending')
+            
+            # Calculate win/loss/draw stats
+            wins = white_matches.filter(result='white_win').count() + black_matches.filter(result='black_win').count()
+            losses = white_matches.filter(result='black_win').count() + black_matches.filter(result='white_win').count()
+            draws = white_matches.filter(result='draw').count() + black_matches.filter(result='draw').count()
+            
+            player.wins = wins
+            player.losses = losses
+            player.draws = draws
+            player.total_games = wins + losses + draws
+        
+        return players
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Make sure we're getting tournaments from today onward and they're not completed
+        from django.utils import timezone
+        today = timezone.now().date()
+        
         context['upcoming_tournaments'] = Tournament.objects.filter(
-            is_completed=False
+            is_completed=False,
+            date__gte=today
         ).order_by('date')[:5]
-        context['recent_tournaments'] = Tournament.objects.filter(
-            is_completed=True
-        ).order_by('-date')[:5]
+        
         return context
 
 class PlayerDetailView(DetailView):
@@ -99,6 +124,51 @@ class TournamentListView(ListView):
             result.append(tournament)
         
         return result
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from django.utils import timezone
+        today = timezone.now().date()
+        
+        # Add upcoming tournaments to context
+        upcoming_tournaments = Tournament.objects.filter(
+            is_completed=False,
+            date__gte=today
+        ).order_by('date')
+        
+        # Process upcoming tournaments to attach winners (should be None for upcoming)
+        processed_upcoming = []
+        for tournament in upcoming_tournaments:
+            tournament.winner = None
+            tournament.runner_up = None
+            processed_upcoming.append(tournament)
+        
+        context['upcoming_tournaments'] = processed_upcoming
+        
+        # Add past tournaments to context
+        past_tournaments = Tournament.objects.filter(
+            is_completed=True
+        ).order_by('-date')
+        
+        # Process past tournaments to attach winners
+        processed_past = []
+        for tournament in past_tournaments:
+            # Get standings sorted by score
+            standings = list(tournament.standings.all().order_by('-score'))
+            
+            # Find winner and runner-up
+            if standings:
+                tournament.winner = standings[0].player
+                tournament.runner_up = standings[1].player if len(standings) > 1 else None
+            else:
+                tournament.winner = None
+                tournament.runner_up = None
+            
+            processed_past.append(tournament)
+        
+        context['past_tournaments'] = processed_past
+        
+        return context
 
 class TournamentDetailView(DetailView):
     """View for tournament details"""

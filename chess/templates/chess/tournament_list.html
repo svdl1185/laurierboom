@@ -17,6 +17,7 @@
     </div>
 </div>
 
+<!-- Upcoming Tournaments -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="card border-0 shadow">
@@ -25,74 +26,71 @@
                     <i class="fas fa-calendar-alt me-2"></i>Upcoming Tournaments
                 </h2>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    {% for tournament in tournaments %}
-                        {% if not tournament.is_completed %}
-                            <div class="col-md-6 col-lg-4 mb-4">
-                                <div class="card h-100 tournament-card">
-                                    <div class="card-header bg-light">
-                                        <h5 class="card-title mb-0">{{ tournament.name }}</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="tournament-info-list">
-                                            <div class="mb-2">
-                                                <i class="far fa-calendar-alt me-2"></i>
-                                                <strong>Date:</strong> {{ tournament.date }}
-                                            </div>
-                                            {% if tournament.start_time %}
-                                            <div class="mb-2">
-                                                <i class="far fa-clock me-2"></i>
-                                                <strong>Time:</strong> {{ tournament.start_time }}
-                                            </div>
-                                            {% endif %}
-                                            <div class="mb-2">
-                                                <i class="fas fa-chess me-2"></i>
-                                                <strong>Type:</strong> 
-                                                {% if tournament.tournament_type == 'round_robin' %}
-                                                    Round Robin
-                                                {% elif tournament.tournament_type == 'double_round_robin' %}
-                                                    Double Round Robin
-                                                {% elif tournament.tournament_type == 'swiss' %}
-                                                    Swiss
-                                                {% else %}
-                                                    {{ tournament.tournament_type|title }}
-                                                {% endif %}
-                                            </div>
-                                            {% if tournament.is_swiss_type %}
-                                                <div class="mb-2">
-                                                    <i class="fas fa-list-ol me-2"></i>
-                                                    <strong>Rounds:</strong> {{ tournament.num_rounds }}
-                                                </div>
-                                            {% endif %}
-                                            <div class="mb-2">
-                                                <i class="fas fa-users me-2"></i>
-                                                <strong>Participants:</strong> {{ tournament.num_participants }}
-                                            </div>
-                                        </div>
-                                        
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover tournament-table mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tournament</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th class="text-center">Players</th>
+                                <th class="text-end"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tournament in upcoming_tournaments %}
+                                <tr class="tournament-table-row" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
+                                    <td class="tournament-name">
+                                        <strong>{{ tournament.name }}</strong>
                                         {% if tournament.description %}
-                                            <p class="text-muted mt-3">{{ tournament.description|truncatewords:15 }}</p>
+                                            <div class="small text-muted mt-1">{{ tournament.description|truncatechars:60 }}</div>
                                         {% endif %}
-                                        
-                                        <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-outline-primary mt-auto">
-                                            View Details
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endif %}
-                    {% empty %}
-                        <div class="col-12 text-center py-4">
-                            <p class="text-muted">No upcoming tournaments scheduled</p>
-                        </div>
-                    {% endfor %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span>{{ tournament.date }}</span>
+                                            {% if tournament.start_time %}
+                                                <span class="text-muted small">{{ tournament.start_time }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="tournament-type-badge {% if tournament.tournament_type == 'swiss' %}swiss{% elif tournament.tournament_type == 'round_robin' %}round-robin{% elif tournament.tournament_type == 'double_round_robin' %}double-round-robin{% else %}tbd{% endif %}">
+                                            {% if tournament.tournament_type == 'round_robin' %}
+                                                Round Robin
+                                            {% elif tournament.tournament_type == 'double_round_robin' %}
+                                                Double Round Robin
+                                            {% elif tournament.tournament_type == 'swiss' %}
+                                                Swiss
+                                            {% else %}
+                                                Type TBD
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="player-count">
+                                            <i class="fas fa-users me-1"></i>{{ tournament.num_participants }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">No upcoming tournaments scheduled</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Past Tournaments -->
 <div class="row">
     <div class="col-12">
         <div class="card border-0 shadow">
@@ -103,25 +101,26 @@
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover tournament-table mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-3">Name</th>
+                                <th>Tournament</th>
                                 <th>Date</th>
                                 <th>Type</th>
-                                <th>Participants</th>
                                 <th>Winner</th>
-                                <th>Runner-up</th>
-                                <th class="text-end pe-3">Action</th>
+                                <th class="text-center">Players</th>
+                                <th class="text-end"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for tournament in tournaments %}
-                                {% if tournament.is_completed %}
-                                    <tr>
-                                        <td class="ps-3">{{ tournament.name }}</td>
-                                        <td>{{ tournament.date }}</td>
-                                        <td>
+                            {% for tournament in past_tournaments %}
+                                <tr class="tournament-table-row" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
+                                    <td class="tournament-name">
+                                        <strong>{{ tournament.name }}</strong>
+                                    </td>
+                                    <td>{{ tournament.date }}</td>
+                                    <td>
+                                        <span class="tournament-type-badge {% if tournament.tournament_type == 'swiss' %}swiss{% elif tournament.tournament_type == 'round_robin' %}round-robin{% elif tournament.tournament_type == 'double_round_robin' %}double-round-robin{% else %}tbd{% endif %}">
                                             {% if tournament.tournament_type == 'round_robin' %}
                                                 Round Robin
                                             {% elif tournament.tournament_type == 'double_round_robin' %}
@@ -129,38 +128,40 @@
                                             {% elif tournament.tournament_type == 'swiss' %}
                                                 Swiss
                                             {% else %}
-                                                {{ tournament.tournament_type|title }}
+                                                Type TBD
                                             {% endif %}
-                                        </td>
-                                        <td>{{ tournament.num_participants }}</td>
-                                        <td>
-                                            {% if tournament.winner %}
-                                                <a href="{% url 'player_detail' tournament.winner.id %}" class="winner-name">
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if tournament.winner %}
+                                            <div class="d-flex flex-column">
+                                                <div class="winner-name">
+                                                    <i class="fas fa-trophy text-warning me-1"></i>
                                                     {{ tournament.winner.get_full_name|default:tournament.winner.username }}
-                                                </a>
-                                            {% else %}
-                                                -
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if tournament.runner_up %}
-                                                <a href="{% url 'player_detail' tournament.runner_up.id %}" class="runner-up-name">
-                                                    {{ tournament.runner_up.get_full_name|default:tournament.runner_up.username }}
-                                                </a>
-                                            {% else %}
-                                                -
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end pe-3">
-                                            <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-sm btn-outline-primary">
-                                                View
-                                            </a>
-                                        </td>
-                                    </tr>
-                                {% endif %}
+                                                </div>
+                                                {% if tournament.runner_up %}
+                                                    <div class="runner-up-name small text-muted">
+                                                        <i class="fas fa-medal text-secondary me-1"></i>
+                                                        {{ tournament.runner_up.get_full_name|default:tournament.runner_up.username }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="player-count">
+                                            <i class="fas fa-users me-1"></i>{{ tournament.num_participants }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </td>
+                                </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">No past tournaments</td>
+                                    <td colspan="6" class="text-center py-4">No past tournaments</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
