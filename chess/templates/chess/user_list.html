@@ -95,10 +95,10 @@
                                                         <i class="fas fa-chess-rook"></i>
                                                     </a>
                                                 {% endif %}
-                                                {% if user.fide_rating %}
-                                                    <span class="badge bg-light text-dark ms-1" data-bs-toggle="tooltip" title="FIDE Rating">
-                                                        {{ user.fide_rating }}
-                                                    </span>
+                                                {% if user.fide_id %}
+                                                    <a href="https://ratings.fide.com/profile/{{ user.fide_id }}" class="btn btn-sm btn-outline-secondary ms-1" target="_blank" data-bs-toggle="tooltip" title="FIDE: {{ user.fide_id }}">
+                                                        <i class="fas fa-chess"></i>
+                                                    </a>
                                                 {% endif %}
                                             </div>
                                         </td>

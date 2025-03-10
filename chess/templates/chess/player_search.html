@@ -38,7 +38,6 @@
                                 <tr>
                                     <th class="ps-3">Player</th>
                                     <th>Rating</th>
-                                    <th>FIDE Rating</th>
                                     <th>Chess Accounts</th>
                                     <th class="text-end pe-3">Action</th>
                                 </tr>
@@ -55,13 +54,6 @@
                                             <span class="badge bg-primary-subtle text-primary">{{ player.blitz_elo|floatformat:0 }} Blitz</span>
                                         </td>
                                         <td>
-                                            {% if player.fide_rating %}
-                                                <span class="badge bg-light text-dark">{{ player.fide_rating }}</span>
-                                            {% else %}
-                                                <span class="text-muted">-</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
                                             <div class="chess-accounts">
                                                 {% if player.lichess_account %}
                                                     <a href="https://lichess.org/@/{{ player.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess: {{ player.lichess_account }}">
@@ -69,8 +61,13 @@
                                                     </a>
                                                 {% endif %}
                                                 {% if player.chesscom_account %}
-                                                    <a href="https://chess.com/member/{{ player.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com: {{ player.chesscom_account }}">
+                                                    <a href="https://chess.com/member/{{ player.chesscom_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Chess.com: {{ player.chesscom_account }}">
                                                         <i class="fas fa-chess-rook"></i>
+                                                    </a>
+                                                {% endif %}
+                                                {% if player.fide_id %}
+                                                    <a href="https://ratings.fide.com/profile/{{ player.fide_id }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="FIDE: {{ player.fide_id }}">
+                                                        <i class="fas fa-chess-king"></i>
                                                     </a>
                                                 {% endif %}
                                             </div>

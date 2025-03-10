@@ -94,7 +94,6 @@
                                     <th>Blitz Rating</th>
                                     <th>Games</th>
                                     <th>Record</th>
-                                    <th>FIDE</th>
                                     <th>Online Profiles</th>
                                   </tr>
                                 </thead>
@@ -121,14 +120,10 @@
                                         </small>
                                       </td>
                                       <td>
-                                        {% if player.fide_rating %}
-                                          <span class="rating-badge fide">{{ player.fide_rating }}</span>
-                                        {% else %}
-                                          <span class="text-muted">-</span>
-                                        {% endif %}
-                                      </td>
-                                      <td>
                                         <div class="online-accounts">
+                                        {% if not player.lichess_account and not player.chesscom_account and not player.fide_id %}
+                                          <span class="text-muted">-</span>
+                                        {% else %}
                                           {% if player.lichess_account %}
                                             <a href="https://lichess.org/@/{{ player.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess">
                                               <i class="fas fa-chess-knight"></i>
@@ -139,6 +134,12 @@
                                               <i class="fas fa-chess-rook"></i>
                                             </a>
                                           {% endif %}
+                                          {% if player.fide_id %}
+                                            <a href="https://ratings.fide.com/profile/{{ player.fide_id }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="FIDE: {{ player.fide_id }}">
+                                              <i class="fas fa-chess"></i>
+                                            </a>
+                                          {% endif %}
+                                        {% endif %}
                                         </div>
                                       </td>
                                     </tr>
