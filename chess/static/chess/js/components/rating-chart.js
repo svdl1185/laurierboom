@@ -23,17 +23,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       // Group data by time control
-      const bulletData = data.filter(item => item.time_control === 'bullet');
+      // const bulletData = data.filter(item => item.time_control === 'bullet');
       const blitzData = data.filter(item => item.time_control === 'blitz');
       const rapidData = data.filter(item => item.time_control === 'rapid');
-      const classicalData = data.filter(item => item.time_control === 'classical');
+      // const classicalData = data.filter(item => item.time_control === 'classical');
       
       // Process data for each time control
       const processedData = {
-        bullet: processByDateWithFallback(bulletData),
+        // bullet: processByDateWithFallback(bulletData),
         blitz: processByDateWithFallback(blitzData),
         rapid: processByDateWithFallback(rapidData),
-        classical: processByDateWithFallback(classicalData),
+        // classical: processByDateWithFallback(classicalData),
       };
       
       // Extract all dates for x-axis
@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Find global min and max ratings for y-axis scale
       const allRatings = [
-        ...processedData.bullet.map(item => item.rating),
+        // ...processedData.bullet.map(item => item.rating),
         ...processedData.blitz.map(item => item.rating),
         ...processedData.rapid.map(item => item.rating),
-        ...processedData.classical.map(item => item.rating),
+        // ...processedData.classical.map(item => item.rating),
       ].filter(rating => rating !== null);
       
       const minRating = Math.min(...allRatings, 1400) - 50;
@@ -57,23 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
           labels: allDates,
           datasets: [
-            {
-              label: 'Bullet',
-              data: processedData.bullet,
-              borderColor: 'rgba(255, 99, 132, 1)',
-              backgroundColor: 'rgba(255, 99, 132, 0.2)',
-              borderWidth: 2,
-              pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 1,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              tension: 0.1,
-              parsing: {
-                xAxisKey: 'date',
-                yAxisKey: 'rating'
-              }
-            },
+            // Bullet dataset removed completely
             {
               label: 'Blitz',
               data: processedData.blitz,
@@ -107,24 +91,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 xAxisKey: 'date',
                 yAxisKey: 'rating'
               }
-            },
-            {
-              label: 'Classical',
-              data: processedData.classical,
-              borderColor: 'rgba(153, 102, 255, 1)',
-              backgroundColor: 'rgba(153, 102, 255, 0.2)',
-              borderWidth: 2,
-              pointBackgroundColor: 'rgba(153, 102, 255, 1)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 1,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              tension: 0.1,
-              parsing: {
-                xAxisKey: 'date',
-                yAxisKey: 'rating'
-              }
             }
+            // Classical dataset removed completely
           ]
         },
         options: {
