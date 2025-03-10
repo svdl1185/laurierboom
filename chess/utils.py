@@ -9,10 +9,13 @@ from .models import User
 
 def generate_swiss_pairings(tournament, round_obj):
     """
-    Generate pairings for a Swiss tournament round
+    Generate pairings for a Swiss tournament round with improved color balancing
     
-    In Swiss tournaments, players are paired with others who have the same or similar scores.
-    For the first round, players are typically paired randomly or by rating.
+    This implementation:
+    1. Pairs players with similar scores
+    2. Balances colors (players alternate white/black when possible)
+    3. Avoids rematches
+    4. Follows FIDE Swiss pairing principles more closely
     """
     from .models import Match, TournamentStanding
     
@@ -47,47 +50,158 @@ def generate_swiss_pairings(tournament, round_obj):
         )
         return [(white_player, black_player)]
     
+    # For tournaments with more than 2 players
+    # Get player color history and pairing history
+    color_history = {}
+    pairing_history = {}
+    
+    # Initialize the structures
+    for player in participants:
+        color_history[player.id] = {'white': 0, 'black': 0, 'last_color': None}
+        pairing_history[player.id] = set()
+    
+    # Populate color history and pairing history from previous matches
+    previous_matches = Match.objects.filter(
+        tournament=tournament
+    ).order_by('round__number')
+    
+    for match in previous_matches:
+        # Record the colors
+        color_history[match.white_player.id]['white'] += 1
+        color_history[match.white_player.id]['last_color'] = 'white'
+        
+        color_history[match.black_player.id]['black'] += 1
+        color_history[match.black_player.id]['last_color'] = 'black'
+        
+        # Record that these players have played each other
+        pairing_history[match.white_player.id].add(match.black_player.id)
+        pairing_history[match.black_player.id].add(match.white_player.id)
+    
     # If it's the first round, pair by rating or randomly
     if round_obj.number == 1:
         # Sort players by rating
         participants.sort(key=lambda x: x.elo, reverse=True)
+        
+        # For first round, simply pair adjacent players in the rating list
+        pairings = []
+        for i in range(0, len(participants), 2):
+            if i + 1 < len(participants):
+                # Higher rated player gets white for first game
+                white_player = participants[i]
+                black_player = participants[i+1]
+                
+                pairings.append((white_player, black_player))
+        
+        # Handle odd number of players (bye)
+        if len(participants) % 2 == 1:
+            # The last player gets a bye
+            # In a real system, you'd implement proper byes here
+            pass
     else:
-        # Sort players by tournament score
+        # Sort players by score (and then by rating as tiebreaker)
         standings = {
             standing.player.id: standing.score 
             for standing in TournamentStanding.objects.filter(tournament=tournament)
         }
-        participants.sort(key=lambda x: (standings.get(x.id, 0), x.elo), reverse=True)
-    
-    # Track already played matches to avoid duplicates
-    already_played = set()
-    for match in tournament.matches.all():
-        player_pair = frozenset([match.white_player.id, match.black_player.id])
-        already_played.add(player_pair)
-    
-    # Create pairings
-    pairings = []
-    unpaired = participants.copy()
-    
-    while len(unpaired) >= 2:
-        player1 = unpaired.pop(0)
         
-        # Find the best opponent for player1
-        for i, player2 in enumerate(unpaired):
-            player_pair = frozenset([player1.id, player2.id])
+        participants.sort(key=lambda x: (standings.get(x.id, 0), x.elo), reverse=True)
+        
+        # Group players by score
+        score_groups = {}
+        for player in participants:
+            score = standings.get(player.id, 0)
+            if score not in score_groups:
+                score_groups[score] = []
+            score_groups[score].append(player)
+        
+        # Process groups from highest score to lowest
+        pairings = []
+        for score in sorted(score_groups.keys(), reverse=True):
+            group = score_groups[score][:]  # Make a copy to avoid modifying the original
             
-            # Check if these players have already played
-            if player_pair not in already_played:
-                unpaired.pop(i)
-                pairings.append((player1, player2))
-                break
-        else:
-            # If all potential pairings would be rematches, pick the first available player
-            player2 = unpaired.pop(0)
-            pairings.append((player1, player2))
-    
-    # If there's an odd number of players, the last one gets a bye
-    # For simplicity, we're not implementing byes here, but would need to in a real system
+            while len(group) >= 2:
+                player1 = group[0]
+                
+                # Try to find the best opponent for player1 in this score group
+                best_match_found = False
+                
+                # First try to find an opponent with different last color
+                for i, player2 in enumerate(group[1:], 1):
+                    # Skip if they've already played
+                    if player2.id in pairing_history[player1.id]:
+                        continue
+                    
+                    # Check if colors would be balanced
+                    p1_last = color_history[player1.id]['last_color']
+                    p2_last = color_history[player2.id]['last_color']
+                    
+                    # Ideal: players had different colors last time, so they can alternate
+                    if p1_last != p2_last and p1_last is not None and p2_last is not None:
+                        group.pop(i)  # Remove player2
+                        group.pop(0)  # Remove player1
+                        
+                        # Assign colors - player who was black gets white
+                        if p1_last == 'black':
+                            white_player, black_player = player1, player2
+                        else:
+                            white_player, black_player = player2, player1
+                        
+                        pairings.append((white_player, black_player))
+                        best_match_found = True
+                        break
+                
+                # If no balanced color match, try to find any valid opponent
+                if not best_match_found:
+                    for i, player2 in enumerate(group[1:], 1):
+                        # Skip if they've already played
+                        if player2.id in pairing_history[player1.id]:
+                            continue
+                        
+                        # Get color balance stats
+                        p1_white = color_history[player1.id]['white']
+                        p1_black = color_history[player1.id]['black']
+                        p2_white = color_history[player2.id]['white']
+                        p2_black = color_history[player2.id]['black']
+                        
+                        # Assign colors based on color balance
+                        # Player with more games as black should get white
+                        if p1_black - p1_white > p2_black - p2_white:
+                            white_player, black_player = player1, player2
+                        else:
+                            white_player, black_player = player2, player1
+                        
+                        group.pop(i)  # Remove player2
+                        group.pop(0)  # Remove player1
+                        pairings.append((white_player, black_player))
+                        best_match_found = True
+                        break
+                
+                # If still no match, allow a rematch with balanced colors
+                if not best_match_found:
+                    # Just pair with the next available player
+                    player2 = group[1]
+                    group.pop(1)  # Remove player2
+                    group.pop(0)  # Remove player1
+                    
+                    # Determine colors to at least maintain balance
+                    p1_white = color_history[player1.id]['white']
+                    p1_black = color_history[player1.id]['black']
+                    p2_white = color_history[player2.id]['white']
+                    p2_black = color_history[player2.id]['black']
+                    
+                    if p1_black - p1_white > p2_black - p2_white:
+                        white_player, black_player = player1, player2
+                    else:
+                        white_player, black_player = player2, player1
+                    
+                    pairings.append((white_player, black_player))
+            
+            # If there's one player left in this score group, move them to the next group
+            if len(group) == 1:
+                leftover = group[0]
+                next_score = next((s for s in sorted(score_groups.keys(), reverse=True) if s < score), None)
+                if next_score is not None:
+                    score_groups[next_score].insert(0, leftover)
     
     # Create match objects for the generated pairings
     for white, black in pairings:
