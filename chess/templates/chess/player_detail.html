@@ -90,17 +90,17 @@
                         {% endif %}
                         
                         {% if player.fide_rating %}
-                            <li class="list-group-item px-0 border-0 pb-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-box me-3">
-                                        <i class="fas fa-trophy fs-4 text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold">FIDE Rating:</div>
-                                        <span>{{ player.fide_rating }}</span>
-                                    </div>
+                        <li class="list-group-item px-0 border-0 pb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box me-3">
+                                    <i class="fas fa-star fs-4 text-primary"></i>
                                 </div>
-                            </li>
+                                <div>
+                                    <div class="fw-bold">FIDE Rating:</div>
+                                    <span>{{ player.fide_rating }}</span>
+                                </div>
+                            </div>
+                        </li>
                         {% endif %}
                         
                         <!-- Additional profile information -->
@@ -127,6 +127,18 @@
                                 </div>
                             </div>
                         </li>
+
+                        <li class="list-group-item px-0 border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box me-3">
+                                    <i class="fas fa-trophy fs-4 text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">Tournaments Won:</div>
+                                    <span>{{ tournaments_won }}</span>
+                                </div>
+                            </div>
+                        </li>
                         
                         <li class="list-group-item px-0 border-0">
                             <div class="d-flex align-items-center">
@@ -135,11 +147,11 @@
                                 </div>
                                 <div>
                                     <div class="fw-bold">Rating Progression:</div>
-                                    <span>{{ rating_change|floatformat:0 }} points 
-                                    {% if rating_change > 0 %}
-                                        <span class="text-success">(+{{ rating_change|floatformat:0 }})</span>
-                                    {% elif rating_change < 0 %}
-                                        <span class="text-danger">({{ rating_change|floatformat:0 }})</span>
+                                    <span>{{ blitz_rating_change|floatformat:0 }} points 
+                                    {% if blitz_rating_change > 0 %}
+                                        <span class="text-success">(+{{ blitz_rating_change|floatformat:0 }})</span>
+                                    {% elif blitz_rating_change < 0 %}
+                                        <span class="text-danger">({{ blitz_rating_change|floatformat:0 }})</span>
                                     {% else %}
                                         <span class="text-muted">(0)</span>
                                     {% endif %}

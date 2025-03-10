@@ -137,44 +137,36 @@ class PlayerDetailView(DetailView):
         combined_matches.sort(key=lambda x: (x.round.tournament.date, x.round.number), reverse=True)
         context['recent_matches'] = combined_matches[:10]  # Keep only the 10 most recent
         
-        # Calculate rating progression over last month
+        # Calculate blitz rating change over last month
         from django.utils import timezone
         import datetime
         one_month_ago = timezone.now() - datetime.timedelta(days=30)
         
-        # Get the standings from tournaments in the last month
-        recent_tournaments = player.tournaments.filter(date__gte=one_month_ago).order_by('date')
-        recent_standings = []
-        for tournament in recent_tournaments:
-            try:
-                standing = tournament.standings.get(player=player)
-                recent_standings.append({
-                    'tournament': tournament.name,
-                    'date': tournament.date,
-                    'position': standing.rank,
-                    'score': standing.score
-                })
-            except:
-                pass
+        # Get blitz matches from tournaments in the last month
+        blitz_matches = Match.objects.filter(
+            (Q(white_player=player) | Q(black_player=player)),
+            tournament__time_control='blitz',
+            tournament__date__gte=one_month_ago,
+            result__in=['white_win', 'black_win', 'draw']
+        ).order_by('tournament__date', 'round__number')
         
-        context['recent_standings'] = recent_standings
+        # Get the earliest blitz match from more than a month ago to establish baseline
+        earliest_match = Match.objects.filter(
+            (Q(white_player=player) | Q(black_player=player)),
+            tournament__time_control='blitz',
+            tournament__date__lt=one_month_ago,
+            result__in=['white_win', 'black_win', 'draw']
+        ).order_by('-tournament__date', '-round__number').first()
         
-        # Calculate rating change over the last month
-        rating_month_ago = 1500  # Default starting rating
+        # Calculate rating change
+        blitz_rating_month_ago = 1500  # Default starting rating
         
-        # Try to get the player's rating from one month ago using matches
-        oldest_matches = Match.objects.filter(
-            Q(white_player=player) | Q(black_player=player),
-            round__tournament__date__lt=one_month_ago
-        ).order_by('-round__tournament__date')
+        if earliest_match:
+            # This is a simplified approximation - in reality you'd need a rating history table
+            # to accurately track historical ratings
+            blitz_rating_month_ago = player.blitz_elo - (10 * len(blitz_matches))
         
-        if oldest_matches.exists():
-            # Use the last known rating before one month ago
-            # This is simplified - in a real app you'd want a rating history table
-            rating_month_ago = player.elo
-        
-        context['rating_change'] = player.elo - rating_month_ago
-        context['rating_month_ago'] = rating_month_ago
+        context['blitz_rating_change'] = player.blitz_elo - blitz_rating_month_ago
         
         # Add tournament placements chart data
         tournaments_participated = player.tournaments.filter(is_completed=True).order_by('date')
@@ -205,12 +197,74 @@ class PlayerDetailView(DetailView):
         context['avg_total_players'] = avg_total_players
 
         # Calculate average points per tournament
+        from django.utils import timezone
+        one_month_ago = timezone.now() - datetime.timedelta(days=30)
+        
+        # Get the standings from tournaments in the last month
+        recent_tournaments = player.tournaments.filter(date__gte=one_month_ago).order_by('date')
+        recent_standings = []
+        for tournament in recent_tournaments:
+            try:
+                standing = tournament.standings.get(player=player)
+                recent_standings.append({
+                    'tournament': tournament.name,
+                    'date': tournament.date,
+                    'position': standing.rank,
+                    'score': standing.score
+                })
+            except:
+                pass
+        
+        context['recent_standings'] = recent_standings
+        
         avg_points = 0
         if recent_standings:
             avg_points = sum(s['score'] for s in recent_standings) / len(recent_standings)
             
         context['avg_points'] = avg_points
         context['tournament_count'] = len(placements)
+
+        one_month_ago = timezone.now() - datetime.timedelta(days=30)
+
+        # Get blitz matches from tournaments in the last month
+        blitz_matches = Match.objects.filter(
+            (Q(white_player=player) | Q(black_player=player)),
+            tournament__time_control='blitz',
+            tournament__date__gte=one_month_ago,
+            result__in=['white_win', 'black_win', 'draw']
+        ).order_by('tournament__date', 'round__number')
+
+        # Get the earliest blitz match from more than a month ago to establish baseline
+        earliest_match = Match.objects.filter(
+            (Q(white_player=player) | Q(black_player=player)),
+            tournament__time_control='blitz',
+            tournament__date__lt=one_month_ago,
+            result__in=['white_win', 'black_win', 'draw']
+        ).order_by('-tournament__date', '-round__number').first()
+
+        # Calculate rating change
+        blitz_rating_month_ago = 1500  # Default starting rating
+
+        if earliest_match:
+            # This is a simplified approximation - in reality you'd need a rating history table
+            blitz_rating_month_ago = player.blitz_elo - (10 * len(blitz_matches))
+
+        context['blitz_rating_change'] = player.blitz_elo - blitz_rating_month_ago
+
+        # Calculate number of tournaments won
+        tournaments_won = 0
+        tournaments_participated = player.tournaments.filter(is_completed=True).order_by('date')
+
+        for tournament in tournaments_participated:
+            try:
+                # Check if player has rank 1 in the standings (winner)
+                standing = tournament.standings.get(player=player, rank=1)
+                if standing:
+                    tournaments_won += 1
+            except:
+                pass
+
+        context['tournaments_won'] = tournaments_won
         
         return context
 
