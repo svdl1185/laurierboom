@@ -212,19 +212,63 @@ def generate_swiss_pairings(tournament, round_obj):
             remaining_players.remove(s1)
             remaining_players.remove(s2)
     
-    # --- STEP 7: Create Match Objects ---
+    # --- STEP 7: Sort Pairings by Importance ---
     
-    # Create match objects for the generated pairings
+    # Sort pairings by the combined score of the players (highest first)
+    # This ensures that board 1 has the most important match (highest scoring players)
+    scored_pairings = []
+    
     for white, black in pairings:
-        Match.objects.create(
+        # Get the scores of both players
+        white_score = 0
+        black_score = 0
+        
+        for player_id, info in player_info.items():
+            if info['player'] == white:
+                white_score = info['score']
+            elif info['player'] == black:
+                black_score = info['score']
+        
+        # Calculate the importance of this pairing
+        # Primary sort: Combined score (higher = more important)
+        # Secondary sort: Highest player rating (higher = more important)
+        combined_score = white_score + black_score
+        max_rating = max(white.elo, black.elo)
+        
+        scored_pairings.append({
+            'white': white,
+            'black': black,
+            'combined_score': combined_score,
+            'max_rating': max_rating
+        })
+    
+    # Sort the pairings by importance (highest combined score first, then by highest rating)
+    sorted_pairings = sorted(scored_pairings, 
+                            key=lambda p: (p['combined_score'], p['max_rating']), 
+                            reverse=True)
+    
+    # --- STEP 8: Create Match Objects With Board Numbers ---
+    
+    # Create match objects for the sorted pairings
+    pairings_result = []
+    for board_number, pairing in enumerate(sorted_pairings, 1):
+        white = pairing['white']
+        black = pairing['black']
+        
+        match = Match.objects.create(
             tournament=tournament,
             round=round_obj,
             white_player=white,
             black_player=black,
             result='pending'
         )
+        
+        # Store the board number (not in the model but could be added if needed)
+        # You could add a board_number field to the Match model if you want to persist this
+        
+        pairings_result.append((white, black))
     
-    return pairings
+    return pairings_result
 
 def determine_colors(s1, s2):
     """
