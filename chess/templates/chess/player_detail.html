@@ -27,22 +27,37 @@
                     </div>
                 </div>
                 <div class="d-flex mt-3">
-                    <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-3">
-                      <span class="fw-bold">{{ player.bullet_elo|floatformat:0 }}</span>
-                      <span class="ms-1">Bullet</span>
-                    </div>
-                    <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-3">
-                      <span class="fw-bold">{{ player.blitz_elo|floatformat:0 }}</span>
-                      <span class="ms-1">Blitz</span>
-                    </div>
-                    <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-3">
-                      <span class="fw-bold">{{ player.rapid_elo|floatformat:0 }}</span>
-                      <span class="ms-1">Rapid</span>
-                    </div>
-                    <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill">
-                      <span class="fw-bold">{{ player.classical_elo|floatformat:0 }}</span>
-                      <span class="ms-1">Classical</span>
-                    </div>
+                    {% if player.bullet_elo != 1500 %}
+                      <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-3">
+                        <span class="fw-bold">{{ player.bullet_elo|floatformat:0 }}</span>
+                        <span class="ms-1">Bullet</span>
+                      </div>
+                    {% endif %}
+                    {% if player.blitz_elo != 1500 %}
+                      <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-3">
+                        <span class="fw-bold">{{ player.blitz_elo|floatformat:0 }}</span>
+                        <span class="ms-1">Blitz</span>
+                      </div>
+                    {% endif %}
+                    {% if player.rapid_elo != 1500 %}
+                      <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-3">
+                        <span class="fw-bold">{{ player.rapid_elo|floatformat:0 }}</span>
+                        <span class="ms-1">Rapid</span>
+                      </div>
+                    {% endif %}
+                    {% if player.classical_elo != 1500 %}
+                      <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill">
+                        <span class="fw-bold">{{ player.classical_elo|floatformat:0 }}</span>
+                        <span class="ms-1">Classical</span>
+                      </div>
+                    {% endif %}
+                    
+                    {% if player.bullet_elo == 1500 and player.blitz_elo == 1500 and player.rapid_elo == 1500 and player.classical_elo == 1500 %}
+                      <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill">
+                        <span class="fw-bold">1500</span>
+                        <span class="ms-1">Default Rating</span>
+                      </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

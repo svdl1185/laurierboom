@@ -50,7 +50,6 @@
                         <table class="table table-hover mb-0" id="usersTable">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="ps-3">Username</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Rating</th>
@@ -61,74 +60,73 @@
                             </thead>
                             <tbody>
                                 {% for user in users %}
-                                {% if not user.is_staff %}
-                                    <tr data-status="{% if user.is_active %}active{% else %}inactive{% endif %}" class="{% if not user.is_active %}table-secondary{% endif %}">
-                                        <td class="ps-3">{{ user.username }}</td>
-                                        <td>{{ user.get_full_name }}</td>
-                                        <td>{{ user.email|default:"-" }}</td>
-                                        <td>
-                                            <div class="ratings-container">
-                                                <span class="badge bg-primary-subtle text-primary mb-1">{{ user.blitz_elo|floatformat:0 }} <small>Blitz</small></span>
-                                                {% if user.bullet_elo != 1500 or user.rapid_elo != 1500 or user.classical_elo != 1500 %}
-                                                    <div class="additional-ratings small">
-                                                        {% if user.bullet_elo != 1500 %}
-                                                            <span class="badge bg-light text-dark me-1">{{ user.bullet_elo|floatformat:0 }} <small>Bullet</small></span>
-                                                        {% endif %}
-                                                        {% if user.rapid_elo != 1500 %}
-                                                            <span class="badge bg-light text-dark me-1">{{ user.rapid_elo|floatformat:0 }} <small>Rapid</small></span>
-                                                        {% endif %}
-                                                        {% if user.classical_elo != 1500 %}
-                                                            <span class="badge bg-light text-dark">{{ user.classical_elo|floatformat:0 }} <small>Classical</small></span>
-                                                        {% endif %}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="chess-accounts">
-                                                {% if user.lichess_account %}
-                                                    <a href="https://lichess.org/@/{{ user.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess: {{ user.lichess_account }}">
-                                                        <i class="fas fa-chess-knight"></i>
-                                                    </a>
-                                                {% endif %}
-                                                {% if user.chesscom_account %}
-                                                    <a href="https://chess.com/member/{{ user.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com: {{ user.chesscom_account }}">
-                                                        <i class="fas fa-chess-rook"></i>
-                                                    </a>
-                                                {% endif %}
-                                                {% if user.fide_id %}
-                                                    <a href="https://ratings.fide.com/profile/{{ user.fide_id }}" class="btn btn-sm btn-outline-secondary ms-1" target="_blank" data-bs-toggle="tooltip" title="FIDE: {{ user.fide_id }}">
-                                                        <i class="fas fa-chess"></i>
-                                                    </a>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {% if user.is_active %}
-                                                <span class="badge bg-success">Active</span>
-                                            {% else %}
-                                                <span class="badge bg-danger">Inactive</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end pe-3">
-                                            <div class="btn-group" role="group">
-                                                <a href="{% url 'player_detail' user.id %}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="View Profile">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{% url 'user_edit' user.id %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="{% url 'user_toggle_active' user.id %}" class="btn btn-sm {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" data-bs-toggle="tooltip" title="{% if user.is_active %}Deactivate{% else %}Activate{% endif %}">
-                                                    {% if user.is_active %}
-                                                        <i class="fas fa-ban"></i>
-                                                    {% else %}
-                                                        <i class="fas fa-check"></i>
+                                    {% if not user.is_staff %}
+                                        <tr data-status="{% if user.is_active %}active{% else %}inactive{% endif %}" class="{% if not user.is_active %}table-secondary{% endif %}">
+                                            <td>{{ user.get_full_name }}</td>
+                                            <td>{{ user.email|default:"-" }}</td>
+                                            <td>
+                                                <div class="ratings-container">
+                                                    <span class="badge bg-primary-subtle text-primary mb-1">{{ user.blitz_elo|floatformat:0 }} <small>Blitz</small></span>
+                                                    {% if user.bullet_elo != 1500 or user.rapid_elo != 1500 or user.classical_elo != 1500 %}
+                                                        <div class="additional-ratings small">
+                                                            {% if user.bullet_elo != 1500 %}
+                                                                <span class="badge bg-light text-dark me-1">{{ user.bullet_elo|floatformat:0 }} <small>Bullet</small></span>
+                                                            {% endif %}
+                                                            {% if user.rapid_elo != 1500 %}
+                                                                <span class="badge bg-light text-dark me-1">{{ user.rapid_elo|floatformat:0 }} <small>Rapid</small></span>
+                                                            {% endif %}
+                                                            {% if user.classical_elo != 1500 %}
+                                                                <span class="badge bg-light text-dark">{{ user.classical_elo|floatformat:0 }} <small>Classical</small></span>
+                                                            {% endif %}
+                                                        </div>
                                                     {% endif %}
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="chess-accounts">
+                                                    {% if user.lichess_account %}
+                                                        <a href="https://lichess.org/@/{{ user.lichess_account }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank" data-bs-toggle="tooltip" title="Lichess: {{ user.lichess_account }}">
+                                                            <i class="fas fa-chess-knight"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    {% if user.chesscom_account %}
+                                                        <a href="https://chess.com/member/{{ user.chesscom_account }}" class="btn btn-sm btn-outline-secondary" target="_blank" data-bs-toggle="tooltip" title="Chess.com: {{ user.chesscom_account }}">
+                                                            <i class="fas fa-chess-rook"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    {% if user.fide_id %}
+                                                        <a href="https://ratings.fide.com/profile/{{ user.fide_id }}" class="btn btn-sm btn-outline-secondary ms-1" target="_blank" data-bs-toggle="tooltip" title="FIDE: {{ user.fide_id }}">
+                                                            <i class="fas fa-chess"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if user.is_active %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end pe-3">
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'player_detail' user.id %}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="View Profile">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'user_edit' user.id %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="{% url 'user_toggle_active' user.id %}" class="btn btn-sm {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" data-bs-toggle="tooltip" title="{% if user.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                                        {% if user.is_active %}
+                                                            <i class="fas fa-ban"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
                                 {% empty %}
                                     <tr>
                                         <td colspan="7" class="text-center py-4">No users found</td>
