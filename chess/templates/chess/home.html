@@ -164,7 +164,6 @@
                                     <th>Bullet Rating</th>
                                     <th>Games</th>
                                     <th>Record</th>
-                                    <th>FIDE</th>
                                     <th>Online Profiles</th>
                                   </tr>
                                 </thead>
@@ -189,13 +188,6 @@
                                         <small class="text-nowrap">
                                           <span class="text-success">{{ player.wins }}</span>-<span class="text-danger">{{ player.losses }}</span>-<span class="text-warning">{{ player.draws }}</span>
                                         </small>
-                                      </td>
-                                      <td>
-                                        {% if player.fide_rating %}
-                                          <span class="rating-badge fide">{{ player.fide_rating }}</span>
-                                        {% else %}
-                                          <span class="text-muted">-</span>
-                                        {% endif %}
                                       </td>
                                       <td>
                                         <div class="online-accounts">
@@ -233,7 +225,6 @@
                                     <th>Rapid Rating</th>
                                     <th>Games</th>
                                     <th>Record</th>
-                                    <th>FIDE</th>
                                     <th>Online Profiles</th>
                                   </tr>
                                 </thead>
@@ -258,13 +249,6 @@
                                         <small class="text-nowrap">
                                           <span class="text-success">{{ player.wins }}</span>-<span class="text-danger">{{ player.losses }}</span>-<span class="text-warning">{{ player.draws }}</span>
                                         </small>
-                                      </td>
-                                      <td>
-                                        {% if player.fide_rating %}
-                                          <span class="rating-badge fide">{{ player.fide_rating }}</span>
-                                        {% else %}
-                                          <span class="text-muted">-</span>
-                                        {% endif %}
                                       </td>
                                       <td>
                                         <div class="online-accounts">
@@ -302,7 +286,6 @@
                                     <th>Classical Rating</th>
                                     <th>Games</th>
                                     <th>Record</th>
-                                    <th>FIDE</th>
                                     <th>Online Profiles</th>
                                   </tr>
                                 </thead>
@@ -327,13 +310,6 @@
                                         <small class="text-nowrap">
                                           <span class="text-success">{{ player.wins }}</span>-<span class="text-danger">{{ player.losses }}</span>-<span class="text-warning">{{ player.draws }}</span>
                                         </small>
-                                      </td>
-                                      <td>
-                                        {% if player.fide_rating %}
-                                          <span class="rating-badge fide">{{ player.fide_rating }}</span>
-                                        {% else %}
-                                          <span class="text-muted">-</span>
-                                        {% endif %}
                                       </td>
                                       <td>
                                         <div class="online-accounts">
