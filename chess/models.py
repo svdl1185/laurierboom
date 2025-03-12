@@ -164,6 +164,7 @@ class TournamentStanding(models.Model):
     player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='standings')
     score = models.FloatField(default=0)
     rank = models.IntegerField(null=True, blank=True)
+    previous_rank = models.IntegerField(null=True, blank=True)
     
     class Meta:
         unique_together = ('tournament', 'player')

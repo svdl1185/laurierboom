@@ -436,8 +436,17 @@ def generate_round_robin_pairings(tournament, round_obj):
     return pairings
 
 def update_tournament_standings(tournament):
-    """Update standings for a tournament based on match results"""
+    """
+    Update standings for a tournament based on match results
+    Now with tracking of previous rankings
+    """
     from .models import TournamentStanding, Match
+    
+    # First, store current ranks as previous ranks
+    current_standings = TournamentStanding.objects.filter(tournament=tournament)
+    for standing in current_standings:
+        standing.previous_rank = standing.rank
+        standing.save()
     
     # Get all completed matches in this tournament
     matches = Match.objects.filter(
@@ -467,70 +476,12 @@ def update_tournament_standings(tournament):
             scores[white_id] += 0.5
             scores[black_id] += 0.5
     
-    # Make sure all participants have a standing entry
+    # Make sure all participants have a standing entry, even if they have no score
     for player in tournament.participants.all():
         if player.id not in scores:
             scores[player.id] = 0
     
-    # Update standings table
-    for player_id, score in scores.items():
-        standing, created = TournamentStanding.objects.get_or_create(
-            tournament=tournament,
-            player_id=player_id,
-            defaults={'score': 0}
-        )
-        standing.score = score
-        standing.save()
-    
-    # Calculate and update ranks
-    standings = TournamentStanding.objects.filter(
-        tournament=tournament
-    ).order_by('-score')
-    
-    current_rank = 1
-    current_score = None
-    
-    for i, standing in enumerate(standings):
-        if standing.score != current_score:
-            current_rank = i + 1
-            current_score = standing.score
-        
-        standing.rank = current_rank
-        standing.save()
-    """
-    Update standings for a tournament based on match results
-    """
-    from .models import TournamentStanding, Match
-    
-    # Get all completed matches in this tournament
-    matches = Match.objects.filter(
-        tournament=tournament
-    ).exclude(result='pending')
-    
-    # Dictionary to track scores
-    scores = {}
-    
-    # Calculate scores based on match results
-    for match in matches:
-        white_id = match.white_player.id
-        black_id = match.black_player.id
-        
-        # Initialize scores if needed
-        if white_id not in scores:
-            scores[white_id] = 0
-        if black_id not in scores:
-            scores[black_id] = 0
-        
-        # Update scores based on match result
-        if match.result == 'white_win':
-            scores[white_id] += 1
-        elif match.result == 'black_win':
-            scores[black_id] += 1
-        else:  # Draw
-            scores[white_id] += 0.5
-            scores[black_id] += 0.5
-    
-    # Update standings table
+    # Update standings table with new scores
     for player_id, score in scores.items():
         standing, created = TournamentStanding.objects.get_or_create(
             tournament=tournament,

@@ -2024,3 +2024,31 @@ a:hover .next-tournament-box {
 .tournament-crosstable .badge {
   min-width: 24px;
 }
+
+/* Rank change indicators */
+.rank-change {
+  margin-left: 5px;
+}
+
+.rank-up {
+  color: #4caf50;  /* Green color for improvement */
+}
+
+.rank-down {
+  color: #f44336;  /* Red color for decline */
+}
+
+/* Make sure the rank cell has relative positioning for the arrow positioning */
+.standings-table td:first-child {
+  position: relative;
+}
+
+/* Style for the actual ranking number */
+.rank-number {
+  display: inline-block;
+}
+
+/* Makes sure there's space for the arrows */
+.standings-table td:first-child {
+  padding-right: 25px;
+}
