@@ -252,7 +252,7 @@
                         <h2 class="card-title mb-0">
                             <i class="fas fa-chess-board me-2"></i> Round {{ current_round.number }}
                         </h2>
-                        {% if user.is_staff and current_round and current_round.matches.count > 0 and rounds|length == tournament.num_rounds and current_round.number == tournament.num_rounds %}
+                        {% if user.is_staff and current_round %}
                             <form method="post" action="{% url 'complete_round' tournament.id current_round.id %}" class="d-inline" 
                                 onsubmit="return confirm('Are all matches complete? This will generate the next round.');">
                                 {% csrf_token %}
