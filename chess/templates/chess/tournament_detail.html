@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container">
-    <!-- Tournament Info Card -->
+    <!-- Tournament Header -->
     <div class="row mb-4">
         <div class="col-lg-12">
             <div class="card border-0 shadow">
@@ -75,340 +75,169 @@
                         {% endif %}
                     </div>
                 </div>
-                
-                <div class="card-body p-4">
-                    <div class="row">
-                        <!-- Tournament Information - Left Side -->
-                        <div class="col-lg-8">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h4 class="mb-3">Tournament Information</h4>
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item d-flex px-0">
-                                            <div class="icon-box me-2">
-                                                <i class="far fa-calendar-alt text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="fw-bold">Date:</span>
-                                                <span class="ms-2">{{ tournament.date }}</span>
-                                            </div>
-                                        </li>
-                                        {% if tournament.start_time %}
-                                            <li class="list-group-item d-flex px-0">
-                                                <div class="icon-box me-2">
-                                                    <i class="far fa-clock text-primary"></i>
-                                                </div>
-                                                <div>
-                                                    <span class="fw-bold">Time:</span>
-                                                    <span class="ms-2">{{ tournament.start_time }}</span>
-                                                </div>
-                                            </li>
-                                        {% endif %}
-                                        <li class="list-group-item d-flex px-0">
-                                            <div class="icon-box me-2">
-                                                <i class="fas fa-map-marker-alt text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="fw-bold">Location:</span>
-                                                <span class="ms-2">{{ tournament.location }}</span>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item d-flex px-0">
-                                            <div class="icon-box me-2">
-                                                <i class="fas fa-chess text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="fw-bold">Format:</span>
-                                                <span class="ms-2">
-                                                    {% if tournament.tournament_type == 'round_robin' %}
-                                                        Round Robin
-                                                    {% elif tournament.tournament_type == 'double_round_robin' %}
-                                                        Double Round Robin
-                                                    {% elif tournament.tournament_type == 'swiss' %}
-                                                        Swiss
-                                                    {% else %}
-                                                        TBD
-                                                    {% endif %}
-                                                </span>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item d-flex px-0">
-                                            <div class="icon-box me-2">
-                                                <i class="fas fa-stopwatch text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="fw-bold">Time Control:</span>
-                                                <span class="ms-2">
-                                                    {% if tournament.time_control == 'bullet' %}
-                                                        Bullet
-                                                    {% elif tournament.time_control == 'blitz' %}
-                                                        Blitz
-                                                    {% elif tournament.time_control == 'rapid' %}
-                                                        Rapid
-                                                    {% elif tournament.time_control == 'classical' %}
-                                                        Classical
-                                                    {% else %}
-                                                        TBD
-                                                    {% endif %}
-                                                </span>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item d-flex px-0">
-                                            <div class="icon-box me-2">
-                                                <i class="fas fa-list-ol text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="fw-bold">Total Rounds:</span>
-                                                <span class="ms-2">
-                                                    {% if tournament.is_swiss_type %}
-                                                        {{ tournament.num_rounds }}
-                                                    {% elif tournament.tournament_type == 'round_robin' %}
-                                                        {% with participant_count=tournament.participants.count %}
-                                                            {% if participant_count|divisibleby:2 %}
-                                                                {{ participant_count|add:"-1" }}
-                                                            {% else %}
-                                                                {{ participant_count }}
-                                                            {% endif %}
-                                                        {% endwith %}
-                                                    {% elif tournament.tournament_type == 'double_round_robin' %}
-                                                        {% with participant_count=tournament.participants.count %}
-                                                            {% if participant_count|divisibleby:2 %}
-                                                                {{ participant_count|add:"-1" }}×2
-                                                            {% else %}
-                                                                {{ participant_count }}×2
-                                                            {% endif %}
-                                                        {% endwith %}
-                                                    {% else %}
-                                                        TBD
-                                                    {% endif %}
-                                                </span>
-                                            </div>
-                                        </li>
-                                        <li class="list-group-item d-flex px-0">
-                                            <div class="icon-box me-2">
-                                                <i class="fas fa-users text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="fw-bold">Participants:</span>
-                                                <span class="ms-2">{{ tournament.num_participants }}</span>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6 mt-4 mt-md-0">
-                                    {% if tournament.description %}
-                                        <h4 class="mb-3">Description</h4>
-                                        <div class="bg-light rounded p-3">
-                                            <p class="mb-0">{{ tournament.description }}</p>
-                                        </div>
-                                    {% endif %}
-                                    
-                                    <!-- Registration Button for non-staff -->
-                                    {% if not tournament.is_completed and current_round is None and user.is_authenticated and not user.is_staff %}
-                                        <div class="mt-4">
-                                            {% if user in tournament.participants.all %}
-                                                <div class="alert alert-success">
-                                                    <i class="fas fa-check-circle me-2"></i>You are registered for this tournament.
-                                                </div>
-                                            {% else %}
-                                                <a href="{% url 'tournament_register' tournament.id %}" class="btn btn-primary">
-                                                    <i class="fas fa-user-plus me-2"></i>Register for this tournament
-                                                </a>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Tournament Standings - Right Side -->
-                        <div class="col-lg-4 mt-4 mt-lg-0">
-                            <h4 class="mb-3">Tournament Standings</h4>
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover standings-table">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Player</th>
-                                            <th>Score</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for standing in standings %}
-                                            {% if not standing.player.is_staff and not standing.player.is_superuser %}
-                                                <tr {% if standing.rank == 1 %}class="table-warning"{% elif standing.rank == 2 %}class="table-light"{% elif standing.rank == 3 %}class="table-light"{% endif %}>
-                                                    <td>
-                                                        {% if standing.rank == 1 %}
-                                                            <span class="badge bg-warning text-dark">1</span>
-                                                        {% elif standing.rank == 2 %}
-                                                            <span class="badge bg-secondary">2</span>
-                                                        {% elif standing.rank == 3 %}
-                                                            <span class="badge bg-info">3</span>
-                                                        {% else %}
-                                                            {{ standing.rank }}
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>
-                                                        <a href="{% url 'player_detail' standing.player.id %}">
-                                                            {{ standing.player.get_full_name|default:standing.player.username }}
-                                                        </a>
-                                                    </td>
-                                                    <td>{{ standing.score }}</td>
-                                                </tr>
-                                            {% endif %}
-                                        {% empty %}
-                                            <tr>
-                                                <td colspan="3" class="text-center">No standings yet</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
-    
-    <!-- Current Round Card (if exists) -->
-    {% if current_round %}
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow">
+
+    <!-- REGISTRATION PHASE (Not Started) -->
+    {% if not tournament.has_started and not tournament.is_completed %}
+        <div class="row">
+            <!-- Left Column: Tournament Information -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow h-100">
                     <div class="card-header bg-dark text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h2 class="card-title mb-0">
-                                <i class="fas fa-chess-board me-2"></i>Current Round
-                            </h2>
-                            {% if user.is_staff and not tournament.is_completed and current_round.matches.count > 0 %}
-                                <form method="post" action="{% url 'complete_round' tournament.id current_round.id %}" class="d-inline" 
-                                    onsubmit="return confirm('Are all matches complete? This will generate the next round.');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-light">
-                                        <i class="fas fa-check-circle me-1"></i> Complete Round
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </div>
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Tournament Information
+                        </h2>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-3">Board</th>
-                                        <th>White</th>
-                                        <th>Black</th>
-                                        <th>Result</th>
-                                        {% if user.is_staff %}
-                                            <th class="text-end pe-3">Action</th>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="far fa-calendar-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Date:</span>
+                                    <span class="ms-2">{{ tournament.date }}</span>
+                                </div>
+                            </li>
+                            {% if tournament.start_time %}
+                                <li class="list-group-item d-flex px-0">
+                                    <div class="icon-box me-2">
+                                        <i class="far fa-clock text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold">Time:</span>
+                                        <span class="ms-2">{{ tournament.start_time }}</span>
+                                    </div>
+                                </li>
+                            {% endif %}
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="fas fa-map-marker-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Location:</span>
+                                    <span class="ms-2">{{ tournament.location }}</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="fas fa-chess text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Format:</span>
+                                    <span class="ms-2">
+                                        {% if tournament.tournament_type == 'round_robin' %}
+                                            Round Robin
+                                        {% elif tournament.tournament_type == 'double_round_robin' %}
+                                            Double Round Robin
+                                        {% elif tournament.tournament_type == 'swiss' %}
+                                            Swiss
+                                        {% else %}
+                                            TBD
                                         {% endif %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for match in current_matches %}
-                                        <tr>
-                                            <td class="ps-3">
-                                                <span class="badge bg-secondary">{{ forloop.counter }}</span>
-                                            </td>
-                                            <td>
-                                                <a href="{% url 'player_detail' match.white_player.id %}" class="player-link">
-                                                    {{ match.white_player.get_full_name|default:match.white_player.username }}
-                                                </a>
-                                                <span class="badge bg-light text-dark ms-1">
-                                                    {% if tournament.time_control == 'bullet' %}
-                                                        {{ match.white_player.bullet_elo|floatformat:0 }}
-                                                    {% elif tournament.time_control == 'blitz' %}
-                                                        {{ match.white_player.blitz_elo|floatformat:0 }}
-                                                    {% elif tournament.time_control == 'rapid' %}
-                                                        {{ match.white_player.rapid_elo|floatformat:0 }}
-                                                    {% elif tournament.time_control == 'classical' %}
-                                                        {{ match.white_player.classical_elo|floatformat:0 }}
-                                                    {% else %}
-                                                        {{ match.white_player.elo|floatformat:0 }}
-                                                    {% endif %}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <a href="{% url 'player_detail' match.black_player.id %}" class="player-link">
-                                                    {{ match.black_player.get_full_name|default:match.black_player.username }}
-                                                </a>
-                                                <span class="badge bg-light text-dark ms-1">
-                                                    {% if tournament.time_control == 'bullet' %}
-                                                        {{ match.black_player.bullet_elo|floatformat:0 }}
-                                                    {% elif tournament.time_control == 'blitz' %}
-                                                        {{ match.black_player.blitz_elo|floatformat:0 }}
-                                                    {% elif tournament.time_control == 'rapid' %}
-                                                        {{ match.black_player.rapid_elo|floatformat:0 }}
-                                                    {% elif tournament.time_control == 'classical' %}
-                                                        {{ match.black_player.classical_elo|floatformat:0 }}
-                                                    {% else %}
-                                                        {{ match.black_player.elo|floatformat:0 }}
-                                                    {% endif %}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {% if user.is_staff and not tournament.is_completed %}
-                                                    <form method="post" action="{% url 'inline_match_result' match.id %}" class="d-inline match-result-form">
-                                                        {% csrf_token %}
-                                                        <select name="result" class="form-select form-select-sm result-select" data-match-id="{{ match.id }}">
-                                                            <option value="pending" {% if match.result == 'pending' %}selected{% endif %}>Pending</option>
-                                                            <option value="white_win" {% if match.result == 'white_win' %}selected{% endif %}>1-0 (White wins)</option>
-                                                            <option value="black_win" {% if match.result == 'black_win' %}selected{% endif %}>0-1 (Black wins)</option>
-                                                            <option value="draw" {% if match.result == 'draw' %}selected{% endif %}>½-½ (Draw)</option>
-                                                        </select>
-                                                    </form>
+                                    </span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="fas fa-stopwatch text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Time Control:</span>
+                                    <span class="ms-2">
+                                        {% if tournament.time_control == 'bullet' %}
+                                            Bullet
+                                        {% elif tournament.time_control == 'blitz' %}
+                                            Blitz
+                                        {% elif tournament.time_control == 'rapid' %}
+                                            Rapid
+                                        {% elif tournament.time_control == 'classical' %}
+                                            Classical
+                                        {% else %}
+                                            TBD
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="fas fa-list-ol text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Total Rounds:</span>
+                                    <span class="ms-2">
+                                        {% if tournament.is_swiss_type %}
+                                            {{ tournament.num_rounds }}
+                                        {% elif tournament.tournament_type == 'round_robin' %}
+                                            {% with participant_count=tournament.participants.count %}
+                                                {% if participant_count|divisibleby:2 %}
+                                                    {{ participant_count|add:"-1" }}
                                                 {% else %}
-                                                    {% if match.result == 'pending' %}
-                                                        <span class="badge bg-secondary">Pending</span>
-                                                    {% elif match.result == 'white_win' %}
-                                                        <span class="badge bg-success">1-0</span>
-                                                    {% elif match.result == 'black_win' %}
-                                                        <span class="badge bg-success">0-1</span>
-                                                    {% else %}
-                                                        <span class="badge bg-success">½-½</span>
-                                                    {% endif %}
+                                                    {{ participant_count }}
                                                 {% endif %}
-                                            </td>
-                                            {% if user.is_staff %}
-                                                <td class="text-end pe-3">
-                                                    {% if match.result != 'pending' %}
-                                                        <span class="badge bg-success save-status" id="save-status-{{ match.id }}">Saved</span>
-                                                    {% else %}
-                                                        <span class="badge save-status" id="save-status-{{ match.id }}"></span>
-                                                    {% endif %}
-                                                </td>
-                                            {% endif %}
-                                        </tr>
-                                    {% empty %}
-                                        <tr>
-                                            <td colspan="{% if user.is_staff %}5{% else %}4{% endif %}" class="text-center py-4">
-                                                No matches in current round
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                                            {% endwith %}
+                                        {% elif tournament.tournament_type == 'double_round_robin' %}
+                                            {% with participant_count=tournament.participants.count %}
+                                                {% if participant_count|divisibleby:2 %}
+                                                    {{ participant_count|add:"-1" }}×2
+                                                {% else %}
+                                                    {{ participant_count }}×2
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% else %}
+                                            TBD
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="fas fa-users text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Participants:</span>
+                                    <span class="ms-2">{{ tournament.num_participants }}</span>
+                                </div>
+                            </li>
+                        </ul>
+
+                        {% if tournament.description %}
+                            <h4 class="mt-4 mb-3">Description</h4>
+                            <div class="bg-light rounded p-3">
+                                <p class="mb-0">{{ tournament.description }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Registration Button for non-staff -->
+                        {% if not tournament.is_completed and current_round is None and user.is_authenticated and not user.is_staff %}
+                            <div class="mt-4">
+                                {% if user in tournament.participants.all %}
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i>You are registered for this tournament.
+                                    </div>
+                                {% else %}
+                                    <a href="{% url 'tournament_register' tournament.id %}" class="btn btn-primary">
+                                        <i class="fas fa-user-plus me-2"></i>Register for this tournament
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
-        </div>
-    {% endif %}
 
-    {% if not tournament.has_started and not tournament.is_completed %}
-        <!-- Participants Card -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow">
+            <!-- Right Column: Participants List -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow h-100">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                         <h2 class="card-title mb-0">
                             <i class="fas fa-users me-2"></i>Participants
                         </h2>
-                        {% if user.is_staff and not tournament.is_completed and current_round is None %}
+                        {% if user.is_staff %}
                             <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
-                                <i class="fas fa-plus me-1"></i> Add
+                                <i class="fas fa-plus me-1"></i> Add Player
                             </button>
                         {% endif %}
                     </div>
@@ -420,7 +249,7 @@
                                         <th class="ps-3">#</th>
                                         <th>Player</th>
                                         <th>Rating</th>
-                                        {% if user.is_staff and not tournament.is_completed and current_round is None %}
+                                        {% if user.is_staff %}
                                             <th class="text-end pe-3">Actions</th>
                                         {% endif %}
                                     </tr>
@@ -449,7 +278,7 @@
                                                     {% endif %}
                                                 </span>
                                             </td>
-                                            {% if user.is_staff and not tournament.is_completed and current_round is None %}
+                                            {% if user.is_staff %}
                                                 <td class="text-end pe-3">
                                                     <a href="{% url 'remove_player_from_tournament' tournament.id player.id %}" 
                                                     class="btn btn-sm btn-outline-danger"
@@ -461,7 +290,7 @@
                                         </tr>
                                     {% empty %}
                                         <tr>
-                                            <td colspan="{% if user.is_staff and not tournament.is_completed and current_round is None %}4{% else %}3{% endif %}" class="text-center py-4">
+                                            <td colspan="{% if user.is_staff %}4{% else %}3{% endif %}" class="text-center py-4">
                                                 No participants yet
                                             </td>
                                         </tr>
@@ -473,9 +302,419 @@
                 </div>
             </div>
         </div>
-    {% endif %}
 
-    {% if tournament.is_completed or tournament.has_started %}
+    <!-- ONGOING PHASE (Tournament Has Started) -->
+    {% elif tournament.has_started and not tournament.is_completed %}
+        <div class="row">
+            <!-- Left Column: Current Round Matches -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow h-100">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-chess-board me-2"></i>Current Round {{ current_round.number }}
+                        </h2>
+                        {% if user.is_staff and current_round and current_round.matches.count > 0 %}
+                            <form method="post" action="{% url 'complete_round' tournament.id current_round.id %}" class="d-inline" 
+                                onsubmit="return confirm('Are all matches complete? This will generate the next round.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-light">
+                                    <i class="fas fa-check-circle me-1"></i> Complete Round
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">White</th>
+                                        <th class="text-center">Result</th>
+                                        <th>Black</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for match in current_matches %}
+                                        <tr>
+                                            <td class="ps-3">
+                                                <a href="{% url 'player_detail' match.white_player.id %}" class="player-link">
+                                                    {{ match.white_player.get_full_name|default:match.white_player.username }}
+                                                </a>
+                                                <span class="badge bg-light text-dark ms-1">
+                                                    {% if tournament.time_control == 'bullet' %}
+                                                        {{ match.white_player.bullet_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'blitz' %}
+                                                        {{ match.white_player.blitz_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'rapid' %}
+                                                        {{ match.white_player.rapid_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'classical' %}
+                                                        {{ match.white_player.classical_elo|floatformat:0 }}
+                                                    {% else %}
+                                                        {{ match.white_player.elo|floatformat:0 }}
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if user.is_staff %}
+                                                    <form method="post" action="{% url 'inline_match_result' match.id %}" class="d-inline match-result-form">
+                                                        {% csrf_token %}
+                                                        <select name="result" class="form-select form-select-sm result-select" data-match-id="{{ match.id }}">
+                                                            <option value="pending" {% if match.result == 'pending' %}selected{% endif %}>-</option>
+                                                            <option value="white_win" {% if match.result == 'white_win' %}selected{% endif %}>1-0</option>
+                                                            <option value="black_win" {% if match.result == 'black_win' %}selected{% endif %}>0-1</option>
+                                                            <option value="draw" {% if match.result == 'draw' %}selected{% endif %}>½-½</option>
+                                                        </select>
+                                                    </form>
+                                                {% else %}
+                                                    {% if match.result == 'pending' %}
+                                                        <span class="badge bg-secondary">-</span>
+                                                    {% elif match.result == 'white_win' %}
+                                                        <span class="badge bg-success">1-0</span>
+                                                    {% elif match.result == 'black_win' %}
+                                                        <span class="badge bg-success">0-1</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">½-½</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'player_detail' match.black_player.id %}" class="player-link">
+                                                    {{ match.black_player.get_full_name|default:match.black_player.username }}
+                                                </a>
+                                                <span class="badge bg-light text-dark ms-1">
+                                                    {% if tournament.time_control == 'bullet' %}
+                                                        {{ match.black_player.bullet_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'blitz' %}
+                                                        {{ match.black_player.blitz_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'rapid' %}
+                                                        {{ match.black_player.rapid_elo|floatformat:0 }}
+                                                    {% elif tournament.time_control == 'classical' %}
+                                                        {{ match.black_player.classical_elo|floatformat:0 }}
+                                                    {% else %}
+                                                        {{ match.black_player.elo|floatformat:0 }}
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4">
+                                                No matches in current round
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Current standings -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow h-100">
+                    <div class="card-header bg-dark text-white">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-trophy me-2"></i>Current Standings
+                        </h2>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover standings-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Player</th>
+                                        <th>Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for standing in standings %}
+                                        {% if not standing.player.is_staff and not standing.player.is_superuser %}
+                                            <tr {% if standing.rank == 1 %}class="table-warning"{% elif standing.rank == 2 %}class="table-light"{% elif standing.rank == 3 %}class="table-light"{% endif %}>
+                                                <td>
+                                                    {% if standing.rank == 1 %}
+                                                        <span class="badge bg-warning text-dark">1</span>
+                                                    {% elif standing.rank == 2 %}
+                                                        <span class="badge bg-secondary">2</span>
+                                                    {% elif standing.rank == 3 %}
+                                                        <span class="badge bg-info">3</span>
+                                                    {% else %}
+                                                        {{ standing.rank }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'player_detail' standing.player.id %}">
+                                                        {{ standing.player.get_full_name|default:standing.player.username }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ standing.score }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center">No standings yet</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Previous Rounds Accordion -->
+        {% if user.is_staff %}
+            {% if rounds|length > 1 %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow">
+                            <div class="card-header bg-dark text-white">
+                                <h2 class="card-title mb-0">
+                                    <i class="fas fa-history me-2"></i>Previous Rounds
+                                </h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="accordion" id="roundsAccordion">
+                                    {% for round_obj in rounds %}
+                                        {% if round_obj.is_completed %}
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="heading{{ round_obj.number }}">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                                            data-bs-target="#collapse{{ round_obj.number }}">
+                                                        Round {{ round_obj.number }}
+                                                    </button>
+                                                </h2>
+                                                <div id="collapse{{ round_obj.number }}" class="accordion-collapse collapse" 
+                                                    aria-labelledby="heading{{ round_obj.number }}" data-bs-parent="#roundsAccordion">
+                                                    <div class="accordion-body p-0">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm table-hover mb-0">
+                                                                <thead class="table-light">
+                                                                    <tr>
+                                                                        <th class="ps-3">White</th>
+                                                                        <th class="text-center">Result</th>
+                                                                        <th>Black</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for match in round_obj.matches.all %}
+                                                                        <tr>
+                                                                            <td class="ps-3">
+                                                                                <a href="{% url 'player_detail' match.white_player.id %}" class="player-link">
+                                                                                    {{ match.white_player.get_full_name|default:match.white_player.username }}
+                                                                                </a>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                {% if user.is_staff and not tournament.is_completed %}
+                                                                                    <form method="post" action="{% url 'inline_match_result' match.id %}" class="d-inline match-result-form">
+                                                                                        {% csrf_token %}
+                                                                                        <select name="result" class="form-select form-select-sm result-select" data-match-id="{{ match.id }}">
+                                                                                            <option value="pending" {% if match.result == 'pending' %}selected{% endif %}>-</option>
+                                                                                            <option value="white_win" {% if match.result == 'white_win' %}selected{% endif %}>1-0</option>
+                                                                                            <option value="black_win" {% if match.result == 'black_win' %}selected{% endif %}>0-1</option>
+                                                                                            <option value="draw" {% if match.result == 'draw' %}selected{% endif %}>½-½</option>
+                                                                                        </select>
+                                                                                    </form>
+                                                                                {% else %}
+                                                                                    {% if match.result == 'white_win' %}
+                                                                                        <span class="badge bg-success">1-0</span>
+                                                                                    {% elif match.result == 'black_win' %}
+                                                                                        <span class="badge bg-success">0-1</span>
+                                                                                    {% elif match.result == 'draw' %}
+                                                                                        <span class="badge bg-success">½-½</span>
+                                                                                    {% else %}
+                                                                                        <span class="badge bg-secondary">-</span>
+                                                                                    {% endif %}
+                                                                                {% endif %}
+                                                                            </td>
+                                                                            <td>
+                                                                                <a href="{% url 'player_detail' match.black_player.id %}" class="player-link">
+                                                                                    {{ match.black_player.get_full_name|default:match.black_player.username }}
+                                                                                </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+
+    <!-- COMPLETED PHASE -->
+    {% elif tournament.is_completed %}
+        <div class="row">
+            <!-- Left Column: Tournament Summary -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow h-100">
+                    <div class="card-header bg-dark text-white">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-trophy me-2"></i>Tournament Summary
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Winner and results highlight -->
+                        {% for standing in standings %}
+                            {% if standing.rank == 1 %}
+                                <div class="text-center mb-4">
+                                    <div class="winner-badge p-3 bg-warning bg-opacity-10 rounded-3 d-inline-block mb-3">
+                                        <div class="display-5 mb-2"><i class="fas fa-trophy text-warning"></i></div>
+                                        <h3 class="fw-bold mb-0">Winner</h3>
+                                        <h4 class="mb-1">{{ standing.player.get_full_name|default:standing.player.username }}</h4>
+                                        <div class="text-muted">{{ standing.score }} points</div>
+                                    </div>
+                                </div>
+                                {% comment %}Replace the break tag with this empty if tag{% endcomment %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Tournament Info -->
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="far fa-calendar-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Date:</span>
+                                    <span class="ms-2">{{ tournament.date }}</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="fas fa-users text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Participants:</span>
+                                    <span class="ms-2">{{ tournament.num_participants }}</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="fas fa-chess text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Format:</span>
+                                    <span class="ms-2">
+                                        {% if tournament.tournament_type == 'round_robin' %}
+                                            Round Robin
+                                        {% elif tournament.tournament_type == 'double_round_robin' %}
+                                            Double Round Robin
+                                        {% elif tournament.tournament_type == 'swiss' %}
+                                            Swiss
+                                        {% else %}
+                                            TBD
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="fas fa-stopwatch text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Time Control:</span>
+                                    <span class="ms-2">
+                                        {% if tournament.time_control == 'bullet' %}
+                                            Bullet
+                                        {% elif tournament.time_control == 'blitz' %}
+                                            Blitz
+                                        {% elif tournament.time_control == 'rapid' %}
+                                            Rapid
+                                        {% elif tournament.time_control == 'classical' %}
+                                            Classical
+                                        {% else %}
+                                            TBD
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex px-0">
+                                <div class="icon-box me-2">
+                                    <i class="fas fa-list-ol text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Total Rounds:</span>
+                                    <span class="ms-2">{{ rounds|length }}</span>
+                                </div>
+                            </li>
+                        </ul>
+                        
+                        {% if tournament.description %}
+                            <h4 class="mt-4 mb-3">Description</h4>
+                            <div class="bg-light rounded p-3">
+                                <p class="mb-0">{{ tournament.description }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Final Standings -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow h-100">
+                    <div class="card-header bg-dark text-white">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-medal me-2"></i>Final Standings
+                        </h2>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover standings-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Player</th>
+                                        <th>Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for standing in standings %}
+                                        {% if not standing.player.is_staff and not standing.player.is_superuser %}
+                                            <tr {% if standing.rank == 1 %}class="table-warning"{% elif standing.rank == 2 %}class="table-light"{% elif standing.rank == 3 %}class="table-light"{% endif %}>
+                                                <td>
+                                                    {% if standing.rank == 1 %}
+                                                        <span class="badge bg-warning text-dark">1</span>
+                                                    {% elif standing.rank == 2 %}
+                                                        <span class="badge bg-secondary">2</span>
+                                                    {% elif standing.rank == 3 %}
+                                                        <span class="badge bg-info">3</span>
+                                                    {% else %}
+                                                        {{ standing.rank }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'player_detail' standing.player.id %}">
+                                                        {{ standing.player.get_full_name|default:standing.player.username }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ standing.score }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center">No standings available</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cross Table for Completed Tournament -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card border-0 shadow">
@@ -559,8 +798,6 @@
                                                                         {% endif %}
                                                                     {% endif %}
                                                                 {% endfor %}
-                                                                
-                                                                <!-- If no match found, leave empty -->
                                                             {% endif %}
                                                         </td>
                                                     {% endif %}
@@ -577,90 +814,70 @@
                 </div>
             </div>
         </div>
-    {% endif %}
-    
-    <!-- Completed Matches Card -->
-    {% if completed_matches %}
+
+        <!-- All Rounds Accordion for Completed Tournament -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card border-0 shadow">
                     <div class="card-header bg-dark text-white">
                         <h2 class="card-title mb-0">
-                            <i class="fas fa-history me-2"></i>Completed Rounds
+                            <i class="fas fa-history me-2"></i>All Rounds
                         </h2>
                     </div>
                     <div class="card-body">
-                        <div class="accordion" id="roundsAccordion">
+                        <div class="accordion" id="completedRoundsAccordion">
                             {% for round_obj in rounds %}
-                                {% if round_obj.is_completed %}
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header" id="heading{{ round_obj.number }}">
-                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                                    data-bs-target="#collapse{{ round_obj.number }}">
-                                                Round {{ round_obj.number }}
-                                            </button>
-                                        </h2>
-                                        <div id="collapse{{ round_obj.number }}" class="accordion-collapse collapse" 
-                                            aria-labelledby="heading{{ round_obj.number }}" data-bs-parent="#roundsAccordion">
-                                            <div class="accordion-body p-0">
-                                                <div class="table-responsive">
-                                                    <table class="table table-sm table-hover mb-0">
-                                                        <thead class="table-light">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading{{ round_obj.number }}">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                                data-bs-target="#collapse{{ round_obj.number }}">
+                                            Round {{ round_obj.number }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse{{ round_obj.number }}" class="accordion-collapse collapse" 
+                                        aria-labelledby="heading{{ round_obj.number }}" data-bs-parent="#completedRoundsAccordion">
+                                        <div class="accordion-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-hover mb-0">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th class="ps-3">White</th>
+                                                            <th class="text-center">Result</th>
+                                                            <th>Black</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for match in round_obj.matches.all %}
                                                             <tr>
-                                                                <th class="ps-3">Board</th>
-                                                                <th>White</th>
-                                                                <th>Black</th>
-                                                                <th class="text-end pe-3">Result</th>
+                                                                <td class="ps-3">
+                                                                    <a href="{% url 'player_detail' match.white_player.id %}" class="player-link">
+                                                                        {{ match.white_player.get_full_name|default:match.white_player.username }}
+                                                                    </a>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    {% if match.result == 'white_win' %}
+                                                                        <span class="badge bg-success">1-0</span>
+                                                                    {% elif match.result == 'black_win' %}
+                                                                        <span class="badge bg-success">0-1</span>
+                                                                    {% elif match.result == 'draw' %}
+                                                                        <span class="badge bg-success">½-½</span>
+                                                                    {% else %}
+                                                                        <span class="badge bg-secondary">-</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td>
+                                                                    <a href="{% url 'player_detail' match.black_player.id %}" class="player-link">
+                                                                        {{ match.black_player.get_full_name|default:match.black_player.username }}
+                                                                    </a>
+                                                                </td>
                                                             </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for match in round_obj.matches.all %}
-                                                                <tr>
-                                                                    <td class="ps-3">
-                                                                        <span class="badge bg-secondary">{{ forloop.counter }}</span>
-                                                                    </td>
-                                                                    <td>
-                                                                        <a href="{% url 'player_detail' match.white_player.id %}" class="player-link">
-                                                                            {{ match.white_player.get_full_name|default:match.white_player.username }}
-                                                                        </a>
-                                                                    </td>
-                                                                    <td>
-                                                                        <a href="{% url 'player_detail' match.black_player.id %}" class="player-link">
-                                                                            {{ match.black_player.get_full_name|default:match.black_player.username }}
-                                                                        </a>
-                                                                    </td>
-                                                                    <td class="text-end pe-3">
-                                                                        {% if user.is_staff and not tournament.is_completed %}
-                                                                            <form method="post" action="{% url 'inline_match_result' match.id %}" class="d-inline match-result-form">
-                                                                                {% csrf_token %}
-                                                                                <select name="result" class="form-select form-select-sm result-select" data-match-id="{{ match.id }}">
-                                                                                    <option value="pending" {% if match.result == 'pending' %}selected{% endif %}>Pending</option>
-                                                                                    <option value="white_win" {% if match.result == 'white_win' %}selected{% endif %}>1-0 (White wins)</option>
-                                                                                    <option value="black_win" {% if match.result == 'black_win' %}selected{% endif %}>0-1 (Black wins)</option>
-                                                                                    <option value="draw" {% if match.result == 'draw' %}selected{% endif %}>½-½ (Draw)</option>
-                                                                                </select>
-                                                                            </form>
-                                                                        {% else %}
-                                                                            {% if match.result == 'white_win' %}
-                                                                                <span class="badge bg-success">1-0</span>
-                                                                            {% elif match.result == 'black_win' %}
-                                                                                <span class="badge bg-success">0-1</span>
-                                                                            {% elif match.result == 'draw' %}
-                                                                                <span class="badge bg-success">½-½</span>
-                                                                            {% else %}
-                                                                                <span class="badge bg-secondary">Pending</span>
-                                                                            {% endif %}
-                                                                        {% endif %}
-                                                                    </td>
-                                                                </tr>
-                                                            {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
-                                {% endif %}
+                                </div>
                             {% endfor %}
                         </div>
                     </div>
@@ -668,39 +885,40 @@
             </div>
         </div>
     {% endif %}
-</div>
 
-<!-- Add Player Modal -->
-{% if user.is_staff and not tournament.is_completed and current_round is None %}
-<div class="modal fade" id="addPlayerModal" tabindex="-1" aria-labelledby="addPlayerModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addPlayerModalLabel">Add Player to Tournament</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="add-player-form" method="post" action="{% url 'add_player_to_tournament' tournament.id %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="player-select" class="form-label">Select Player</label>
-                        <select name="player" id="player-select" class="form-select" required>
-                            <option value="">-- Select Player --</option>
-                            {% for player in available_players %}
-                                <option value="{{ player.id }}">{{ player.get_full_name|default:player.username }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Player</button>
-                    </div>
-                </form>
+    <!-- Add Player Modal -->
+    {% if user.is_staff and not tournament.is_completed and not tournament.has_started %}
+    <div class="modal fade" id="addPlayerModal" tabindex="-1" aria-labelledby="addPlayerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPlayerModalLabel">Add Player to Tournament</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-player-form" method="post" action="{% url 'add_player_to_tournament' tournament.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="player-select" class="form-label">Select Player</label>
+                            <select name="player" id="player-select" class="form-select" required>
+                                <option value="">-- Select Player --</option>
+                                {% for player in available_players %}
+                                    <option value="{{ player.id }}">{{ player.get_full_name|default:player.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Player</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
-{% endif %}
+
 
 {% block extra_js %}
 <script>
@@ -738,6 +956,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         saveStatus.classList.remove('bg-warning', 'bg-danger');
                         saveStatus.classList.add('bg-success');
                     }
+                    // Optional: Refresh the page to update standings
+                    // Uncomment the line below if you want to refresh automatically
+                    // location.reload();
                 } else {
                     if (saveStatus) {
                         saveStatus.textContent = 'Error';
