@@ -442,11 +442,13 @@ def update_tournament_standings(tournament):
     """
     from .models import TournamentStanding, Match
     
-    # First, store current ranks as previous ranks
+    # Before calculating new rankings, store current ranks as previous ranks
     current_standings = TournamentStanding.objects.filter(tournament=tournament)
     for standing in current_standings:
-        standing.previous_rank = standing.rank
-        standing.save()
+        # Only save previous_rank if it doesn't already have one or if rank has actually changed
+        if standing.previous_rank is None or standing.rank != standing.previous_rank:
+            standing.previous_rank = standing.rank
+            standing.save()
     
     # Get all completed matches in this tournament
     matches = Match.objects.filter(
@@ -477,11 +479,12 @@ def update_tournament_standings(tournament):
             scores[black_id] += 0.5
     
     # Make sure all participants have a standing entry, even if they have no score
+    # This ensures the tournament standings are complete for all participants
     for player in tournament.participants.all():
         if player.id not in scores:
             scores[player.id] = 0
     
-    # Update standings table with new scores
+    # Update standings table
     for player_id, score in scores.items():
         standing, created = TournamentStanding.objects.get_or_create(
             tournament=tournament,
@@ -508,8 +511,10 @@ def update_tournament_standings(tournament):
         else:
             count_at_current_score += 1
         
-        standing.rank = current_rank
-        standing.save()
+        # Only save rank if it has changed
+        if standing.rank != current_rank:
+            standing.rank = current_rank
+            standing.save()
 
 def update_fide_ratings():
     """Fetch and update FIDE ratings for all users with a FIDE ID"""

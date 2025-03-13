@@ -2052,3 +2052,61 @@ a:hover .next-tournament-box {
 .standings-table td:first-child {
   padding-right: 25px;
 }
+
+    /* Rank and badge styling */
+    .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        font-weight: 700;
+    }
+    
+    /* Gold for 1st place */
+    .rank-1 {
+        background-color: #FFD700 !important;
+        color: #5F4C0B !important;
+    }
+    
+    /* Silver for 2nd place */
+    .rank-2 {
+        background-color: #C0C0C0 !important;
+        color: #333 !important;
+    }
+    
+    /* Bronze for 3rd place */
+    .rank-3 {
+        background-color: #CD7F32 !important;
+        color: #fff !important;
+    }
+    
+    /* Regular numbers */
+    .rank-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+        height: 24px;
+        font-weight: 700;
+        color: #000;
+    }
+    
+    /* Rank change indicators */
+    .rank-change-up {
+        color: #4caf50 !important;
+        margin-left: 8px;
+    }
+    
+    .rank-change-down {
+        color: #f44336 !important;
+        margin-left: 8px;
+    }
+    
+    /* Position container */
+    .rank-position {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }

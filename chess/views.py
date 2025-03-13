@@ -1034,3 +1034,29 @@ def player_rating_history(request, player_id):
     
     except User.DoesNotExist:
         return JsonResponse({'error': 'Player not found'}, status=404)
+    
+
+def debug_previous_rank(request, tournament_id):
+    """Debugging view to check previous_rank values"""
+    from django.http import JsonResponse
+    from .models import Tournament, TournamentStanding
+    
+    tournament = Tournament.objects.get(pk=tournament_id)
+    standings = TournamentStanding.objects.filter(tournament=tournament)
+    
+    data = []
+    for standing in standings:
+        data.append({
+            'player': standing.player.username,
+            'rank': standing.rank,
+            'previous_rank': standing.previous_rank,
+            'score': standing.score
+        })
+    
+    # Fix: Ensure previous_rank is set for all standings
+    for standing in standings:
+        if standing.previous_rank is None and standing.rank is not None:
+            standing.previous_rank = standing.rank
+            standing.save()
+    
+    return JsonResponse({'standings': data})

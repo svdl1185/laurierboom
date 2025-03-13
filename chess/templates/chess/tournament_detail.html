@@ -845,29 +845,31 @@
                             {% for standing in standings %}
                                 {% if not standing.player.is_staff and not standing.player.is_superuser %}
                                     <tr>
-                                        <td class="position-relative">
-                                            {% if standing.rank == 1 %}
-                                                <span class="badge bg-warning text-dark">1</span>
-                                            {% elif standing.rank == 2 %}
-                                                <span class="badge bg-secondary">2</span>
-                                            {% elif standing.rank == 3 %}
-                                                <span class="badge bg-info">3</span>
-                                            {% else %}
-                                                {{ standing.rank }}
-                                            {% endif %}
-                                            
-                                            <!-- Rank change indicators -->
-                                            {% if standing.previous_rank is not None %}
-                                                {% if standing.previous_rank > standing.rank %}
-                                                    <span class="position-absolute" style="right: 5px; top: 50%; transform: translateY(-50%);">
-                                                        <i class="fas fa-arrow-up text-success"></i>
-                                                    </span>
-                                                {% elif standing.previous_rank < standing.rank %}
-                                                    <span class="position-absolute" style="right: 5px; top: 50%; transform: translateY(-50%);">
-                                                        <i class="fas fa-arrow-down text-danger"></i>
-                                                    </span>
+                                        <td class="standings-rank">
+                                            <div style="position: relative; display: flex; align-items: center;">
+                                                {% if standing.rank == 1 %}
+                                                    <span class="badge bg-warning text-dark">1</span>
+                                                {% elif standing.rank == 2 %}
+                                                    <span class="badge bg-secondary">2</span>
+                                                {% elif standing.rank == 3 %}
+                                                    <span class="badge bg-info">3</span>
+                                                {% else %}
+                                                    <span class="rank-number">{{ standing.rank }}</span>
                                                 {% endif %}
-                                            {% endif %}
+                                                
+                                                <!-- Rank change indicators -->
+                                                {% if standing.previous_rank and standing.previous_rank != standing.rank %}
+                                                    {% if standing.previous_rank > standing.rank %}
+                                                        <span style="margin-left: 8px; color: #4caf50;">
+                                                            <i class="fas fa-arrow-up"></i>
+                                                        </span>
+                                                    {% elif standing.previous_rank < standing.rank %}
+                                                        <span style="margin-left: 8px; color: #f44336;">
+                                                            <i class="fas fa-arrow-down"></i>
+                                                        </span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
                                         </td>
                                         <td class="standings-player">{{ standing.player.get_full_name|default:standing.player.username }}</td>
                                         <td class="standings-score">{{ standing.score }}</td>
