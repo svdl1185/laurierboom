@@ -636,6 +636,297 @@
         background-color: #e2e3e5;
         color: #383d41;
     }
+
+    body {
+        background-color: #1a2721;
+        color: #ffffff;
+    }
+    
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .tournament-title {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #ffffff;
+        margin-top: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .live-indicator {
+        display: inline-block;
+        position: relative;
+        color: #ffffff;
+        font-size: 1.5rem;
+        margin-left: 0.5rem;
+    }
+    
+    .live-indicator::before {
+        content: '';
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background-color: #ff0000;
+        border-radius: 50%;
+        margin-right: 0.2rem;
+    }
+    
+    .tournament-location {
+        font-size: 1.2rem;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        color: #ffffff;
+    }
+    
+    .tournament-panel {
+        background-color: #19e893;
+        border-radius: 15px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .tournament-panel-title {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #000000;
+    }
+    
+    /* Standings Table Container */
+    .standings-table-container {
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    /* Table styling */
+    .standings-table {
+        width: 100%;
+        margin-bottom: 0;
+    }
+    
+    /* Header styling */
+    .standings-table thead th {
+        padding: 1rem;
+        background-color: rgba(0, 0, 0, 0.05);
+        font-weight: 600;
+        color: #000000;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    /* Row styling */
+    .standings-table tr {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .standings-table tr:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        transform: translateX(3px);
+    }
+    
+    /* Cell styling */
+    .standings-table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f0f0f0;
+        color: #000000;
+    }
+    
+    .standings-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    /* Rank badge styling */
+    .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-weight: 700;
+        color: #000000;
+        background-color: #f8f9fa;
+    }
+    
+    /* Gold for 1st place */
+    .rank-1 {
+        background-color: #FFD700 !important;
+        color: #5F4C0B !important;
+    }
+    
+    /* Silver for 2nd place */
+    .rank-2 {
+        background-color: #C0C0C0 !important;
+        color: #333333 !important;
+    }
+    
+    /* Bronze for 3rd place */
+    .rank-3 {
+        background-color: #CD7F32 !important;
+        color: #ffffff !important;
+    }
+    
+    /* Light blue for tied positions (like 3rd place ties) */
+    .rank-tied {
+        background-color: #87CEEB !important;
+        color: #333333 !important;
+    }
+    
+    /* Player name styling */
+    .player-name {
+        font-weight: 500;
+        color: #000000;
+    }
+    
+    /* Score styling */
+    .player-score {
+        font-weight: 600;
+        text-align: right;
+    }
+    
+    /* Rank change indicators */
+    .rank-change {
+        margin-left: 5px;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .rank-up {
+        color: #4caf50;
+    }
+    
+    .rank-down {
+        color: #f44336;
+    }
+    
+    /* Tournament info styling */
+    .info-container {
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        color: #000000;
+    }
+    
+    .info-item {
+        margin-bottom: 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 500;
+        text-align: center;
+    }
+    
+    /* Pairings styling */
+    .pairings-board {
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-align: center;
+        width: 10%;
+        color: #000000;
+    }
+    
+    .pairings-player {
+        font-size: 1.5rem;
+        font-weight: bold;
+        width: 35%;
+        color: #000000;
+    }
+    
+    .pairings-result {
+        font-size: 1.2rem;
+        text-align: center;
+        width: 20%;
+        color: #000000;
+    }
+    
+    /* Match results table and forms */
+    .match-results-table th {
+        text-align: left;
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+        color: #000000;
+    }
+    
+    .match-results-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+        color: #000000;
+    }
+    
+    .result-select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d0d0d0;
+        border-radius: 4px;
+    }
+    
+    /* Unified participant row styling */
+    .participant-row {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+    
+    .participant-row:last-child {
+        border-bottom: none;
+    }
+    
+    .participant-row:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+    
+    .participant-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-weight: 700;
+        color: #000000;
+        background-color: #f8f9fa;
+        margin-right: 1rem;
+    }
+    
+    .participant-name {
+        font-size: 1.2rem;
+        font-weight: 500;
+        flex-grow: 1;
+        color: #000000;
+    }
+    
+    .participant-rating {
+        font-weight: 600;
+        margin-right: 1rem;
+        color: #000000;
+    }
+    
+    .remove-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 5px;
+        border: 1px solid #ff4d4f;
+        background: white;
+        color: #ff4d4f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+    
+    .remove-btn:hover {
+        background-color: #fff1f0;
+    }
 </style>
 {% endblock %}
 
@@ -718,6 +1009,10 @@
                                 Total Rounds TBD
                             {% endif %}
                         </div>
+
+                        <div class="info-item">
+                            {{ tournament.participants.count }}/{{ tournament.max_participants }}
+                        </div>
                     </div>
                     
                     {% if tournament.description %}
@@ -757,40 +1052,49 @@
                         </button>
                     {% endif %}
                     
-                    <div class="tournament-table">
-                        {% for player in tournament.participants.all %}
-                            <div class="participant-row">
-                                <div class="participant-number">{{ forloop.counter }}</div>
-                                <div class="participant-name">
-                                    <a href="{% url 'player_detail' player.id %}" style="color: inherit; text-decoration: none;">
-                                        {{ player.get_full_name|default:player.username }}
-                                    </a>
-                                </div>
-                                <div class="participant-rating">
-                                    {% if tournament.time_control == 'bullet' %}
-                                        {{ player.bullet_elo|floatformat:0 }}
-                                    {% elif tournament.time_control == 'blitz' %}
-                                        {{ player.blitz_elo|floatformat:0 }}
-                                    {% elif tournament.time_control == 'rapid' %}
-                                        {{ player.rapid_elo|floatformat:0 }}
-                                    {% elif tournament.time_control == 'classical' %}
-                                        {{ player.classical_elo|floatformat:0 }}
-                                    {% else %}
-                                        {{ player.elo|floatformat:0 }}
-                                    {% endif %}
-                                </div>
-                                
-                                {% if user.is_staff %}
-                                    <a href="{% url 'remove_player_from_tournament' tournament.id player.id %}"
-                                    class="remove-btn"
-                                    onclick="return confirm('Are you sure you want to remove this player?');">
-                                        ×
-                                    </a>
-                                {% endif %}
-                            </div>
-                        {% empty %}
-                            <div class="empty-list">No participants yet</div>
-                        {% endfor %}
+                    <div class="standings-table-container">
+                        <table class="table standings-table mb-0">
+                            <tbody>
+                                {% for player in tournament.participants.all %}
+                                    <tr onclick="window.location.href='{% url 'player_detail' player.id %}';">
+                                        <td class="ps-3" style="width: 70px;">
+                                            <div class="rank-badge">{{ forloop.counter }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="player-name">{{ player.get_full_name|default:player.username }}</span>
+                                        </td>
+                                        <td class="text-end pe-3">
+                                            {% if tournament.time_control == 'bullet' %}
+                                                {{ player.bullet_elo|floatformat:0 }}
+                                            {% elif tournament.time_control == 'blitz' %}
+                                                {{ player.blitz_elo|floatformat:0 }}
+                                            {% elif tournament.time_control == 'rapid' %}
+                                                {{ player.rapid_elo|floatformat:0 }}
+                                            {% elif tournament.time_control == 'classical' %}
+                                                {{ player.classical_elo|floatformat:0 }}
+                                            {% else %}
+                                                {{ player.elo|floatformat:0 }}
+                                            {% endif %}
+                                        </td>
+                                        {% if user.is_staff %}
+                                            <td style="width: 50px;">
+                                                <a href="{% url 'remove_player_from_tournament' tournament.id player.id %}"
+                                                   class="btn btn-sm btn-outline-danger"
+                                                   onclick="return confirm('Are you sure you want to remove this player?');">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            </td>
+                                        {% endif %}
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="{% if user.is_staff %}4{% else %}3{% endif %}" class="text-center py-4">
+                                            No participants yet
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -840,48 +1144,48 @@
                 <div class="tournament-panel">
                     <h2 class="tournament-panel-title">Stand</h2>
                     
-                    <table class="tournament-table">
-                        <tbody>
-                            {% for standing in standings %}
-                                {% if not standing.player.is_staff and not standing.player.is_superuser %}
-                                    <tr>
-                                        <td class="standings-rank">
-                                            <div style="position: relative; display: flex; align-items: center;">
-                                                {% if standing.rank == 1 %}
-                                                    <span class="badge bg-warning text-dark">1</span>
-                                                {% elif standing.rank == 2 %}
-                                                    <span class="badge bg-secondary">2</span>
-                                                {% elif standing.rank == 3 %}
-                                                    <span class="badge bg-info">3</span>
-                                                {% else %}
-                                                    <span class="rank-number">{{ standing.rank }}</span>
-                                                {% endif %}
-                                                
-                                                <!-- Rank change indicators -->
-                                                {% if standing.previous_rank and standing.previous_rank != standing.rank %}
-                                                    {% if standing.previous_rank > standing.rank %}
-                                                        <span style="margin-left: 8px; color: #4caf50;">
-                                                            <i class="fas fa-arrow-up"></i>
-                                                        </span>
-                                                    {% elif standing.previous_rank < standing.rank %}
-                                                        <span style="margin-left: 8px; color: #f44336;">
-                                                            <i class="fas fa-arrow-down"></i>
-                                                        </span>
+                    <div class="standings-table-container">
+                        <table class="table standings-table mb-0">
+                            <tbody>
+                                {% for standing in standings %}
+                                    {% if not standing.player.is_staff and not standing.player.is_superuser %}
+                                        <tr onclick="window.location.href='{% url 'player_detail' standing.player.id %}';">
+                                            <td class="ps-3" style="width: 70px;">
+                                                <div class="rank-position">
+                                                    <div class="rank-badge {% if standing.rank <= 3 %}rank-{{ standing.rank }}{% endif %}">
+                                                        {{ standing.rank }}
+                                                    </div>
+                                                    
+                                                    <!-- Rank change indicators -->
+                                                    {% if standing.previous_rank and standing.previous_rank != standing.rank %}
+                                                        {% if standing.previous_rank > standing.rank %}
+                                                            <span class="rank-change rank-up">
+                                                                <i class="fas fa-arrow-up"></i>
+                                                            </span>
+                                                        {% elif standing.previous_rank < standing.rank %}
+                                                            <span class="rank-change rank-down">
+                                                                <i class="fas fa-arrow-down"></i>
+                                                            </span>
+                                                        {% endif %}
                                                     {% endif %}
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                        <td class="standings-player">{{ standing.player.get_full_name|default:standing.player.username }}</td>
-                                        <td class="standings-score">{{ standing.score }}</td>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="player-name">{{ standing.player.get_full_name|default:standing.player.username }}</span>
+                                            </td>
+                                            <td class="text-end pe-3">
+                                                <span class="player-score">{{ standing.score }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4">No standings yet</td>
                                     </tr>
-                                {% endif %}
-                            {% empty %}
-                                <tr>
-                                    <td colspan="3" style="text-align:center; color:#000000;">No standings yet</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             
@@ -1131,26 +1435,33 @@
                 <div class="tournament-panel">
                     <h2 class="tournament-panel-title">Final Standings</h2>
                     
-                    <div class="tournament-table">
-                        {% for standing in standings %}
-                            {% if not standing.player.is_staff and not standing.player.is_superuser %}
-                                <div class="participant-row" {% if standing.rank == 1 %}style="background-color: rgba(247, 185, 69, 0.1);"{% endif %}>
-                                    <div class="participant-number" {% if standing.rank == 1 %}style="color: #f7b945; font-weight: bold;"{% elif standing.rank == 2 %}style="color: #a0a0a0; font-weight: bold;"{% elif standing.rank == 3 %}style="color: #cd7f32; font-weight: bold;"{% endif %}>
-                                        {{ standing.rank }}
-                                    </div>
-                                    <div class="participant-name">
-                                        <a href="{% url 'player_detail' standing.player.id %}" style="color: inherit; text-decoration: none;">
-                                            {{ standing.player.get_full_name|default:standing.player.username }}
-                                        </a>
-                                    </div>
-                                    <div class="participant-rating" style="font-size: 1.5rem; font-weight: bold;">
-                                        {{ standing.score }}
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% empty %}
-                            <div class="empty-list">No standings available</div>
-                        {% endfor %}
+                    <div class="standings-table-container">
+                        <table class="table standings-table mb-0">
+                            <tbody>
+                                {% for standing in standings %}
+                                    {% if not standing.player.is_staff and not standing.player.is_superuser %}
+                                        <tr onclick="window.location.href='{% url 'player_detail' standing.player.id %}';" 
+                                            {% if standing.rank == 1 %}style="background-color: rgba(255, 215, 0, 0.1);"{% endif %}>
+                                            <td class="ps-3" style="width: 70px;">
+                                                <div class="rank-badge {% if standing.rank <= 3 %}rank-{{ standing.rank }}{% endif %}">
+                                                    {{ standing.rank }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="player-name">{{ standing.player.get_full_name|default:standing.player.username }}</span>
+                                            </td>
+                                            <td class="text-end pe-3">
+                                                <span class="player-score">{{ standing.score }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4">No standings available</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

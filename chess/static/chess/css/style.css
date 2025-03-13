@@ -2111,3 +2111,152 @@ a:hover .next-tournament-box {
         align-items: center;
     }
 
+/* Unified Standings Table Styling */
+
+/* Base table container */
+.standings-table-container {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Table styling */
+.standings-table {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+/* Header styling */
+.standings-table thead th {
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  color: #000000;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Row styling */
+.standings-table tr {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.standings-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: translateX(3px);
+}
+
+/* Cell styling */
+.standings-table td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0f0f0;
+  color: #000000;
+}
+
+.standings-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Rank badge styling */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 700;
+  color: #000000;
+  background-color: #f8f9fa;
+}
+
+/* Gold for 1st place */
+.rank-1 {
+  background-color: #FFD700 !important;
+  color: #5F4C0B !important;
+}
+
+/* Silver for 2nd place */
+.rank-2 {
+  background-color: #C0C0C0 !important;
+  color: #333333 !important;
+}
+
+/* Bronze for 3rd place */
+.rank-3 {
+  background-color: #CD7F32 !important;
+  color: #ffffff !important;
+}
+
+/* Light blue for tied positions (like 3rd place ties) */
+.rank-tied {
+  background-color: #87CEEB !important;
+  color: #333333 !important;
+}
+
+/* Player name styling */
+.player-name {
+  font-weight: 500;
+  color: #000000;
+}
+
+/* Score styling */
+.player-score {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Rating styling - no background */
+.player-rating {
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Rating with badge styling (for home page) */
+.rating-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 0.35em 0.65em;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background-color: #19e893;
+  color: #000000;
+  text-align: center;
+}
+
+/* Rank change indicators */
+.rank-change {
+  margin-left: 5px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rank-up {
+  color: #4caf50;
+}
+
+.rank-down {
+  color: #f44336;
+}
+
+/* Panel styling for consistency */
+.tournament-panel {
+  background-color: #19e893;
+  border-radius: 15px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tournament-panel-title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #000000;
+}
