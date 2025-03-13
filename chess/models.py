@@ -69,6 +69,8 @@ class User(AbstractUser):
             return self.get_full_name()
         return self.username
 
+# Update to models.py - Adding max_participants field to Tournament model
+
 class Tournament(models.Model):
     TIME_CONTROL_CHOICES = [
         ('bullet', 'Bullet'),
@@ -85,15 +87,16 @@ class Tournament(models.Model):
     
     name = models.CharField(max_length=200)
     date = models.DateField()
-    start_time = models.TimeField(null=True, blank=True)  # Add this field
+    start_time = models.TimeField(null=True, blank=True)  
     location = models.CharField(max_length=200, default="De Laurierboom, Amsterdam")
-    tournament_type = models.CharField(max_length=20, choices=TOURNAMENT_TYPES, blank=True, null=True)  # Make optional initially
-    num_rounds = models.IntegerField(validators=[MinValueValidator(1)], null=True, blank=True)  # Make optional initially
+    tournament_type = models.CharField(max_length=20, choices=TOURNAMENT_TYPES, blank=True, null=True)
+    num_rounds = models.IntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
     description = models.TextField(blank=True)
     participants = models.ManyToManyField(User, related_name='tournaments')
     is_completed = models.BooleanField(default=False)
-    has_started = models.BooleanField(default=False)  # Add this field to track if tournament has started
+    has_started = models.BooleanField(default=False)
     time_control = models.CharField(max_length=20, choices=TIME_CONTROL_CHOICES, default='blitz')
+    max_participants = models.IntegerField(default=20, validators=[MinValueValidator(2)])
     
     def __str__(self):
         return self.name
@@ -101,11 +104,18 @@ class Tournament(models.Model):
     def num_participants(self):
         return self.participants.count()
     
+    def is_full(self):
+        """Check if tournament has reached maximum participants"""
+        return self.participants.count() >= self.max_participants
+    
+    def spots_left(self):
+        """Return number of spots left in tournament"""
+        return max(0, self.max_participants - self.participants.count())
+    
     def is_swiss_type(self):
         """Check if tournament is Swiss type"""
         return self.tournament_type == 'swiss'
 
-    # And the is_round_robin_type method 
     def is_round_robin_type(self):
         """Check if tournament is Round Robin type"""
         return self.tournament_type in ['round_robin', 'double_round_robin']

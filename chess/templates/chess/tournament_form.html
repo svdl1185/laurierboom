@@ -120,6 +120,27 @@
                           </div>
 
                           <div class="col-md-6 mb-3">
+                            <label for="{{ form.max_participants.id_for_label }}" class="form-label">Maximum Participants <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                              <span class="input-group-text"><i class="fas fa-users"></i></span>
+                              <input type="number" name="{{ form.max_participants.name }}" 
+                                     id="{{ form.max_participants.id_for_label }}" 
+                                     class="form-control {% if form.max_participants.errors %}is-invalid{% endif %}"
+                                     value="{{ form.max_participants.value|default:'20' }}"
+                                     min="2">
+                            </div>
+                            {% if form.max_participants.errors %}
+                              <div class="text-danger mt-1 small">
+                                {{ form.max_participants.errors }}
+                              </div>
+                            {% else %}
+                              <div class="form-text">
+                                Maximum number of players who can register
+                              </div>
+                            {% endif %}
+                          </div>
+
+                          <div class="col-md-6 mb-3">
                             <label for="{{ form.time_control.id_for_label }}" class="form-label">Time Control <span class="text-danger">*</span></label>
                             <div class="input-group">
                               <span class="input-group-text"><i class="fas fa-clock"></i></span>

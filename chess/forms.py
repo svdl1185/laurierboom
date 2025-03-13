@@ -5,11 +5,23 @@ from django.core.validators import MinValueValidator
 from .models import Tournament, Match, User
 from django.utils.crypto import get_random_string
 
+# Update to forms.py - Adding max_participants field to TournamentForm
+
 class TournamentForm(forms.ModelForm):
     """Form for creating and updating tournaments"""
     class Meta:
         model = Tournament
-        fields = ['name', 'date', 'start_time', 'location', 'tournament_type', 'time_control', 'num_rounds', 'description']
+        fields = [
+            'name', 
+            'date', 
+            'start_time', 
+            'location', 
+            'tournament_type', 
+            'time_control', 
+            'num_rounds', 
+            'max_participants',
+            'description'
+        ]
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'start_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
@@ -19,12 +31,22 @@ class TournamentForm(forms.ModelForm):
             'tournament_type': forms.Select(attrs={'class': 'form-select', 'required': False}),
             'num_rounds': forms.NumberInput(attrs={'class': 'form-control'}),
             'time_control': forms.Select(attrs={'class': 'form-select', 'required': True}),
+            'max_participants': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'min': '2',
+                'placeholder': 'Maximum number of participants'
+            }),
         }
     
     def clean(self):
         cleaned_data = super().clean()
         tournament_type = cleaned_data.get('tournament_type')
         num_rounds = cleaned_data.get('num_rounds')
+        max_participants = cleaned_data.get('max_participants')
+        
+        # Validate max_participants
+        if max_participants is not None and max_participants < 2:
+            self.add_error('max_participants', 'Tournament must allow at least 2 participants')
         
         # If tournament_type is provided, validate it
         if tournament_type:
