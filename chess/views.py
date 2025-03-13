@@ -360,22 +360,37 @@ class TournamentDetailView(DetailView):
         standings = tournament.standings.all().order_by('-score', 'rank')
         context['standings'] = standings
         
-        # Get rounds and matches
+        # Get all rounds in order
         rounds = tournament.rounds.all().order_by('number')
         context['rounds'] = rounds
         
-        # Get completed matches
-        completed_matches = tournament.matches.exclude(result='pending')
-        context['completed_matches'] = completed_matches
+        # Get all matches organized by round number
+        rounds_matches = {}
+        for round_obj in rounds:
+            rounds_matches[round_obj.number] = round_obj.matches.all()
         
-        # Get current round's matches
+        context['rounds_matches'] = rounds_matches
+        
+        # Get current round (first incomplete round)
         try:
             current_round = rounds.filter(is_completed=False).earliest('number')
             context['current_round'] = current_round
             context['current_matches'] = current_round.matches.all()
         except Round.DoesNotExist:
-            context['current_round'] = None
-            
+            # If all rounds are completed, set the last round as current
+            if rounds.exists():
+                context['current_round'] = rounds.latest('number')
+                context['current_matches'] = context['current_round'].matches.all()
+            else:
+                context['current_round'] = None
+                context['current_matches'] = []
+        
+        # Check if this is the final round for admin controls visibility
+        if tournament.num_rounds and rounds.exists():
+            context['is_final_round'] = rounds.latest('number').number >= tournament.num_rounds
+        else:
+            context['is_final_round'] = False
+        
         # Add available players for dropdown
         if self.request.user.is_staff and not tournament.is_completed:
             # Get already registered player IDs
@@ -391,7 +406,7 @@ class TournamentDetailView(DetailView):
             context['available_players'] = available_players
         
         # For board numbers assignment:
-        if context['current_round']:
+        if context['current_round'] and context['current_matches']:
             current_matches = list(context['current_matches'])
             
             # Get player rankings from standings
@@ -413,7 +428,7 @@ class TournamentDetailView(DetailView):
             context['current_matches'] = current_matches
         
         return context
-
+    
 class CreateTournamentView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     """View for creating new tournaments (admin only)"""
     model = Tournament
