@@ -5,7 +5,7 @@ import math
 import requests
 from bs4 import BeautifulSoup
 import logging
-from .models import User
+from .models import TournamentStanding, User, Match
 
 def generate_swiss_pairings(tournament, round_obj):
     """
@@ -436,12 +436,6 @@ def generate_round_robin_pairings(tournament, round_obj):
     return pairings
 
 def update_tournament_standings(tournament):
-    """
-    Update standings for a tournament based on match results
-    Now with tracking of previous rankings
-    """
-    from .models import TournamentStanding, Match
-    
     # Before calculating new rankings, store current ranks as previous ranks
     current_standings = TournamentStanding.objects.filter(tournament=tournament)
     for standing in current_standings:

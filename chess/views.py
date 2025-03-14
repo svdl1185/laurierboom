@@ -827,76 +827,6 @@ def complete_round(request, tournament_id, round_id):
     
     return redirect('tournament_detail', pk=tournament_id)
 
-def update_tournament_standings(tournament):
-    """
-    Update standings for a tournament based on match results
-    """
-    from .models import TournamentStanding, Match
-    
-    # Get all completed matches in this tournament
-    matches = Match.objects.filter(
-        tournament=tournament
-    ).exclude(result='pending')
-    
-    # Dictionary to track scores
-    scores = {}
-    
-    # Calculate scores based on match results
-    for match in matches:
-        white_id = match.white_player.id
-        black_id = match.black_player.id
-        
-        # Initialize scores if needed
-        if white_id not in scores:
-            scores[white_id] = 0
-        if black_id not in scores:
-            scores[black_id] = 0
-        
-        # Update scores based on match result
-        if match.result == 'white_win':
-            scores[white_id] += 1
-        elif match.result == 'black_win':
-            scores[black_id] += 1
-        else:  # Draw
-            scores[white_id] += 0.5
-            scores[black_id] += 0.5
-    
-    # Make sure all participants have a standing entry, even if they have no score
-    # This ensures the tournament standings are complete for all participants
-    for player in tournament.participants.all():
-        if player.id not in scores:
-            scores[player.id] = 0
-    
-    # Update standings table
-    for player_id, score in scores.items():
-        standing, created = TournamentStanding.objects.get_or_create(
-            tournament=tournament,
-            player_id=player_id,
-            defaults={'score': 0}
-        )
-        standing.score = score
-        standing.save()
-    
-    # Calculate and update ranks
-    standings = TournamentStanding.objects.filter(
-        tournament=tournament
-    ).order_by('-score')
-    
-    current_rank = 1
-    current_score = None
-    count_at_current_score = 0
-    
-    for i, standing in enumerate(standings):
-        if standing.score != current_score:
-            current_rank = i + 1
-            current_score = standing.score
-            count_at_current_score = 1
-        else:
-            count_at_current_score += 1
-        
-        standing.rank = current_rank
-        standing.save()
-
 def complete_tournament(request, tournament_id):
     """Admin view to manually complete a tournament"""
     if not request.user.is_staff:
@@ -967,6 +897,10 @@ def inline_match_result(request, match_id):
     if not request.user.is_staff:
         return JsonResponse({'success': False, 'error': 'Permission denied'})
     
+    # Add debug logging
+    print(f"Request method: {request.method}")
+    print(f"POST data: {request.POST}")
+    
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Invalid request method'})
     
@@ -979,8 +913,12 @@ def inline_match_result(request, match_id):
     
     # Get the new result from the form
     result = request.POST.get('result')
-    if result not in ['white_win', 'black_win', 'draw', 'pending']:
-        return JsonResponse({'success': False, 'error': 'Invalid result'})
+    print(f"Received result: {result}")
+    
+    # Validate the result more explicitly
+    valid_results = ['white_win', 'black_win', 'draw', 'pending']
+    if result not in valid_results:
+        return JsonResponse({'success': False, 'error': f'Invalid result: {result}. Expected one of {valid_results}'})
     
     # Update the match
     match.result = result
@@ -989,14 +927,8 @@ def inline_match_result(request, match_id):
     # Update tournament standings
     update_tournament_standings(tournament)
     
-    # Check if this is an XHR request
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({'success': True})
-    else:
-        # Fallback for non-JavaScript clients
-        messages.success(request, "Match result updated")
-        return redirect('tournament_detail', pk=tournament.id)
-    
+    return JsonResponse({'success': True})
+
 def player_rating_history(request, player_id):
     """API view to get rating history data for a player chart"""
     try:
@@ -1050,28 +982,3 @@ def player_rating_history(request, player_id):
     except User.DoesNotExist:
         return JsonResponse({'error': 'Player not found'}, status=404)
     
-
-def debug_previous_rank(request, tournament_id):
-    """Debugging view to check previous_rank values"""
-    from django.http import JsonResponse
-    from .models import Tournament, TournamentStanding
-    
-    tournament = Tournament.objects.get(pk=tournament_id)
-    standings = TournamentStanding.objects.filter(tournament=tournament)
-    
-    data = []
-    for standing in standings:
-        data.append({
-            'player': standing.player.username,
-            'rank': standing.rank,
-            'previous_rank': standing.previous_rank,
-            'score': standing.score
-        })
-    
-    # Fix: Ensure previous_rank is set for all standings
-    for standing in standings:
-        if standing.previous_rank is None and standing.rank is not None:
-            standing.previous_rank = standing.rank
-            standing.save()
-    
-    return JsonResponse({'standings': data})
