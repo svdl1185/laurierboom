@@ -1,4 +1,4 @@
-<!-- templates/chess/home.html - Redesigned to match tournament_detail.html -->
+<!-- templates/chess/home.html - Redesigned with consistent styling -->
 {% extends 'chess/base.html' %}
 
 {% block title %}Bar Blitz{% endblock %}
@@ -21,7 +21,7 @@
     .panel {
         background-color: #19e893;
         border-radius: 15px;
-        padding: 1rem;
+        padding: 1.5rem;
         margin-bottom: 2rem;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
@@ -32,6 +32,7 @@
         text-align: center;
         margin-bottom: 1.5rem;
         color: #000000;
+        font-family: 'Playfair Display', serif;
     }
     
     .table-container {
@@ -44,7 +45,7 @@
     /* Tournament row styling */
     .tournament-row {
         display: flex;
-        padding: 0.75rem 1rem;
+        padding: 1rem 1.25rem;
         border-bottom: 1px solid #f0f0f0;
         transition: all 0.2s ease;
         cursor: pointer;
@@ -62,30 +63,11 @@
     }
     
     .tournament-row.live {
-        background-color: rgba(255, 255, 177, 0.3);
+        background-color: rgba(255, 215, 0, 0.1);
     }
     
     .tournament-row:nth-child(odd):not(.live) {
         background-color: rgba(0,0,0,0.02);
-    }
-    
-    /* Tournament row arrow indicator */
-    .tournament-row::after {
-        content: '\f054';
-        font-family: 'Font Awesome 5 Free';
-        font-weight: 900;
-        font-size: 0.8rem;
-        color: #ccc;
-        position: absolute;
-        right: 10px;
-        opacity: 0;
-        transition: all 0.2s ease;
-    }
-    
-    .tournament-row:hover::after {
-        opacity: 1;
-        right: 15px;
-        color: #19e893;
     }
     
     /* Tournament date styling */
@@ -94,100 +76,89 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        min-width: 60px;
+        min-width: 100px;
         text-align: center;
-        margin-right: 15px;
+        margin-right: 1.25rem;
     }
     
     .tournament-date-day {
         font-weight: 700;
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         color: #000000;
+        margin-bottom: 0.25rem;
     }
     
-    .tournament-date-month {
+    .tournament-date-time {
         font-size: 0.9rem;
-        color: #000000;
+        color: #666;
     }
     
     /* Tournament info styling */
     .tournament-info-block {
         flex: 1;
+        display: flex;
+        flex-direction: column;
     }
     
     .tournament-title {
         font-weight: 600;
         font-size: 1.1rem;
         color: #000000;
-    }
-    
-    .tournament-details {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 0.9rem;
-        color: rgba(0,0,0,0.7);
-    }
-    
-    .tournament-time {
-        display: inline-flex;
-        align-items: center;
-    }
-    
-    .tournament-time:before {
-        content: '\f017';
-        font-family: 'Font Awesome 5 Free';
-        margin-right: 5px;
-        opacity: 0.7;
+        margin-bottom: 0.25rem;
+        font-family: 'Roboto', sans-serif;
     }
     
     .tournament-location {
-        display: inline-flex;
-        align-items: center;
+        font-size: 0.9rem;
+        color: #666;
     }
     
-    .tournament-location:before {
-        content: '\f3c5';
-        font-family: 'Font Awesome 5 Free';
-        font-weight: 900;
-        margin-right: 5px;
+    .tournament-location i {
+        margin-right: 0.35rem;
         opacity: 0.7;
     }
     
     /* Tournament status styling */
     .tournament-status-block {
-        margin-left: 15px;
+        margin-left: 1rem;
+        white-space: nowrap;
     }
     
     .tournament-status {
         display: inline-block;
         font-size: 0.9rem;
-        color: rgba(0,0,0,0.8);
+        font-weight: 500;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
     }
     
     .tournament-status.live {
+        background-color: rgba(220, 53, 69, 0.1);
         color: #dc3545;
-        font-weight: 600;
     }
     
-    .tournament-status.waitlist {
+    .tournament-status.full {
+        background-color: rgba(108, 117, 125, 0.1);
         color: #6c757d;
     }
     
     .tournament-status.spots {
+        background-color: rgba(25, 135, 84, 0.1);
         color: #198754;
     }
     
     /* Rankings table styling */
+    .rankings-table {
+        width: 100%;
+    }
+    
     .rankings-table th {
         font-weight: 600;
+        font-size: 1rem;
         color: #000000;
         padding: 1rem;
         background-color: rgba(0,0,0,0.05);
-    }
-    
-    .rankings-table th:last-child {
-        text-align: center;
+        font-family: 'Roboto', sans-serif;
     }
     
     .rankings-table td {
@@ -195,6 +166,7 @@
         vertical-align: middle;
         border-bottom: 1px solid #f0f0f0;
         color: #000000;
+        font-size: 1rem;
     }
     
     .rankings-table tr:last-child td {
@@ -203,6 +175,7 @@
     
     .rankings-table tr {
         transition: all 0.2s ease;
+        cursor: pointer;
     }
     
     .rankings-table tr:hover {
@@ -219,6 +192,7 @@
         height: 32px;
         border-radius: 50%;
         font-weight: 700;
+        font-size: 0.9rem;
     }
     
     .rank-1 {
@@ -241,19 +215,18 @@
         color: #000000;
     }
     
-    /* Rating badge styling */
-    .rating-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 80px;
-        padding: 0.35em 0.65em;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        background-color: #19e893;
+    /* Player name styling */
+    .player-name {
+        font-size: 1rem;
+        font-weight: 500;
         color: #000000;
-        text-align: center;
+    }
+    
+    /* Rating styling */
+    .player-rating {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #000000;
     }
 </style>
 {% endblock %}
@@ -267,37 +240,38 @@
                 <h2 class="panel-title">Agenda</h2>
                 
                 {% if upcoming_tournaments %}
-                    <!-- List of upcoming tournaments in a clean format like example 3 -->
                     <div class="table-container">
                         {% for tournament in upcoming_tournaments %}
                             <div class="tournament-row {% if tournament.has_started %}live{% endif %}" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
                                 <div class="tournament-date-block">
-                                    <div class="tournament-date-day">{{ tournament.date|date:"d" }}</div>
-                                    <div class="tournament-date-month">{{ tournament.date|date:"M" }}</div>
+                                    <div class="tournament-date-day">{{ tournament.date|date:"d" }} {{ tournament.date|date:"M" }}</div>
+                                    <div class="tournament-date-time">{{ tournament.start_time|default:"5 p.m." }}</div>
                                 </div>
                                 <div class="tournament-info-block">
                                     <div class="tournament-title">{{ tournament.name }}</div>
-                                    <div class="tournament-details">
-                                        <span class="tournament-time">{{ tournament.start_time|default:"5 p.m." }}</span>
-                                        <span class="tournament-location">{{ tournament.location|default:"De Laurierboom, Amsterdam" }}</span>
+                                    <div class="tournament-location">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ tournament.location|default:"De Laurierboom, Amsterdam" }}
                                     </div>
                                 </div>
                                 <div class="tournament-status-block">
                                     {% if tournament.has_started %}
                                         <span class="tournament-status live">Live</span>
                                     {% elif tournament.is_full %}
-                                        <span class="tournament-status waitlist">Full</span>
+                                        <span class="tournament-status full">Full</span>
                                     {% else %}
-                                        <span class="tournament-status spots">({{ tournament.participants.count }}/{{ tournament.max_participants }})</span>
+                                        <span class="tournament-status spots">{{ tournament.participants.count }}/{{ tournament.max_participants }}</span>
                                     {% endif %}
                                 </div>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="info-container text-center py-4">
-                        <p class="m-0">No upcoming tournaments scheduled</p>
-                        <p class="small m-0">Check back soon for new events!</p>
+                    <div class="table-container">
+                        <div class="text-center py-4" style="color: #000000;">
+                            <p class="m-0">No upcoming tournaments scheduled</p>
+                            <p class="small m-0">Check back soon for new events!</p>
+                        </div>
                     </div>
                 {% endif %}
             </div>
@@ -311,22 +285,22 @@
                     <table class="table rankings-table mb-0">
                         <thead>
                             <tr>
-                                <th class="ps-3">Rank</th>
+                                <th class="ps-3" style="width: 70px;">Rank</th>
                                 <th>Player</th>
-                                <th class="text-center">Rating</th>
+                                <th class="text-center" style="width: 100px;">Rating</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for player in blitz_players %}
-                                <tr onclick="window.location.href='{% url 'player_detail' player.id %}';" style="cursor: pointer;">
+                                <tr onclick="window.location.href='{% url 'player_detail' player.id %}';">
                                     <td class="ps-3">
                                         <div class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-other{% endif %}">{{ forloop.counter }}</div>
                                     </td>
                                     <td>
-                                        {{ player.get_full_name|default:player.username }}
+                                        <span class="player-name">{{ player.get_full_name|default:player.username }}</span>
                                     </td>
                                     <td class="text-center">
-                                        <span>{{ player.blitz_elo|floatformat:0 }}</span>
+                                        <span class="player-rating">{{ player.blitz_elo|floatformat:0 }}</span>
                                     </td>
                                 </tr>
                             {% empty %}

@@ -1,4 +1,4 @@
-<!-- templates/chess/tournament_detail.html -->
+<!-- templates/chess/tournament_detail.html - With improved styling and clear labels -->
 {% extends 'chess/base.html' %}
 
 {% block title %}{{ tournament.name }} - De Laurierboom Chess{% endblock %}
@@ -9,6 +9,7 @@
     body {
         background-color: #1a2721;
         color: #ffffff;
+        font-family: 'Roboto', sans-serif;
     }
     
     .page-container {
@@ -19,19 +20,21 @@
     
     /* Tournament header styles */
     .tournament-title {
-        font-size: 3rem;
+        font-size: 2.5rem;
         font-weight: bold;
         color: #ffffff;
         margin-top: 2rem;
         margin-bottom: 0.5rem;
+        font-family: 'Playfair Display', serif;
     }
     
     .live-indicator {
         display: inline-block;
         position: relative;
         color: #ffffff;
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         margin-left: 0.5rem;
+        vertical-align: middle;
     }
     
     .live-indicator::before {
@@ -55,17 +58,18 @@
     .tournament-panel {
         background-color: #19e893;
         border-radius: 15px;
-        padding: 1rem;
+        padding: 1.5rem;
         margin-bottom: 2rem;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     
     .tournament-panel-title {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: bold;
         text-align: center;
         margin-bottom: 1.5rem;
         color: #000000;
+        font-family: 'Playfair Display', serif;
     }
     
     /* Info container styles */
@@ -73,21 +77,36 @@
         width: 100%;
         background-color: #ffffff;
         border-radius: 10px;
-        padding: 2rem 1rem;
+        padding: 1.5rem;
         margin-bottom: 1rem;
         color: #000000;
     }
     
     .info-item {
         color: #000000;
-        margin-bottom: 1.5rem;
-        font-size: 1.25rem;
-        font-weight: 500;
+        margin-bottom: 1.25rem;
         text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     
     .info-item:last-child {
         margin-bottom: 0;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        color: rgba(0, 0, 0, 0.6);
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 1.25rem;
+        font-weight: 500;
     }
     
     .description-container {
@@ -102,6 +121,8 @@
         margin: 0;
         color: #000000;
         text-align: center;
+        font-size: 1rem;
+        line-height: 1.5;
     }
     
     /* Table styles */
@@ -115,7 +136,7 @@
     }
     
     .tournament-table tr {
-        height: 4.5rem;
+        height: 4rem;
         border-bottom: 1px solid #f0f0f0;
     }
     
@@ -124,8 +145,9 @@
     }
     
     .tournament-table td {
-        padding: 0.75rem 0.5rem;
+        padding: 0.75rem 1rem;
         vertical-align: middle;
+        font-size: 1rem;
     }
     
     /* Standings Table Container */
@@ -147,6 +169,7 @@
         font-weight: 600;
         color: #000000;
         border-bottom: 1px solid #f0f0f0;
+        font-size: 1rem;
     }
     
     .standings-table tr {
@@ -164,6 +187,7 @@
         vertical-align: middle;
         border-bottom: 1px solid #f0f0f0;
         color: #000000;
+        font-size: 1rem;
     }
     
     .standings-table tr:last-child td {
@@ -181,6 +205,7 @@
         font-weight: 700;
         color: #000000;
         background-color: #f8f9fa;
+        font-size: 0.9rem;
     }
     
     .rank-1 {
@@ -228,32 +253,45 @@
     .player-name {
         font-weight: 500;
         color: #000000;
+        font-size: 1rem;
     }
     
     .player-score {
         font-weight: 600;
         text-align: right;
+        font-size: 1rem;
     }
     
     /* Pairings styles */
     .pairings-board {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: bold;
         text-align: center;
         color: #000000;
     }
     
     .pairings-player {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: bold;
         color: #000000;
     }
     
     .pairings-result {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: bold;
         text-align: center;
         color: #000000;
+        position: relative;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    .pairings-result span {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        text-align: center;
     }
     
     /* Participant row styling */
@@ -284,10 +322,11 @@
         color: #000000;
         background-color: #f8f9fa;
         margin-right: 1rem;
+        font-size: 0.9rem;
     }
     
     .participant-name {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 500;
         flex-grow: 1;
         color: #000000;
@@ -297,38 +336,7 @@
         font-weight: 600;
         margin-right: 1rem;
         color: #000000;
-    }
-    
-    /* Remove button styling */
-    .remove-btn {
-        width: 28px;
-        height: 28px;
-        border-radius: 5px;
-        border: 1px solid #ff4d4f;
-        background: white;
-        color: #ff4d4f;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        cursor: pointer;
-    }
-    
-    .remove-btn:hover {
-        background-color: #fff1f0;
-    }
-    
-    /* Add player button */
-    .add-player-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background-color: #ffffff;
-        color: #000000;
-        border: none;
-        border-radius: 5px;
-        padding: 0.5rem 1rem;
-        font-weight: bold;
+        font-size: 1rem;
     }
     
     /* Button styles */
@@ -345,9 +353,10 @@
         border: none;
         border-radius: 5px;
         padding: 0.75rem 1.5rem;
-        font-weight: bold;
+        font-weight: 600;
         margin-right: 0.75rem;
         text-decoration: none;
+        font-size: 1rem;
     }
     
     .edit-btn:hover {
@@ -364,8 +373,9 @@
         border: none;
         border-radius: 5px;
         padding: 0.75rem 1.5rem;
-        font-weight: bold;
+        font-weight: 600;
         text-decoration: none;
+        font-size: 1rem;
     }
     
     .start-btn:hover {
@@ -378,28 +388,15 @@
         margin-right: 0.5rem;
     }
     
-    .admin-button {
-        background-color: #f7b945;
-        color: #000000;
-        border: none;
-        border-radius: 5px;
-        padding: 0.75rem 1.5rem;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    
-    .admin-button:hover {
-        background-color: #e6a832;
-    }
-    
+    /* Registration button */
     .registration-btn {
         background-color: #19e893;
         color: #000000;
         border: none;
         border-radius: 10px;
         padding: 0.75rem 1.5rem;
-        font-size: 1.2rem;
-        font-weight: bold;
+        font-size: 1.1rem;
+        font-weight: 600;
         margin-top: 1rem;
         cursor: pointer;
         transition: background-color 0.3s;
@@ -412,69 +409,7 @@
         color: #000000;
     }
     
-    .registered-badge {
-        background-color: #19e893;
-        color: #000000;
-        border-radius: 5px;
-        padding: 0.5rem 1rem;
-        display: inline-block;
-        margin-top: 1rem;
-        font-weight: bold;
-    }
-    
-    /* Admin section styling */
-    .admin-section {
-        background-color: #ffffff;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .admin-section h2 {
-        color: #000000;
-        font-size: 1.5rem;
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-    }
-    
-    /* Empty list message */
-    .empty-list {
-        text-align: center;
-        padding: 2rem;
-        color: #000000;
-    }
-    
     /* Match results styling */
-    .match-results-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    .match-results-table th {
-        text-align: left;
-        padding: 1rem;
-        border-bottom: 1px solid #e0e0e0;
-        color: #000000;
-    }
-    
-    .match-results-table td {
-        padding: 1rem;
-        border-bottom: 1px solid #e0e0e0;
-        color: #000000;
-    }
-    
-    .match-results-table tr:last-child td {
-        border-bottom: none;
-    }
-    
-    .result-select {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #d0d0d0;
-        border-radius: 4px;
-    }
-    
-    /* Match result badges */
     .match-result-badge {
         display: inline-block;
         padding: 0.25rem 0.5rem;
@@ -503,6 +438,37 @@
         color: #383d41;
     }
     
+    /* Winner section styling in completed tournament */
+    .winner-section {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+    
+    .trophy-icon {
+        font-size: 3rem;
+        color: #f7b945;
+        margin-bottom: 0.5rem;
+    }
+    
+    .winner-label {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+        color: #000;
+    }
+    
+    .winner-name {
+        margin-bottom: 0.5rem;
+        font-size: 1.75rem;
+        color: #000;
+        font-weight: 600;
+    }
+    
+    .winner-score {
+        color: #666;
+        font-size: 1.1rem;
+    }
+    
     /* Accordion styles for rounds */
     .rounds-accordion {
         width: 100%;
@@ -522,7 +488,7 @@
     
     .rounds-accordion .accordion-button {
         padding: 1rem 1.5rem;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 600;
         color: #000000;
         background-color: #ffffff;
@@ -537,49 +503,6 @@
     .rounds-accordion .accordion-button:focus {
         box-shadow: none;
         border-color: #f0f0f0;
-    }
-    
-    .rounds-accordion .accordion-button::after {
-        background-size: 1.2rem;
-        width: 1.2rem;
-        height: 1.2rem;
-    }
-    
-    .rounds-match-table {
-        margin-bottom: 0;
-        width: 100%;
-        color: #000000;
-    }
-    
-    .rounds-match-table thead {
-        background-color: #f8f9fa;
-    }
-    
-    .rounds-match-table th {
-        padding: 0.75rem 1rem;
-        font-weight: 600;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    
-    .rounds-match-table td {
-        padding: 0.75rem 1rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    
-    .rounds-match-table tr:last-child td {
-        border-bottom: none;
-    }
-    
-    .rounds-match-table a {
-        color: #000000;
-        text-decoration: none;
-        font-weight: 500;
-    }
-    
-    .rounds-match-table a:hover {
-        text-decoration: underline;
-        color: #19e893;
     }
 </style>
 {% endblock %}
@@ -613,59 +536,71 @@
                         
                         <!-- Time Control -->
                         <div class="info-item">
-                            {% if tournament.time_control == 'bullet' %}
-                                Bullet
-                            {% elif tournament.time_control == 'blitz' %}
-                                Blitz
-                            {% elif tournament.time_control == 'rapid' %}
-                                Rapid
-                            {% elif tournament.time_control == 'classical' %}
-                                Classical
-                            {% else %}
-                                Time Control TBD
-                            {% endif %}
+                            <div class="info-label">Time Control</div>
+                            <div class="info-value">
+                                {% if tournament.time_control == 'bullet' %}
+                                    Bullet
+                                {% elif tournament.time_control == 'blitz' %}
+                                    Blitz
+                                {% elif tournament.time_control == 'rapid' %}
+                                    Rapid
+                                {% elif tournament.time_control == 'classical' %}
+                                    Classical
+                                {% else %}
+                                    TBD
+                                {% endif %}
+                            </div>
                         </div>
 
                         <!-- Format -->
                         <div class="info-item">
-                            {% if tournament.tournament_type == 'round_robin' %}
-                                Round Robin
-                            {% elif tournament.tournament_type == 'double_round_robin' %}
-                                Double Round Robin
-                            {% elif tournament.tournament_type == 'swiss' %}
-                                Swiss
-                            {% else %}
-                                Format TBD
-                            {% endif %}
+                            <div class="info-label">Format</div>
+                            <div class="info-value">
+                                {% if tournament.tournament_type == 'round_robin' %}
+                                    Round Robin
+                                {% elif tournament.tournament_type == 'double_round_robin' %}
+                                    Double Round Robin
+                                {% elif tournament.tournament_type == 'swiss' %}
+                                    Swiss
+                                {% else %}
+                                    TBD
+                                {% endif %}
+                            </div>
                         </div>
                         
                         <!-- Total Rounds -->
                         <div class="info-item">
-                            {% if tournament.is_swiss_type %}
-                                {{ tournament.num_rounds }} Rounds
-                            {% elif tournament.tournament_type == 'round_robin' %}
-                                {% with participant_count=tournament.participants.count %}
-                                    {% if participant_count|divisibleby:2 %}
-                                        {{ participant_count|add:"-1" }} Rounds
-                                    {% else %}
-                                        {{ participant_count }} Rounds
-                                    {% endif %}
-                                {% endwith %}
-                            {% elif tournament.tournament_type == 'double_round_robin' %}
-                                {% with participant_count=tournament.participants.count %}
-                                    {% if participant_count|divisibleby:2 %}
-                                        {{ participant_count|add:"-1" }}×2 Rounds
-                                    {% else %}
-                                        {{ participant_count }}×2 Rounds
-                                    {% endif %}
-                                {% endwith %}
-                            {% else %}
-                                Total Rounds TBD
-                            {% endif %}
+                            <div class="info-label">Rounds</div>
+                            <div class="info-value">
+                                {% if tournament.is_swiss_type %}
+                                    {{ tournament.num_rounds }}
+                                {% elif tournament.tournament_type == 'round_robin' %}
+                                    {% with participant_count=tournament.participants.count %}
+                                        {% if participant_count|divisibleby:2 %}
+                                            {{ participant_count|add:"-1" }}
+                                        {% else %}
+                                            {{ participant_count }}
+                                        {% endif %}
+                                    {% endwith %}
+                                {% elif tournament.tournament_type == 'double_round_robin' %}
+                                    {% with participant_count=tournament.participants.count %}
+                                        {% if participant_count|divisibleby:2 %}
+                                            {{ participant_count|add:"-1" }}×2
+                                        {% else %}
+                                            {{ participant_count }}×2
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    TBD
+                                {% endif %}
+                            </div>
                         </div>
 
                         <div class="info-item">
-                            {{ tournament.participants.count }}/{{ tournament.max_participants }}
+                            <div class="info-label">Players</div>
+                            <div class="info-value">
+                                {{ tournament.participants.count }}/{{ tournament.max_participants }}
+                            </div>
                         </div>
                     </div>
                     
@@ -701,8 +636,8 @@
                     <h2 class="tournament-panel-title">Participants</h2>
                     
                     {% if user.is_staff %}
-                        <button type="button" class="add-player-btn" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
-                            <i class="fas fa-plus me-1"></i> Add Player
+                        <button type="button" class="btn btn-light add-player-btn" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
+                            <i class="fas fa-plus"></i> Add Player
                         </button>
                     {% endif %}
                     
@@ -846,20 +781,13 @@
                 <div class="tournament-panel">
                     <h2 class="tournament-panel-title">Round {{ current_round.number }}</h2>
                     
-                    <table class="tournament-table">
+                    <table class="tournament-table" style="width: 100%;">
                         <tbody>
                             {% for match in current_matches %}
                                 <tr>
-                                    <!-- Board number column - fixed width -->
-                                    <td class="pairings-board" style="width: 8%;">{{ forloop.counter }}</td>
-                                    
-                                    <!-- White player column - fixed width -->
-                                    <td class="pairings-player" style="width: 36%; padding-left: 20px;">
-                                        {{ match.white_player.get_full_name|default:match.white_player.username }}
-                                    </td>
-                                    
-                                    <!-- Result column - centered with fixed width -->
-                                    <td class="pairings-result text-center" style="width: 20%;">
+                                    <td style="width: 10%; text-align: left; color: #000000 !important; font-weight: bold;">{{ forloop.counter }}</td>
+                                    <td style="width: 25%; text-align: left; color: #000000 !important; font-weight: bold;">{{ match.white_player.get_full_name|default:match.white_player.username }}</td>
+                                    <td style="width: 30%; text-align: center; color: #000000 !important; font-weight: bold;">
                                         {% if match.result == 'white_win' %}
                                             1 - 0
                                         {% elif match.result == 'black_win' %}
@@ -870,15 +798,11 @@
                                             ... - ...
                                         {% endif %}
                                     </td>
-                                    
-                                    <!-- Black player column - fixed width -->
-                                    <td class="pairings-player" style="width: 36%; padding-left: 20px;">
-                                        {{ match.black_player.get_full_name|default:match.black_player.username }}
-                                    </td>
+                                    <td style="width: 25%; text-align: left; color: #000000 !important; font-weight: bold;">{{ match.black_player.get_full_name|default:match.black_player.username }}</td>
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="4" class="text-center py-4" style="color:#000000;">
+                                    <td colspan="4" style="text-align: center; padding: 1rem; color: #000000 !important;">
                                         No matches in current round
                                     </td>
                                 </tr>
@@ -1024,18 +948,20 @@
                     <h2 class="tournament-panel-title">Tournament Summary</h2>
                     
                     <!-- Winner highlight in white container -->
-                    {% for standing in standings %}
-                        {% if standing.rank == 1 %}
-                            <div class="info-container" style="margin-bottom: 1.5rem;">
-                                <div style="text-align:center;">
-                                    <div style="font-size: 3rem; color: #f7b945; margin-bottom: 0.5rem;"><i class="fas fa-trophy"></i></div>
-                                    <h3 style="font-weight: bold; margin-bottom: 0.5rem;">Winner</h3>
-                                    <h4 style="margin-bottom: 0.5rem;">{{ standing.player.get_full_name|default:standing.player.username }}</h4>
+                    <div class="info-container">
+                        {% for standing in standings %}
+                            {% if standing.rank == 1 %}
+                                <div style="text-align: center; margin-bottom: 1rem;">
+                                    <div style="margin-bottom: 1rem; font-size: 3rem; color: #f7b945;"><i class="fas fa-trophy"></i></div>
+                                    <div style="margin-bottom: 0.5rem; font-weight: bold; font-size: 1.25rem;">Winner</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600; color: #000; margin-bottom: 0.5rem;">
+                                        {{ standing.player.get_full_name|default:standing.player.username }}
+                                    </div>
                                     <div style="color: #666;">{{ standing.score }} points</div>
                                 </div>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
                     
                     <!-- Tournament Info in white container -->
                     <div class="info-container">
@@ -1053,35 +979,26 @@
                         
                         <!-- Format -->
                         <div class="info-item">
-                            {% if tournament.tournament_type == 'round_robin' %}
-                                Round Robin
-                            {% elif tournament.tournament_type == 'double_round_robin' %}
-                                Double Round Robin
-                            {% elif tournament.tournament_type == 'swiss' %}
-                                Swiss
-                            {% else %}
-                                TBD
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Time Control -->
-                        <div class="info-item">
-                            {% if tournament.time_control == 'bullet' %}
-                                Bullet
-                            {% elif tournament.time_control == 'blitz' %}
-                                Blitz
-                            {% elif tournament.time_control == 'rapid' %}
-                                Rapid
-                            {% elif tournament.time_control == 'classical' %}
-                                Classical
-                            {% else %}
-                                TBD
-                            {% endif %}
+                            <div class="info-label">FORMAT</div>
+                            <div class="info-value">
+                                {% if tournament.tournament_type == 'round_robin' %}
+                                    Round Robin
+                                {% elif tournament.tournament_type == 'double_round_robin' %}
+                                    Double Round Robin
+                                {% elif tournament.tournament_type == 'swiss' %}
+                                    Swiss
+                                {% else %}
+                                    TBD
+                                {% endif %}
+                            </div>
                         </div>
                         
                         <!-- Total Rounds -->
                         <div class="info-item">
-                            {{ rounds|length }} Rounds
+                            <div class="info-label">ROUNDS</div>
+                            <div class="info-value">
+                                {{ rounds|length }}
+                            </div>
                         </div>
                     </div>
                     
@@ -1113,14 +1030,27 @@
                                             <td>
                                                 <span class="player-name">{{ standing.player.get_full_name|default:standing.player.username }}</span>
                                             </td>
-                                            <td class="text-end pe-3">
+                                            <td style="text-align: center; width: 100px;">
+                                                {% if tournament.time_control == 'bullet' %}
+                                                    {{ standing.player.bullet_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'blitz' %}
+                                                    {{ standing.player.blitz_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'rapid' %}
+                                                    {{ standing.player.rapid_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'classical' %}
+                                                    {{ standing.player.classical_elo|floatformat:0 }}
+                                                {% else %}
+                                                    {{ standing.player.elo|floatformat:0 }}
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end pe-3" style="width: 70px;">
                                                 <span class="player-score">{{ standing.score }}</span>
                                             </td>
                                         </tr>
                                     {% endif %}
                                 {% empty %}
                                     <tr>
-                                        <td colspan="3" class="text-center py-4">No standings available</td>
+                                        <td colspan="4" class="text-center py-4">No standings available</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
