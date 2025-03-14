@@ -4,6 +4,10 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 import math
 
+from django.dispatch import receiver
+from allauth.socialaccount.signals import social_account_added, social_account_updated
+from allauth.socialaccount.models import SocialAccount
+
 class User(AbstractUser):
     # Add additional field to identify users who don't need login
     is_player_only = models.BooleanField(default=True)
@@ -182,7 +186,6 @@ class TournamentStanding(models.Model):
     def __str__(self):
         return f"{self.player.username} - {self.score} points"
 
-
 # Glicko-2 implementation functions
 def update_glicko2_ratings(match):
     """Update Glicko-2 ratings based on match result and time control"""
@@ -323,3 +326,31 @@ def update_glicko2_ratings(match):
     
     white_player.save()
     black_player.save()
+
+
+@receiver(social_account_added)
+def social_account_added_handler(request, sociallogin, **kwargs):
+    """Handle new social account connections"""
+    process_social_data(sociallogin)
+
+@receiver(social_account_updated)
+def social_account_updated_handler(request, sociallogin, **kwargs):
+    """Handle updates to social accounts"""
+    process_social_data(sociallogin)
+
+def process_social_data(sociallogin):
+    """Process data from social account and update user profile"""
+    user = sociallogin.user
+    account = sociallogin.account
+    
+    # Get data from social account
+    data = account.extra_data
+    
+    # Example: Update user fields if blank
+    if not user.first_name and 'given_name' in data:
+        user.first_name = data['given_name']
+    
+    if not user.last_name and 'family_name' in data:
+        user.last_name = data['family_name']
+    
+    user.save()

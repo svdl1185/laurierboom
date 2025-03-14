@@ -1,0 +1,515 @@
+<!-- templates/chess/profile.html -->
+{% extends 'chess/base.html' %}
+
+{% block title %}{{ user.get_full_name|default:user.username }} - De Laurierboom Chess{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Base styles */
+    body {
+        background-color: #1a2721;
+        color: #ffffff;
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    /* Profile header styles */
+    .profile-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffffff;
+        margin-top: 2rem;
+        margin-bottom: 0.5rem;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .profile-subtitle {
+        font-size: 1.2rem;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        color: #ffffff;
+    }
+    
+    /* Panel styles */
+    .profile-panel {
+        background-color: #19e893;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .profile-panel-title {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #000000;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Info container styles */
+    .info-container {
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        color: #000000;
+    }
+    
+    .info-item {
+        margin-bottom: 1.25rem;
+    }
+    
+    .info-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        color: rgba(0, 0, 0, 0.6);
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 1.25rem;
+        font-weight: 500;
+    }
+    
+    /* Profile picture styles */
+    .profile-picture-container {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 1.5rem;
+        position: relative;
+    }
+    
+    .profile-picture {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid white;
+    }
+    
+    /* Account link styles */
+    .account-link {
+        display: block;
+        color: #3a5caa;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .account-link:hover {
+        text-decoration: underline;
+    }
+    
+    .account-link i {
+        margin-right: 0.5rem;
+    }
+    
+    /* Ratings chart */
+    .ratings-chart {
+        width: 100%;
+        height: 250px;
+        background-color: white;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+    }
+    
+    /* Tournament list styles */
+    .tournament-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .tournament-item {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+    }
+    
+    .tournament-item:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .tournament-item:last-child {
+        border-bottom: none;
+    }
+    
+    .tournament-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .tournament-date {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .tournament-status {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-upcoming {
+        background-color: #cfe2ff;
+        color: #084298;
+    }
+    
+    .status-completed {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    /* Stats section styles */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-box {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #3a5caa;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    /* Accolades styles */
+    .accolades-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .accolade-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .accolade-icon {
+        width: 40px;
+        height: 40px;
+        margin-right: 0.75rem;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #19e893;
+        color: #000000;
+        border-radius: 50%;
+    }
+    
+    .accolade-info {
+        flex: 1;
+    }
+    
+    .accolade-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .accolade-desc {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .accolade-count {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #3a5caa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h1 class="profile-title">{{ user.get_full_name|default:user.username }}</h1>
+    <p class="profile-subtitle">Member since {{ user.date_joined|date:"F Y" }}</p>
+    
+    <div class="row">
+        <!-- Left Column: Profile Info & Tournaments -->
+        <div class="col-md-4 mb-4">
+            <!-- Profile Panel -->
+            <div class="profile-panel">
+                <h2 class="profile-panel-title">Profile</h2>
+                
+                <div class="profile-picture-container">
+                    <!-- Default profile picture if none provided -->
+                    <img src="{% if user.socialaccount_set.exists and user.socialaccount_set.first.get_avatar_url %}{{ user.socialaccount_set.first.get_avatar_url }}{% else %}https://via.placeholder.com/150{% endif %}" class="profile-picture" alt="Profile Picture">
+                </div>
+                
+                <div class="info-container">
+                    <!-- Rating -->
+                    <div class="info-item">
+                        <div class="info-label">Rating</div>
+                        <div class="info-value">{{ user.blitz_elo|floatformat:0 }}</div>
+                    </div>
+                    
+                    <!-- Chess Platform Accounts -->
+                    <div class="info-item">
+                        {% if user.lichess_account %}
+                            <a href="https://lichess.org/@/{{ user.lichess_account }}" target="_blank" class="account-link">
+                                <i class="fas fa-chess-knight"></i> {{ user.lichess_account }} (Lichess)
+                            </a>
+                        {% endif %}
+                        
+                        {% if user.chesscom_account %}
+                            <a href="https://chess.com/member/{{ user.chesscom_account }}" target="_blank" class="account-link">
+                                <i class="fas fa-chess-rook"></i> {{ user.chesscom_account }} (Chess.com)
+                            </a>
+                        {% endif %}
+                        
+                        {% if user.fide_id %}
+                            <a href="https://ratings.fide.com/profile/{{ user.fide_id }}" target="_blank" class="account-link">
+                                <i class="fas fa-chess"></i> FIDE: {{ user.fide_id }}
+                            </a>
+                        {% endif %}
+                        
+                        {% if not user.lichess_account and not user.chesscom_account and not user.fide_id %}
+                            <div class="text-muted">No linked chess accounts</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tournaments Panel -->
+            <div class="profile-panel">
+                <h2 class="profile-panel-title">Tournament Agenda</h2>
+                
+                <div class="info-container">
+                    <h5 class="mb-3">Upcoming Tournaments</h5>
+                    <ul class="tournament-list">
+                        {% for tournament in upcoming_tournaments %}
+                            <li class="tournament-item">
+                                <div class="tournament-name">{{ tournament.name }}</div>
+                                <div class="tournament-date">{{ tournament.date }}</div>
+                                <span class="tournament-status status-upcoming">Upcoming</span>
+                            </li>
+                        {% empty %}
+                            <li class="tournament-item">
+                                <div class="text-muted">No upcoming tournaments</div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <hr class="my-3">
+                    
+                    <h5 class="mb-3">Past Tournaments</h5>
+                    <ul class="tournament-list">
+                        {% for tournament in past_tournaments %}
+                            <li class="tournament-item">
+                                <div class="tournament-name">{{ tournament.name }}</div>
+                                <div class="tournament-date">{{ tournament.date }}</div>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span class="tournament-status status-completed">Completed</span>
+                                    {% if tournament.standings %}
+                                        <span class="badge bg-primary">{{ tournament.standings.rank }} place</span>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="tournament-item">
+                                <div class="text-muted">No past tournaments</div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Statistics & Accolades -->
+        <div class="col-md-8">
+            <!-- Chess Stats Panel -->
+            <div class="profile-panel">
+                <h2 class="profile-panel-title">Chess Stats</h2>
+                
+                <div class="info-container">
+                    <div class="stats-container">
+                        <div class="stat-box">
+                            <div class="stat-value">{{ wins|default:"0" }}</div>
+                            <div class="stat-label">Wins</div>
+                        </div>
+                        
+                        <div class="stat-box">
+                            <div class="stat-value">{{ losses|default:"0" }}</div>
+                            <div class="stat-label">Losses</div>
+                        </div>
+                        
+                        <div class="stat-box">
+                            <div class="stat-value">{{ draws|default:"0" }}</div>
+                            <div class="stat-label">Draws</div>
+                        </div>
+                        
+                        <div class="stat-box">
+                            <div class="stat-value">{{ win_percentage|default:"0" }}%</div>
+                            <div class="stat-label">Win Rate</div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mb-3">Rating History</h5>
+                    <div class="ratings-chart" id="ratingsChart">
+                        <div style="height:100%; display:flex; align-items:center; justify-content:center; color:#666;">
+                            Rating history chart will appear here
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Accolades Panel -->
+            <div class="profile-panel">
+                <h2 class="profile-panel-title">Accolades</h2>
+                
+                <div class="info-container">
+                    <div class="accolades-grid">
+                        <!-- Emotional Support Bear -->
+                        <div class="accolade-item">
+                            <div class="accolade-icon">
+                                <i class="fas fa-teddy-bear"></i>
+                            </div>
+                            <div class="accolade-info">
+                                <div class="accolade-name">Emotional Support Bear</div>
+                                <div class="accolade-desc">No wins in a tournament</div>
+                            </div>
+                            <div class="accolade-count">{{ accolades.support_bear|default:"0" }}</div>
+                        </div>
+                        
+                        <!-- Chess for Dummies -->
+                        <div class="accolade-item">
+                            <div class="accolade-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="accolade-info">
+                                <div class="accolade-name">Chess for Dummies</div>
+                                <div class="accolade-desc">Last place in a tournament</div>
+                            </div>
+                            <div class="accolade-count">{{ accolades.dummies|default:"0" }}</div>
+                        </div>
+                        
+                        <!-- Golden Pint -->
+                        <div class="accolade-item">
+                            <div class="accolade-icon">
+                                <i class="fas fa-beer"></i>
+                            </div>
+                            <div class="accolade-info">
+                                <div class="accolade-name">Gouden Pint</div>
+                                <div class="accolade-desc">Big drinker during tournament</div>
+                            </div>
+                            <div class="accolade-count">{{ accolades.golden_pint|default:"0" }}</div>
+                        </div>
+                        
+                        <!-- The G.O.A.T -->
+                        <div class="accolade-item">
+                            <div class="accolade-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="accolade-info">
+                                <div class="accolade-name">The G.O.A.T</div>
+                                <div class="accolade-desc">Won all games in a tournament</div>
+                            </div>
+                            <div class="accolade-count">{{ accolades.goat|default:"0" }}</div>
+                        </div>
+                        
+                        <!-- Truce Seeker -->
+                        <div class="accolade-item">
+                            <div class="accolade-icon">
+                                <i class="fas fa-flag"></i>
+                            </div>
+                            <div class="accolade-info">
+                                <div class="accolade-name">Truce Seeker</div>
+                                <div class="accolade-desc">50%+ draws in a tournament</div>
+                            </div>
+                            <div class="accolade-count">{{ accolades.truce_seeker|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Example chart initialization - would need to fetch actual data from backend
+        function initRatingChart() {
+            const ctx = document.getElementById('ratingsChart').getContext('2d');
+            
+            // Sample data - would be replaced with actual rating history
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            const ratings = [1500, 1530, 1520, 1550, 1570, 1590];
+            
+            if (typeof Chart !== 'undefined') {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: months,
+                        datasets: [{
+                            label: 'Rating',
+                            data: ratings,
+                            borderColor: '#3a5caa',
+                            backgroundColor: 'rgba(58, 92, 170, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: Math.min(...ratings) - 50,
+                                max: Math.max(...ratings) + 50
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Attempt to initialize chart if Chart.js is loaded
+        if (typeof Chart !== 'undefined') {
+            initRatingChart();
+        } else {
+            console.log('Chart.js not loaded, skipping chart initialization');
+        }
+    });
+</script>
+{% endblock %}

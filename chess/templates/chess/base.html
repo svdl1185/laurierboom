@@ -221,10 +221,10 @@
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
                             <li class="nav-item">
-                                <form method="post" action="{% url 'logout' %}" class="nav-link">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-link text-white p-0 text-decoration-none">Log Out</button>
-                                </form>
+                                <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
                             </li>
                         {% else %}
                             <li class="nav-item">

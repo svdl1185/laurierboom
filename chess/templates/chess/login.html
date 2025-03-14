@@ -1,5 +1,6 @@
 <!-- templates/chess/login.html -->
 {% extends 'chess/base.html' %}
+{% load socialaccount %}
 
 {% block title %}Log In - De Laurierboom Chess{% endblock %}
 
@@ -76,6 +77,16 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-sign-in-alt me-2"></i>Log In
                             </button>
+                        </div>
+                        
+                        <!-- Google Login Button -->
+                        <div class="social-login mt-4">
+                            <p class="text-center">Or sign in with:</p>
+                            <div class="d-flex justify-content-center">
+                                <a href="{% provider_login_url 'google' %}" class="btn btn-outline-secondary">
+                                    <i class="fab fa-google me-2"></i>Google
+                                </a>
+                            </div>
                         </div>
                         
                         <div class="text-center mt-4">

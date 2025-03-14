@@ -7,6 +7,8 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db.models import F, Count, Sum, Q
 from django.http import HttpResponseRedirect, JsonResponse
+from django.views.generic import TemplateView
+from django.utils import timezone
 
 from .models import Tournament, User, Match, Round, TournamentStanding
 from .forms import EmptyForm, MatchResultForm, SimplePlayerRegistrationForm, StartTournamentSettingsForm, TournamentForm, UserEditForm, UserRegistrationForm, AddPlayerToTournamentForm
@@ -684,6 +686,137 @@ class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         user.save()
         messages.success(self.request, f"User {user.username} created successfully")
         return HttpResponseRedirect(self.success_url)
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = 'chess/profile.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Get upcoming tournaments the user is registered for
+        today = timezone.now().date()
+        context['upcoming_tournaments'] = Tournament.objects.filter(
+            participants=user,
+            date__gte=today,
+            is_completed=False
+        ).order_by('date')
+        
+        # Get past tournaments the user participated in
+        context['past_tournaments'] = Tournament.objects.filter(
+            participants=user,
+            is_completed=True
+        ).order_by('-date')
+        
+        # Add standings to past tournaments
+        for tournament in context['past_tournaments']:
+            try:
+                tournament.standings = TournamentStanding.objects.get(
+                    tournament=tournament,
+                    player=user
+                )
+            except TournamentStanding.DoesNotExist:
+                tournament.standings = None
+        
+        # Calculate match statistics
+        white_matches = user.white_matches.exclude(result='pending')
+        black_matches = user.black_matches.exclude(result='pending')
+        
+        # Wins calculation
+        white_wins = white_matches.filter(result='white_win').count()
+        black_wins = black_matches.filter(result='black_win').count()
+        context['wins'] = white_wins + black_wins
+        
+        # Losses calculation
+        white_losses = white_matches.filter(result='black_win').count()
+        black_losses = black_matches.filter(result='white_win').count()
+        context['losses'] = white_losses + black_losses
+        
+        # Draws calculation
+        white_draws = white_matches.filter(result='draw').count()
+        black_draws = black_matches.filter(result='draw').count()
+        context['draws'] = white_draws + black_draws
+        
+        # Total games and win percentage
+        total_games = context['wins'] + context['losses'] + context['draws']
+        context['total_games'] = total_games
+        
+        if total_games > 0:
+            context['win_percentage'] = round((context['wins'] / total_games) * 100)
+        else:
+            context['win_percentage'] = 0
+        
+        # Calculate accolades (placeholder logic - would need implementation)
+        context['accolades'] = self.calculate_accolades(user)
+        
+        return context
+    
+    def calculate_accolades(self, user):
+        """Calculate accolades for the user based on their tournament performance"""
+        accolades = {
+            'support_bear': 0,  # No wins in a tournament
+            'dummies': 0,       # Last place in a tournament
+            'golden_pint': 0,   # Big drinker (placeholder)
+            'goat': 0,          # Perfect score in a tournament
+            'truce_seeker': 0,  # 50%+ draws
+        }
+        
+        # Get all completed tournaments the user participated in
+        tournaments = Tournament.objects.filter(
+            participants=user,
+            is_completed=True
+        )
+        
+        for tournament in tournaments:
+            # Get user's matches in this tournament
+            user_matches = Match.objects.filter(
+                Q(white_player=user) | Q(black_player=user),
+                tournament=tournament
+            ).exclude(result='pending')
+            
+            if not user_matches.exists():
+                continue
+                
+            # Count wins, losses, draws
+            wins = 0
+            draws = 0
+            total = user_matches.count()
+            
+            for match in user_matches:
+                if (match.white_player == user and match.result == 'white_win') or \
+                   (match.black_player == user and match.result == 'black_win'):
+                    wins += 1
+                elif match.result == 'draw':
+                    draws += 1
+            
+            # Calculate accolades
+            if wins == 0 and total > 0:
+                accolades['support_bear'] += 1
+                
+            # Check if user was last place
+            try:
+                standing = TournamentStanding.objects.get(
+                    tournament=tournament,
+                    player=user
+                )
+                participants_count = tournament.participants.count()
+                
+                if standing.rank == participants_count:
+                    accolades['dummies'] += 1
+                    
+                if standing.rank == 1 and wins == total:
+                    accolades['goat'] += 1
+            except TournamentStanding.DoesNotExist:
+                pass
+                
+            # Check for truce seeker
+            if total > 0 and (draws / total) >= 0.5:
+                accolades['truce_seeker'] += 1
+                
+            # Golden pint is a manual award, not calculated
+            
+        return accolades
+
 
 def user_toggle_active(request, pk):
     """Toggle user active status (enable/disable account)"""

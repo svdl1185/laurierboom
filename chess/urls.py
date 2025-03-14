@@ -1,5 +1,5 @@
 # chess/urls.py
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth.views import LoginView, LogoutView
 from . import views
 
@@ -7,6 +7,7 @@ urlpatterns = [
     # Home and player views
     path('', views.HomeView.as_view(), name='home'),
     path('player/<int:pk>/', views.PlayerDetailView.as_view(), name='player_detail'),
+    path('profile/', views.ProfileView.as_view(), name='profile'),
     
     # Tournament views
     path('tournaments/', views.TournamentListView.as_view(), name='tournament_list'),
@@ -31,6 +32,7 @@ urlpatterns = [
     path('users/<int:pk>/toggle-active/', views.user_toggle_active, name='user_toggle_active'),
     
     # User authentication
+    path('accounts/', include('allauth.urls')),
     path('register/', views.UserRegistrationView.as_view(), name='register'),
     path('register/simple/', views.simple_register, name='simple_register'),
     path('login/', LoginView.as_view(template_name='chess/login.html'), name='login'),
