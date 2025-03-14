@@ -756,7 +756,6 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         accolades = {
             'support_bear': 0,  # No wins in a tournament
             'dummies': 0,       # Last place in a tournament
-            'golden_pint': 0,   # Big drinker (placeholder)
             'goat': 0,          # Perfect score in a tournament
             'truce_seeker': 0,  # 50%+ draws
         }
