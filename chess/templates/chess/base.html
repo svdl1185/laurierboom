@@ -22,16 +22,173 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'chess/css/style.css' %}">
+    <style>
+        /* Updated navbar and footer styles to match home/tournament_detail pages */
+        body {
+            background-color: #1a2721;
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        /* Header styling */
+        .chess-header {
+            background-color: #1a2721;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0;
+        }
+        
+        .chess-pattern-top, 
+        .chess-pattern-bottom {
+            height: 5px;
+            background-color: #19e893;
+        }
+        
+        /* Navbar styling */
+        .navbar {
+            padding: 1rem 0;
+            background-color: #1a2721;
+        }
+        
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #19e893 !important;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-img {
+            height: 40px;
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .navbar-dark .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #19e893;
+        }
+        
+        .navbar-dark .navbar-nav .nav-link.active::after {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            right: 1rem;
+            bottom: 0.3rem;
+            height: 2px;
+            background-color: #19e893;
+        }
+        
+        /* Search bar styling */
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-container .form-control {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            border-radius: 20px;
+            padding-left: 15px;
+            padding-right: 45px;
+            transition: all 0.3s;
+        }
+        
+        .search-container .form-control:focus {
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 0.25rem rgba(25, 232, 147, 0.25);
+        }
+        
+        .search-container .btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            padding: 6px 8px;
+            color: #19e893;
+        }
+        
+        /* Main content area */
+        main.container {
+            background-color: #1a2721;
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+        }
+        
+        /* Footer styling */
+        .footer {
+            background-color: #1a2721;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 2rem 0;
+            margin-top: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer p {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Alert styling */
+        .messages-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            max-width: 350px;
+        }
+        
+        .messages-container .alert {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            border-left: 4px solid #19e893;
+        }
+        
+        /* Button styling */
+        .btn-primary {
+            background-color: #19e893;
+            border-color: #19e893;
+            color: #000;
+            font-weight: 500;
+        }
+        
+        .btn-primary:hover, 
+        .btn-primary:focus {
+            background-color: #15cb7f;
+            border-color: #15cb7f;
+            color: #000;
+        }
+        
+        .btn-outline-light:hover {
+            background-color: #19e893;
+            border-color: #19e893;
+            color: #000;
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Hero header -->
+    <!-- Header -->
     <header class="chess-header">
         <div class="chess-pattern-top"></div>
         <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container">
                 <a class="navbar-brand" href="{% url 'home' %}">
-                    <span class="chess-logo"><i class="fas fa-chess-knight me-2"></i>Bar Blitz</span>
+                    <span class="chess-logo">
+                        <img src="{% static 'chess/images/logo.png' %}" alt="Bar Blitz Logo" class="logo-img me-2">
+                        Bar Blitz
+                    </span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
@@ -100,11 +257,11 @@
         {% endblock %}
     </main>
 
-    <footer class="footer py-5">
+    <footer class="footer py-4">
         <div class="container">
             <div class="row">
-                <div class="col-md-12 text-md-end">
-                    <p class="mb-md-0">&copy; {% now "Y" %} Bar Blitz. All rights reserved.</p>
+                <div class="col-md-12 text-center">
+                    <p class="mb-0">&copy; {% now "Y" %} Bar Blitz. All rights reserved.</p>
                 </div>
             </div>
         </div>
