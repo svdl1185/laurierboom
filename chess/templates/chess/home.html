@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <style>
+    /* Base styles */
     body {
         background-color: #1a2721;
         color: #ffffff;
@@ -16,6 +17,7 @@
         padding: 0 1rem;
     }
     
+    /* Panel styling */
     .panel {
         background-color: #19e893;
         border-radius: 15px;
@@ -39,7 +41,7 @@
         overflow: hidden;
     }
     
-    /* Agenda items styling */
+    /* Tournament row styling */
     .tournament-row {
         display: flex;
         padding: 0.75rem 1rem;
@@ -59,6 +61,34 @@
         transform: translateX(3px);
     }
     
+    .tournament-row.live {
+        background-color: rgba(255, 255, 177, 0.3);
+    }
+    
+    .tournament-row:nth-child(odd):not(.live) {
+        background-color: rgba(0,0,0,0.02);
+    }
+    
+    /* Tournament row arrow indicator */
+    .tournament-row::after {
+        content: '\f054';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        font-size: 0.8rem;
+        color: #ccc;
+        position: absolute;
+        right: 10px;
+        opacity: 0;
+        transition: all 0.2s ease;
+    }
+    
+    .tournament-row:hover::after {
+        opacity: 1;
+        right: 15px;
+        color: #19e893;
+    }
+    
+    /* Tournament date styling */
     .tournament-date-block {
         display: flex;
         flex-direction: column;
@@ -80,6 +110,7 @@
         color: #000000;
     }
     
+    /* Tournament info styling */
     .tournament-info-block {
         flex: 1;
     }
@@ -123,6 +154,7 @@
         opacity: 0.7;
     }
     
+    /* Tournament status styling */
     .tournament-status-block {
         margin-left: 15px;
     }
@@ -178,6 +210,7 @@
         transform: translateX(3px);
     }
     
+    /* Rank styling */
     .rank-badge {
         display: inline-flex;
         align-items: center;
@@ -208,6 +241,7 @@
         color: #000000;
     }
     
+    /* Rating badge styling */
     .rating-badge {
         display: inline-flex;
         align-items: center;
@@ -220,35 +254,6 @@
         background-color: #19e893;
         color: #000000;
         text-align: center;
-    }
-    
-    /* Make second row yellow for live */
-    .tournament-row.live {
-        background-color: rgba(255, 255, 177, 0.3);
-    }
-    
-    /* Make tournament rows alternate for better readability */
-    .tournament-row:nth-child(odd):not(.live) {
-        background-color: rgba(0,0,0,0.02);
-    }
-    
-    /* Add arrow indicator for clickable rows */
-    .tournament-row::after {
-        content: '\f054';
-        font-family: 'Font Awesome 5 Free';
-        font-weight: 900;
-        font-size: 0.8rem;
-        color: #ccc;
-        position: absolute;
-        right: 10px;
-        opacity: 0;
-        transition: all 0.2s ease;
-    }
-    
-    .tournament-row:hover::after {
-        opacity: 1;
-        right: 15px;
-        color: #19e893;
     }
 </style>
 {% endblock %}
@@ -321,7 +326,7 @@
                                         {{ player.get_full_name|default:player.username }}
                                     </td>
                                     <td class="text-center">
-                                        <span class="rating-badge">{{ player.blitz_elo|floatformat:0 }}</span>
+                                        <span>{{ player.blitz_elo|floatformat:0 }}</span>
                                     </td>
                                 </tr>
                             {% empty %}
