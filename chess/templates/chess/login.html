@@ -2,27 +2,200 @@
 {% extends 'chess/base.html' %}
 {% load socialaccount %}
 
-{% block title %}Log In - De Laurierboom Chess{% endblock %}
+{% block title %}Log In - Bar Blitz{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Base styles */
+    body {
+        background-color: #1a2721;
+        color: #ffffff;
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    /* Login panel styling */
+    .login-panel {
+        background-color: #19e893;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .login-panel-title {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #000000;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Form container styling */
+    .form-container {
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        color: #000000;
+    }
+    
+    /* Input styling */
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        color: #000000;
+    }
+    
+    .form-control {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #19e893;
+        box-shadow: 0 0 0 0.25rem rgba(25, 232, 147, 0.25);
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-right: none;
+        color: #6c757d;
+    }
+    
+    /* Button styling */
+    .btn-login {
+        background-color: #19e893;
+        color: #000000;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        width: 100%;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-login:hover {
+        background-color: #15cb7f;
+    }
+    
+    /* Social login styling */
+    .social-login {
+        text-align: center;
+        margin-top: 2rem;
+    }
+    
+    .social-login p {
+        display: inline-block;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-social {
+        background-color: #ffffff;
+        color: #000000;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    
+    .btn-social:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .social-icon {
+        font-size: 1.2rem;
+    }
+    
+    /* Form elements */
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        margin-top: 0.15em;
+        border-color: rgba(0, 0, 0, 0.25);
+    }
+    
+    .form-check-input:checked {
+        background-color: #19e893;
+        border-color: #19e893;
+    }
+    
+    .form-check-input:focus {
+        border-color: #19e893;
+        box-shadow: 0 0 0 0.25rem rgba(25, 232, 147, 0.25);
+    }
+    
+    /* Create account link */
+    .create-account {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+    
+    .create-account a {
+        color: #19e893;
+        font-weight: 500;
+        text-decoration: none;
+    }
+    
+    .create-account a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Alert styling */
+    .alert {
+        border-radius: 8px;
+        border: none;
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 1rem;
+    }
+    
+    .alert .fas {
+        font-size: 1.5rem;
+        color: #856404;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="page-container">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-            <div class="card border-0 shadow">
-                <div class="card-header bg-dark text-white py-3">
-                    <h2 class="card-title mb-0">
-                        <i class="fas fa-sign-in-alt me-2"></i>Log In
-                    </h2>
-                </div>
-                <div class="card-body p-4">
+            <div class="login-panel">
+                <h2 class="login-panel-title">
+                    Log In
+                </h2>
+                
+                <div class="form-container">
                     <form method="post">
                         {% csrf_token %}
                         
                         {% if form.errors %}
-                            <div class="alert alert-danger">
+                            <div class="alert mb-4">
                                 <div class="d-flex">
                                     <div class="me-3">
-                                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                                        <i class="fas fa-exclamation-circle"></i>
                                     </div>
                                     <div>
                                         <p class="mb-0">Your username and password didn't match. Please try again.</p>
@@ -73,24 +246,23 @@
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-sign-in-alt me-2"></i>Log In
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-login">
+                            <i class="fas fa-sign-in-alt me-2"></i>Log In
+                        </button>
                         
                         <!-- Google Login Button -->
-                        <div class="social-login mt-4">
-                            <p class="text-center">Or sign in with:</p>
-                            <div class="d-flex justify-content-center">
-                                <a href="{% provider_login_url 'google' %}" class="btn btn-outline-secondary">
-                                    <i class="fab fa-google me-2"></i>Google
+                        <div class="social-login">
+                            <p>Or sign in with</p>
+                            <div class="d-grid mt-3">
+                                <a href="{% provider_login_url 'google' %}" class="btn btn-social">
+                                    <i class="fab fa-google social-icon"></i>
+                                    Google
                                 </a>
                             </div>
                         </div>
                         
-                        <div class="text-center mt-4">
-                            <p class="mb-0">Don't have an account? <a href="{% url 'simple_register' %}">Create Profile</a></p>
+                        <div class="create-account">
+                            <p class="mb-0">Don't have an account? <a href="{% url 'register' %}">Create Profile</a></p>
                         </div>
                     </form>
                 </div>
