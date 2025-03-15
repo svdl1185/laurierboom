@@ -1090,7 +1090,7 @@
                                             <td>
                                                 <span class="player-name">{{ standing.player.get_full_name|default:standing.player.username }}</span>
                                             </td>
-                                            <td style="text-align: center; width: 100px;">
+                                            <td style="text-align: center; width: 100px; font-weight: normal;">
                                                 {% if tournament.time_control == 'bullet' %}
                                                     {{ standing.player.bullet_elo|floatformat:0 }}
                                                 {% elif tournament.time_control == 'blitz' %}

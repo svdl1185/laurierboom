@@ -1182,16 +1182,12 @@
                 
                 // Group data by time control
                 const blitzData = data.filter(item => item.time_control === 'blitz');
-                const rapidData = data.filter(item => item.time_control === 'rapid');
                 
                 // Extract all unique dates
                 const allDates = [...new Set(data.map(item => item.date))].sort();
                 
                 // Find global min and max ratings for y-axis scale
-                const allRatings = [
-                    ...blitzData.map(item => item.rating),
-                    ...rapidData.map(item => item.rating),
-                ].filter(rating => rating !== null);
+                const allRatings = blitzData.map(item => item.rating).filter(rating => rating !== null);
                 
                 const minRating = Math.min(...allRatings, 1400) - 50;
                 const maxRating = Math.max(...allRatings, 1600) + 50;
@@ -1205,15 +1201,15 @@
                             {
                                 label: 'Blitz',
                                 data: blitzData,
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                borderWidth: 2,
-                                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                                borderColor: '#19e893',
+                                backgroundColor: 'rgba(25, 232, 147, 0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#19e893',
                                 pointBorderColor: '#fff',
-                                pointBorderWidth: 1,
+                                pointBorderWidth: 2,
                                 pointRadius: 4,
                                 pointHoverRadius: 6,
-                                tension: 0.1,
+                                tension: 0.2,
                                 parsing: {
                                     xAxisKey: 'date',
                                     yAxisKey: 'rating'
@@ -1226,24 +1222,28 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                position: 'top',
+                                display: false // Remove the legend
                             },
                             tooltip: {
+                                backgroundColor: '#1a2721',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                titleFont: {
+                                    family: "'Roboto', sans-serif",
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    family: "'Roboto', sans-serif"
+                                },
+                                padding: 10,
+                                cornerRadius: 8,
+                                displayColors: false,
                                 callbacks: {
-                                    afterLabel: function(context) {
-                                        const dataIndex = context.dataIndex;
-                                        const datasetIndex = context.datasetIndex;
-                                        const datasetLabel = context.dataset.label.toLowerCase();
-                                        const item = context.dataset.data[dataIndex];
-                                        
-                                        if (!item.tournament) {
-                                            return [];
-                                        }
-                                        
-                                        return [
-                                            `Tournament: ${item.tournament}`,
-                                            item.opponent ? `Opponent: ${item.opponent}` : ''
-                                        ].filter(line => line);
+                                    title: function(context) {
+                                        return context[0].raw.tournament || 'Rating';
+                                    },
+                                    label: function(context) {
+                                        return `Rating: ${context.raw.rating}`;
                                     }
                                 }
                             }
@@ -1252,20 +1252,41 @@
                             y: {
                                 min: minRating,
                                 max: maxRating,
+                                grid: {
+                                    color: 'rgba(200, 200, 200, 0.1)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#6c757d',
+                                    font: {
+                                        family: "'Roboto', sans-serif"
+                                    }
+                                },
                                 title: {
-                                    display: true,
-                                    text: 'Rating'
+                                    display: false
                                 }
                             },
                             x: {
-                                title: {
-                                    display: true,
-                                    text: 'Date'
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
                                 },
                                 ticks: {
+                                    color: '#6c757d',
+                                    font: {
+                                        family: "'Roboto', sans-serif"
+                                    },
                                     maxRotation: 45,
                                     minRotation: 45
+                                },
+                                title: {
+                                    display: false
                                 }
+                            }
+                        },
+                        elements: {
+                            line: {
+                                tension: 0.4 // Smoother curve
                             }
                         }
                     }
