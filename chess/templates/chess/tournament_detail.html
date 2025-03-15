@@ -632,31 +632,23 @@
             
             <!-- Right Column: Participants -->
             <div class="col-md-7">
-                <div class="tournament-panel">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h2 class="tournament-panel-title" style="margin-bottom: 0;">Participants</h2>
-                        {% if user.is_staff %}
-                        <a href="#" class="btn btn-light" style="border: 1px solid #dee2e6; border-radius: 4px; padding: 0.5rem 1rem; font-weight: 500; font-size: 0.9rem;" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
-                            <i class="fas fa-plus"></i> Add Player
-                        </a>
-                        {% endif %}
-                    </div>
+                <div class="tournament-panel" style="position: relative;">
+                    <h2 class="tournament-panel-title">Participants</h2>
                     
                     <div class="standings-table-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1rem; border-bottom: 1px solid #f0f0f0; background-color: #f8f9fa;">
+                            <span style="font-weight: 600;">#</span>
+                            <span style="font-weight: 600;">Player</span>
+                            <span style="font-weight: 600;">Rating</span>
+                            {% if user.is_staff %}
+                            <span style="width: 50px;"></span>
+                            {% endif %}
+                        </div>
                         <table class="table standings-table mb-0">
-                            <thead style="background-color: #f8f9fa; border-bottom: 1px solid #eee;">
-                                <tr>
-                                    <th style="width: 70px; text-align: left; padding: 0.75rem 1rem; color: #000000 !important; font-weight: 600;">#</th>
-                                    <th style="text-align: left; padding: 0.75rem 1rem; color: #000000 !important; font-weight: 600;">Player</th>
-                                    <th style="text-align: right; padding: 0.75rem 1rem; color: #000000 !important; font-weight: 600;">Rating</th>
-                                    {% if user.is_staff %}
-                                    <th style="width: 50px;"></th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
+                            <thead
                             <tbody>
                                 {% for player in tournament.participants.all %}
-                                    <tr onclick="window.location.href='{% url 'player_detail' player.id %}';">
+                                    <tr onclick="window.location.href='{% url 'profile_detail' player.id %}'">
                                         <td class="ps-3" style="width: 70px;">
                                             <div class="rank-badge">{{ forloop.counter }}</div>
                                         </td>
@@ -696,6 +688,12 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {% if user.is_staff %}
+                    <a href="#" class="btn btn-light add-player-btn" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
+                        <i class="fas fa-plus"></i> Add Player
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -756,7 +754,7 @@
                             <tbody>
                                 {% for standing in standings %}
                                     {% if not standing.player.is_staff and not standing.player.is_superuser %}
-                                        <tr onclick="window.location.href='{% url 'player_detail' standing.player.id %}';">
+                                        <tr onclick="window.location.href='{% url 'profile_detail' standing.player.id %}'">
                                             <td class="ps-3" style="width: 70px;">
                                                 <div class="rank-position">
                                                     <div class="rank-badge {% if standing.rank <= 3 %}rank-{{ standing.rank }}{% endif %}">
@@ -1054,7 +1052,7 @@
                             <tbody>
                                 {% for standing in standings %}
                                     {% if not standing.player.is_staff and not standing.player.is_superuser %}
-                                        <tr onclick="window.location.href='{% url 'player_detail' standing.player.id %}';" 
+                                        <tr onclick="window.location.href='{% url 'profile_detail' standing.player.id %}'" 
                                             {% if standing.rank == 1 %}style="background-color: rgba(255, 215, 0, 0.1);"{% endif %}>
                                             <td class="ps-3" style="width: 70px;">
                                                 <div class="rank-badge {% if standing.rank <= 3 %}rank-{{ standing.rank }}{% endif %}">
@@ -1126,7 +1124,7 @@
                                                     {% for match in round_obj.matches.all %}
                                                         <tr>
                                                             <td class="ps-3">
-                                                                <a href="{% url 'player_detail' match.white_player.id %}">
+                                                                <a href="{% url 'profile_detail' match.white_player.id %}">
                                                                     {{ match.white_player.get_full_name|default:match.white_player.username }}
                                                                 </a>
                                                             </td>
@@ -1142,7 +1140,7 @@
                                                                 {% endif %}
                                                             </td>
                                                             <td>
-                                                                <a href="{% url 'player_detail' match.black_player.id %}">
+                                                                <a href="{% url 'profile_detail' match.black_player.id %}">
                                                                     {{ match.black_player.get_full_name|default:match.black_player.username }}
                                                                 </a>
                                                             </td>

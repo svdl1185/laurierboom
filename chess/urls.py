@@ -6,8 +6,9 @@ from . import views
 urlpatterns = [
     # Home and player views
     path('', views.HomeView.as_view(), name='home'),
-    path('player/<int:pk>/', views.PlayerDetailView.as_view(), name='player_detail'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
+    path('profile/<int:pk>/', views.ProfileView.as_view(), name='profile_detail'),
+    path('profile/edit/', views.profile_edit, name='profile_edit'),
     
     # Tournament views
     path('tournaments/', views.TournamentListView.as_view(), name='tournament_list'),

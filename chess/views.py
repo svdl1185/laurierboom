@@ -5,13 +5,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.db.models import F, Count, Sum, Q
+from django.db.models import F, Count, Sum, Q, Avg
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.generic import TemplateView
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 
 from .models import Tournament, User, Match, Round, TournamentStanding
-from .forms import EmptyForm, MatchResultForm, SimplePlayerRegistrationForm, StartTournamentSettingsForm, TournamentForm, UserEditForm, UserRegistrationForm, AddPlayerToTournamentForm
+from .forms import EmptyForm, MatchResultForm, ProfileEditForm, SimplePlayerRegistrationForm, StartTournamentSettingsForm, TournamentForm, UserEditForm, UserRegistrationForm, AddPlayerToTournamentForm
 from .utils import generate_swiss_pairings, generate_round_robin_pairings, update_tournament_standings
 
 
@@ -687,55 +688,94 @@ class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         messages.success(self.request, f"User {user.username} created successfully")
         return HttpResponseRedirect(self.success_url)
 
-class ProfileView(LoginRequiredMixin, TemplateView):
+class ProfileView(TemplateView):
+    """View for user profiles - can show own profile or others' profiles"""
     template_name = 'chess/profile.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.request.user
+        
+        # Determine which user's profile to show
+        if 'pk' in kwargs:
+            # If a specific user ID is provided, show their profile
+            profile_user = get_object_or_404(User, pk=kwargs['pk'])
+            context['is_own_profile'] = self.request.user.is_authenticated and self.request.user.id == profile_user.id
+        else:
+            # If no user ID provided, show the current user's profile
+            if not self.request.user.is_authenticated:
+                # Redirect to login if trying to see own profile while not logged in
+                return redirect('login')
+            profile_user = self.request.user
+            context['is_own_profile'] = True
+            
+        context['profile_user'] = profile_user
         
         # Get upcoming tournaments the user is registered for
         today = timezone.now().date()
         context['upcoming_tournaments'] = Tournament.objects.filter(
-            participants=user,
+            participants=profile_user,
             date__gte=today,
             is_completed=False
         ).order_by('date')
         
         # Get past tournaments the user participated in
-        context['past_tournaments'] = Tournament.objects.filter(
-            participants=user,
+        past_tournaments = Tournament.objects.filter(
+            participants=profile_user,
             is_completed=True
         ).order_by('-date')
         
-        # Add standings to past tournaments
-        for tournament in context['past_tournaments']:
+        # Process tournaments and their standings separately
+        processed_past_tournaments = []
+        for tournament in past_tournaments:
+            # Create a temporary copy of the tournament for display purposes
+            tournament_info = {
+                'id': tournament.id,
+                'name': tournament.name,
+                'date': tournament.date,
+                'standings': None
+            }
+            
+            # Try to find the user's standing for this tournament
             try:
-                tournament.standings = TournamentStanding.objects.get(
+                standing = TournamentStanding.objects.get(
                     tournament=tournament,
-                    player=user
+                    player=profile_user
                 )
+                tournament_info['standings'] = standing
             except TournamentStanding.DoesNotExist:
-                tournament.standings = None
+                pass
+            
+            processed_past_tournaments.append(tournament_info)
+        
+        context['past_tournaments'] = processed_past_tournaments
         
         # Calculate match statistics
-        white_matches = user.white_matches.exclude(result='pending')
-        black_matches = user.black_matches.exclude(result='pending')
+        white_matches = profile_user.white_matches.exclude(result='pending')
+        black_matches = profile_user.black_matches.exclude(result='pending')
+        
+        # Total matches
+        context['total_matches'] = white_matches.count() + black_matches.count()
         
         # Wins calculation
         white_wins = white_matches.filter(result='white_win').count()
         black_wins = black_matches.filter(result='black_win').count()
         context['wins'] = white_wins + black_wins
+        context['white_wins'] = white_wins
+        context['black_wins'] = black_wins
         
         # Losses calculation
         white_losses = white_matches.filter(result='black_win').count()
         black_losses = black_matches.filter(result='white_win').count()
         context['losses'] = white_losses + black_losses
+        context['white_losses'] = white_losses
+        context['black_losses'] = black_losses
         
         # Draws calculation
         white_draws = white_matches.filter(result='draw').count()
         black_draws = black_matches.filter(result='draw').count()
         context['draws'] = white_draws + black_draws
+        context['white_draws'] = white_draws
+        context['black_draws'] = black_draws
         
         # Total games and win percentage
         total_games = context['wins'] + context['losses'] + context['draws']
@@ -746,8 +786,61 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         else:
             context['win_percentage'] = 0
         
-        # Calculate accolades (placeholder logic - would need implementation)
-        context['accolades'] = self.calculate_accolades(user)
+        # Win rates by color
+        total_white_games = white_wins + white_losses + white_draws
+        total_black_games = black_wins + black_losses + black_draws
+        
+        if total_white_games > 0:
+            context['white_win_rate'] = round((white_wins / total_white_games) * 100)
+        else:
+            context['white_win_rate'] = 0
+            
+        if total_black_games > 0:
+            context['black_win_rate'] = round((black_wins / total_black_games) * 100)
+        else:
+            context['black_win_rate'] = 0
+        
+        # Recent match history
+        combined_matches = list(white_matches) + list(black_matches)
+        combined_matches.sort(key=lambda x: (x.round.tournament.date, x.round.number), reverse=True)
+        context['recent_matches'] = combined_matches[:10]  # Keep only the 10 most recent
+        
+        # Calculate accolades for the user based on their tournament performance
+        context['accolades'] = self.calculate_accolades(profile_user)
+        
+        # Tournament statistics
+        # Calculate number of tournaments played
+        tournaments_participated = profile_user.tournaments.filter(is_completed=True)
+        context['tournament_count'] = tournaments_participated.count()
+        
+        # Calculate number of tournaments won
+        tournaments_won = 0
+        avg_position = 0
+        avg_points = 0
+        
+        if context['tournament_count'] > 0:
+            # Count tournaments where the user was ranked 1st
+            for tournament in tournaments_participated:
+                try:
+                    standing = tournament.standings.get(player=profile_user, rank=1)
+                    if standing:
+                        tournaments_won += 1
+                except:
+                    pass
+                
+            # Calculate average position and points
+            standings = TournamentStanding.objects.filter(
+                tournament__in=tournaments_participated,
+                player=profile_user
+            )
+            
+            if standings.exists():
+                avg_position = standings.aggregate(Avg('rank'))['rank__avg']
+                avg_points = standings.aggregate(Avg('score'))['score__avg']
+        
+        context['tournaments_won'] = tournaments_won
+        context['avg_position'] = avg_position if avg_position else 0
+        context['avg_points'] = avg_points if avg_points else 0
         
         return context
     
@@ -812,10 +905,21 @@ class ProfileView(LoginRequiredMixin, TemplateView):
             if total > 0 and (draws / total) >= 0.5:
                 accolades['truce_seeker'] += 1
                 
-            # Golden pint is a manual award, not calculated
-            
         return accolades
 
+@login_required
+def profile_edit(request):
+    """View for users to edit their own profile"""
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated successfully")
+            return redirect('profile')
+    else:
+        form = ProfileEditForm(instance=request.user)
+    
+    return render(request, 'chess/profile_edit.html', {'form': form})
 
 def user_toggle_active(request, pk):
     """Toggle user active status (enable/disable account)"""

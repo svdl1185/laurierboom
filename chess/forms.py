@@ -177,7 +177,16 @@ class SimplePlayerRegistrationForm(forms.ModelForm):
             user.save()
         return user
 
-
+class ProfileEditForm(forms.ModelForm):
+    """Form for users to edit their own profile"""
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'lichess_account', 'chesscom_account', 'fide_id']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
 
 class EmptyForm(forms.Form):
     """Form with no fields, used for CSRF protection only"""

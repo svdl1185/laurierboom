@@ -76,28 +76,25 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        min-width: 100px;
+        min-width: 50px;
         text-align: center;
         margin-right: 1.25rem;
     }
     
     .tournament-date-day {
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 1.25rem;
         color: #000000;
-        margin-bottom: 0.25rem;
     }
     
-    .tournament-date-time {
+    .tournament-date-month {
         font-size: 0.9rem;
-        color: #666;
+        color: #000000;
     }
     
     /* Tournament info styling */
     .tournament-info-block {
         flex: 1;
-        display: flex;
-        flex-direction: column;
     }
     
     .tournament-title {
@@ -108,9 +105,27 @@
         font-family: 'Roboto', sans-serif;
     }
     
-    .tournament-location {
+    .tournament-details {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
         font-size: 0.9rem;
-        color: #666;
+        color: rgba(0,0,0,0.7);
+    }
+    
+    .tournament-time {
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .tournament-time i {
+        margin-right: 0.35rem;
+        opacity: 0.7;
+    }
+    
+    .tournament-location {
+        display: inline-flex;
+        align-items: center;
     }
     
     .tournament-location i {
@@ -228,6 +243,51 @@
         font-weight: 600;
         color: #000000;
     }
+
+    .accolade-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+    
+    .accolade-item:hover {
+        background-color: #e9ecef;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .accolade-icon {
+        width: 40px;
+        height: 40px;
+        margin-right: 0.75rem;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #19e893;
+        color: #000000;
+        border-radius: 50%;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .accolade-item:hover .accolade-icon {
+        transform: scale(1.1);
+    }
+    
+    .accolade-count {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #3a5caa;
+        transition: color 0.2s ease-in-out;
+    }
+    
+    .accolade-item:hover .accolade-count {
+        color: #19e893;
+    }
 </style>
 {% endblock %}
 
@@ -244,14 +304,20 @@
                         {% for tournament in upcoming_tournaments %}
                             <div class="tournament-row {% if tournament.has_started %}live{% endif %}" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
                                 <div class="tournament-date-block">
-                                    <div class="tournament-date-day">{{ tournament.date|date:"d" }} {{ tournament.date|date:"M" }}</div>
-                                    <div class="tournament-date-time">{{ tournament.start_time|default:"5 p.m." }}</div>
+                                    <div class="tournament-date-day">{{ tournament.date|date:"d" }}</div>
+                                    <div class="tournament-date-month">{{ tournament.date|date:"M" }}</div>
                                 </div>
                                 <div class="tournament-info-block">
                                     <div class="tournament-title">{{ tournament.name }}</div>
-                                    <div class="tournament-location">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        {{ tournament.location|default:"De Laurierboom, Amsterdam" }}
+                                    <div class="tournament-details">
+                                        <span class="tournament-time">
+                                            <i class="fas fa-clock"></i>
+                                            {{ tournament.start_time|default:"5 p.m." }}
+                                        </span>
+                                        <span class="tournament-location">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            {{ tournament.location|default:"De Laurierboom, Amsterdam" }}
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="tournament-status-block">
@@ -292,7 +358,7 @@
                         </thead>
                         <tbody>
                             {% for player in blitz_players %}
-                                <tr onclick="window.location.href='{% url 'player_detail' player.id %}';">
+                                <tr onclick="window.location.href='{% url 'profile_detail' player.id %}'">
                                     <td class="ps-3">
                                         <div class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-other{% endif %}">{{ forloop.counter }}</div>
                                     </td>

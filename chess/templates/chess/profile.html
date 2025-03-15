@@ -1,7 +1,7 @@
 <!-- templates/chess/profile.html -->
 {% extends 'chess/base.html' %}
 
-{% block title %}{{ user.get_full_name|default:user.username }} - De Laurierboom Chess{% endblock %}
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }} - Bar Blitz{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -101,6 +101,30 @@
         border: 3px solid white;
     }
     
+    .profile-edit-btn {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 40px;
+        height: 40px;
+        background-color: #19e893;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+        color: #000;
+        font-size: 1rem;
+        text-decoration: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .profile-edit-btn:hover {
+        background-color: #15cb7f;
+        transform: scale(1.05);
+    }
+    
     /* Account link styles */
     .account-link {
         display: block;
@@ -118,16 +142,6 @@
         margin-right: 0.5rem;
     }
     
-    /* Ratings chart */
-    .ratings-chart {
-        width: 100%;
-        height: 250px;
-        background-color: white;
-        border-radius: 10px;
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-    }
-    
     /* Tournament list styles */
     .tournament-list {
         list-style: none;
@@ -139,6 +153,7 @@
         padding: 1rem;
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         transition: all 0.2s ease;
+        cursor: pointer;
     }
     
     .tournament-item:hover {
@@ -187,6 +202,20 @@
         margin-bottom: 1.5rem;
     }
     
+    .stats-section {
+        margin-bottom: 2rem;
+    }
+
+    .stats-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .stats-section h5 {
+        margin-bottom: 1rem;
+        font-weight: 600;
+        color: #000;
+    }
+    
     .stat-box {
         background-color: #f8f9fa;
         border-radius: 8px;
@@ -204,6 +233,44 @@
     .stat-label {
         font-size: 0.9rem;
         color: #6c757d;
+    }
+    
+    /* Stats table */
+    .stats-table {
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-table th,
+    .stats-table td {
+        padding: 0.75rem 1rem;
+        text-align: center;
+    }
+    
+    .stats-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .stats-table td {
+        font-weight: 500;
+    }
+    
+    .stats-table .positive {
+        color: #198754;
+    }
+    
+    .stats-table .negative {
+        color: #dc3545;
+    }
+    
+    .stats-table .neutral {
+        color: #fd7e14;
+    }
+
+    .stats-table i.fa-chess-pawn[style="color: white"] {
+        text-shadow: 0px 0px 1px #000;
     }
     
     /* Accolades styles */
@@ -253,13 +320,177 @@
         font-size: 1.25rem;
         color: #3a5caa;
     }
+
+    .accolade-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+    
+    .accolade-item:hover {
+        background-color: #e9ecef;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .accolade-icon {
+        width: 40px;
+        height: 40px;
+        margin-right: 0.75rem;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #19e893;
+        color: #000000;
+        border-radius: 50%;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .accolade-item:hover .accolade-icon {
+        transform: scale(1.1);
+    }
+    
+    .accolade-count {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #3a5caa;
+        transition: color 0.2s ease-in-out;
+    }
+    
+    .accolade-item:hover .accolade-count {
+        color: #19e893;
+    }
+    
+    /* Tournament summary */
+    .tournament-summary {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .tournament-summary-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .tournament-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .tournament-stat {
+        text-align: center;
+        flex: 1;
+    }
+    
+    .tournament-stat-value {
+        font-weight: 700;
+        font-size: 1.75rem;
+        color: #3a5caa;
+        margin-bottom: 0.25rem;
+    }
+    
+    .tournament-stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    /* Ratings chart */
+    .ratings-chart {
+        width: 100%;
+        height: 250px;
+        background-color: white;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+    }
+
+    .chess-accounts-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .chess-account-link {
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.2s ease;
+        display: block;
+    }
+    
+    .chess-account-link:hover {
+        transform: translateX(5px);
+    }
+    
+    .chess-account-item {
+        display: flex;
+        align-items: center;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .chess-account-link:hover .chess-account-item {
+        background-color: #e9ecef;
+    }
+    
+    .chess-account-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        font-size: 1.25rem;
+        color: white;
+    }
+    
+    .chess-account-icon.lichess {
+        background-color: #3a5caa;
+    }
+    
+    .chess-account-icon.chesscom {
+        background-color: #7fa650;
+    }
+    
+    .chess-account-icon.fide {
+        background-color: #c93838;
+    }
+    
+    .chess-account-details {
+        flex: 1;
+    }
+    
+    .chess-account-platform {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 0.1rem;
+    }
+    
+    .chess-account-username {
+        font-weight: 600;
+        color: #212529;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-container">
-    <h1 class="profile-title">{{ user.get_full_name|default:user.username }}</h1>
-    <p class="profile-subtitle">Member since {{ user.date_joined|date:"F Y" }}</p>
+    <h1 class="profile-title">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+    <p class="profile-subtitle">Member since {{ profile_user.date_joined|date:"F Y" }}</p>
     
     <div class="row">
         <!-- Left Column: Profile Info & Tournaments -->
@@ -270,52 +501,127 @@
                 
                 <div class="profile-picture-container">
                     <!-- Default profile picture if none provided -->
-                    <img src="{% if user.socialaccount_set.exists and user.socialaccount_set.first.get_avatar_url %}{{ user.socialaccount_set.first.get_avatar_url }}{% else %}https://via.placeholder.com/150{% endif %}" class="profile-picture" alt="Profile Picture">
+                    <img src="{% if profile_user.socialaccount_set.exists and profile_user.socialaccount_set.first.get_avatar_url %}{{ profile_user.socialaccount_set.first.get_avatar_url }}{% else %}https://via.placeholder.com/150{% endif %}" class="profile-picture" alt="Profile Picture">
                 </div>
                 
                 <div class="info-container">
-                    <!-- Rating -->
+                    <!-- Ratings -->
                     <div class="info-item">
-                        <div class="info-label">Rating</div>
-                        <div class="info-value">{{ user.blitz_elo|floatformat:0 }}</div>
+                        <div class="info-label">Ratings</div>
+                        <div class="info-value">
+                            {% if profile_user.bullet_elo != 1500 %}
+                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-2 mb-2">
+                                <span class="fw-bold">{{ profile_user.bullet_elo|floatformat:0 }}</span>
+                                <span class="ms-1">Bullet</span>
+                              </div>
+                            {% endif %}
+                            
+                            {% if profile_user.blitz_elo != 1500 %}
+                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-2 mb-2">
+                                <span class="fw-bold">{{ profile_user.blitz_elo|floatformat:0 }}</span>
+                                <span class="ms-1">Blitz</span>
+                              </div>
+                            {% endif %}
+                            
+                            {% if profile_user.rapid_elo != 1500 %}
+                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-2 mb-2">
+                                <span class="fw-bold">{{ profile_user.rapid_elo|floatformat:0 }}</span>
+                                <span class="ms-1">Rapid</span>
+                              </div>
+                            {% endif %}
+                            
+                            {% if profile_user.classical_elo != 1500 %}
+                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill mb-2">
+                                <span class="fw-bold">{{ profile_user.classical_elo|floatformat:0 }}</span>
+                                <span class="ms-1">Classical</span>
+                              </div>
+                            {% endif %}
+                            
+                            {% if profile_user.bullet_elo == 1500 and profile_user.blitz_elo == 1500 and profile_user.rapid_elo == 1500 and profile_user.classical_elo == 1500 %}
+                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill">
+                                <span class="fw-bold">1500</span>
+                                <span class="ms-1">Default Rating</span>
+                              </div>
+                            {% endif %}
+                        </div>
                     </div>
                     
                     <!-- Chess Platform Accounts -->
                     <div class="info-item">
-                        {% if user.lichess_account %}
-                            <a href="https://lichess.org/@/{{ user.lichess_account }}" target="_blank" class="account-link">
-                                <i class="fas fa-chess-knight"></i> {{ user.lichess_account }} (Lichess)
-                            </a>
-                        {% endif %}
-                        
-                        {% if user.chesscom_account %}
-                            <a href="https://chess.com/member/{{ user.chesscom_account }}" target="_blank" class="account-link">
-                                <i class="fas fa-chess-rook"></i> {{ user.chesscom_account }} (Chess.com)
-                            </a>
-                        {% endif %}
-                        
-                        {% if user.fide_id %}
-                            <a href="https://ratings.fide.com/profile/{{ user.fide_id }}" target="_blank" class="account-link">
-                                <i class="fas fa-chess"></i> FIDE: {{ user.fide_id }}
-                            </a>
-                        {% endif %}
-                        
-                        {% if not user.lichess_account and not user.chesscom_account and not user.fide_id %}
-                            <div class="text-muted">No linked chess accounts</div>
-                        {% endif %}
+                        <div class="info-label">Chess Accounts</div>
+                        <div class="chess-accounts-container">
+                            {% if profile_user.lichess_account or profile_user.chesscom_account or profile_user.fide_id %}
+                                {% if profile_user.lichess_account %}
+                                    <a href="https://lichess.org/@/{{ profile_user.lichess_account }}" target="_blank" class="chess-account-link">
+                                        <div class="chess-account-item">
+                                            <div class="chess-account-icon lichess">
+                                                <i class="fas fa-chess-knight"></i>
+                                            </div>
+                                            <div class="chess-account-details">
+                                                <div class="chess-account-platform">Lichess</div>
+                                                <div class="chess-account-username">{{ profile_user.lichess_account }}</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% endif %}
+                                
+                                {% if profile_user.chesscom_account %}
+                                    <a href="https://chess.com/member/{{ profile_user.chesscom_account }}" target="_blank" class="chess-account-link">
+                                        <div class="chess-account-item">
+                                            <div class="chess-account-icon chesscom">
+                                                <i class="fas fa-chess-rook"></i>
+                                            </div>
+                                            <div class="chess-account-details">
+                                                <div class="chess-account-platform">Chess.com</div>
+                                                <div class="chess-account-username">{{ profile_user.chesscom_account }}</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% endif %}
+                                
+                                {% if profile_user.fide_id %}
+                                    <a href="https://ratings.fide.com/profile/{{ profile_user.fide_id }}" target="_blank" class="chess-account-link">
+                                        <div class="chess-account-item">
+                                            <div class="chess-account-icon fide">
+                                                <i class="fas fa-chess"></i>
+                                            </div>
+                                            <div class="chess-account-details">
+                                                <div class="chess-account-platform">FIDE</div>
+                                                <div class="chess-account-username">{{ profile_user.fide_id }}</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% endif %}
+                                
+                                {% if is_own_profile %}
+                                <div class="mt-2 text-center">
+                                    <a href="{% url 'profile_edit' %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-pen me-1"></i> Edit Chess Accounts
+                                    </a>
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="text-muted mb-2">No linked chess accounts</div>
+                                {% if is_own_profile %}
+                                <a href="{% url 'profile_edit' %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-link me-1"></i> Link Accounts
+                                </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Tournaments Panel -->
+            <!-- Tournament List Panel -->
             <div class="profile-panel">
-                <h2 class="profile-panel-title">Tournament Agenda</h2>
+                <h2 class="profile-panel-title">Tournaments</h2>
                 
                 <div class="info-container">
                     <h5 class="mb-3">Upcoming Tournaments</h5>
                     <ul class="tournament-list">
                         {% for tournament in upcoming_tournaments %}
-                            <li class="tournament-item">
+                            <li class="tournament-item" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
                                 <div class="tournament-name">{{ tournament.name }}</div>
                                 <div class="tournament-date">{{ tournament.date }}</div>
                                 <span class="tournament-status status-upcoming">Upcoming</span>
@@ -332,7 +638,7 @@
                     <h5 class="mb-3">Past Tournaments</h5>
                     <ul class="tournament-list">
                         {% for tournament in past_tournaments %}
-                            <li class="tournament-item">
+                            <li class="tournament-item" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
                                 <div class="tournament-name">{{ tournament.name }}</div>
                                 <div class="tournament-date">{{ tournament.date }}</div>
                                 <div class="d-flex justify-content-between align-items-center mt-1">
@@ -359,37 +665,99 @@
                 <h2 class="profile-panel-title">Chess Stats</h2>
                 
                 <div class="info-container">
-                    <div class="stats-container">
-                        <div class="stat-box">
-                            <div class="stat-value">{{ wins|default:"0" }}</div>
-                            <div class="stat-label">Wins</div>
-                        </div>
-                        
-                        <div class="stat-box">
-                            <div class="stat-value">{{ losses|default:"0" }}</div>
-                            <div class="stat-label">Losses</div>
-                        </div>
-                        
-                        <div class="stat-box">
-                            <div class="stat-value">{{ draws|default:"0" }}</div>
-                            <div class="stat-label">Draws</div>
-                        </div>
-                        
-                        <div class="stat-box">
-                            <div class="stat-value">{{ win_percentage|default:"0" }}%</div>
-                            <div class="stat-label">Win Rate</div>
+                    <!-- Stats Sections -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="mb-3">Overall Performance</h5>
+                            <div class="tournament-stats">
+                                <div class="tournament-stat">
+                                    <div class="tournament-stat-value">{{ wins|default:"0" }}</div>
+                                    <div class="tournament-stat-label">Wins</div>
+                                </div>
+                                <div class="tournament-stat">
+                                    <div class="tournament-stat-value">{{ losses|default:"0" }}</div>
+                                    <div class="tournament-stat-label">Losses</div>
+                                </div>
+                                <div class="tournament-stat">
+                                    <div class="tournament-stat-value">{{ draws|default:"0" }}</div>
+                                    <div class="tournament-stat-label">Draws</div>
+                                </div>
+                                <div class="tournament-stat">
+                                    <div class="tournament-stat-value">{{ win_percentage|default:"0" }}%</div>
+                                    <div class="tournament-stat-label">Win Rate</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <h5 class="mb-3">Rating History</h5>
-                    <div class="ratings-chart" id="ratingsChart">
-                        <div style="height:100%; display:flex; align-items:center; justify-content:center; color:#666;">
-                            Rating history chart will appear here
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="mb-3">Tournament Statistics</h5>
+                            <div class="tournament-stats">
+                                <div class="tournament-stat">
+                                    <div class="tournament-stat-value">{{ tournament_count|default:0 }}</div>
+                                    <div class="tournament-stat-label">Tournaments</div>
+                                </div>
+                                <div class="tournament-stat">
+                                    <div class="tournament-stat-value">{{ tournaments_won|default:0 }}</div>
+                                    <div class="tournament-stat-label">Wins</div>
+                                </div>
+                                <div class="tournament-stat">
+                                    <div class="tournament-stat-value">{{ avg_position|floatformat:1 }}</div>
+                                    <div class="tournament-stat-label">Avg Position</div>
+                                </div>
+                                <div class="tournament-stat">
+                                    <div class="tournament-stat-value">{{ avg_points|floatformat:1 }}</div>
+                                    <div class="tournament-stat-label">Avg Points</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance by Color -->
+                    <div class="stats-section">
+                        <h5>Performance by Color</h5>
+                        <table class="stats-table">
+                            <thead>
+                                <tr>
+                                    <th>Color</th>
+                                    <th>Wins</th>
+                                    <th>Draws</th>
+                                    <th>Losses</th>
+                                    <th>Win Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fas fa-chess-pawn" style="color: white"></i> White</td>
+                                    <td class="positive">{{ white_wins|default:"0" }}</td>
+                                    <td class="neutral">{{ white_draws|default:"0" }}</td>
+                                    <td class="negative">{{ white_losses|default:"0" }}</td>
+                                    <td>{{ white_win_rate|floatformat:0 }}%</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-chess-pawn" style="color: black"></i> Black</td>
+                                    <td class="positive">{{ black_wins|default:"0" }}</td>
+                                    <td class="neutral">{{ black_draws|default:"0" }}</td>
+                                    <td class="negative">{{ black_losses|default:"0" }}</td>
+                                    <td>{{ black_win_rate|floatformat:0 }}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Rating History Chart -->
+                    <div class="stats-section">
+                        <h5>Rating History</h5>
+                        <div class="ratings-chart" id="ratingsChart" data-player-id="{{ profile_user.id }}">
+                            <div style="height:100%; display:flex; align-items:center; justify-content:center; color:#666;">
+                                Rating history chart will appear here
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Accolades Panel -->
             <div class="profile-panel">
                 <h2 class="profile-panel-title">Accolades</h2>
@@ -399,7 +767,7 @@
                         <!-- Emotional Support Bear -->
                         <div class="accolade-item">
                             <div class="accolade-icon">
-                                <i class="fas fa-teddy-bear"></i>
+                                <i class="fas fa-paw"></i>
                             </div>
                             <div class="accolade-info">
                                 <div class="accolade-name">Emotional Support Bear</div>
@@ -420,8 +788,7 @@
                             <div class="accolade-count">{{ accolades.dummies|default:"0" }}</div>
                         </div>
                         
-                        
-                        <!-- The G.O.A.T -->
+                        <!-- The Ace -->
                         <div class="accolade-item">
                             <div class="accolade-icon">
                                 <i class="fas fa-trophy"></i>
@@ -436,7 +803,7 @@
                         <!-- Truce Seeker -->
                         <div class="accolade-item">
                             <div class="accolade-icon">
-                                <i class="fas fa-flag"></i>
+                                <i class="fas fa-handshake"></i>
                             </div>
                             <div class="accolade-info">
                                 <div class="accolade-name">Truce Seeker</div>
@@ -447,58 +814,227 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Recent Matches Panel -->
+            <div class="profile-panel">
+                <h2 class="profile-panel-title">Recent Matches</h2>
+                
+                <div class="info-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tournament</th>
+                                    <th>Round</th>
+                                    <th>Color</th>
+                                    <th>Opponent</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for match in recent_matches %}
+                                    <tr onclick="window.location.href='{% url 'tournament_detail' match.tournament.id %}'">
+                                        <td>
+                                            {{ match.tournament.name }}
+                                        </td>
+                                        <td>{{ match.round.number }}</td>
+                                        <td>
+                                            {% if match.white_player == profile_user %}
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-chess-pawn me-1"></i> White
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-chess-pawn me-1"></i> Black
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if match.white_player == profile_user %}
+                                                {{ match.black_player.get_full_name|default:match.black_player.username }}
+                                            {% else %}
+                                                {{ match.white_player.get_full_name|default:match.white_player.username }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if match.white_player == profile_user %}
+                                                {% if match.result == 'white_win' %}
+                                                    <span class="badge bg-success">Win</span>
+                                                {% elif match.result == 'black_win' %}
+                                                    <span class="badge bg-danger">Loss</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">Draw</span>
+                                                {% endif %}
+                                            {% else %}
+                                                {% if match.result == 'black_win' %}
+                                                    <span class="badge bg-success">Win</span>
+                                                {% elif match.result == 'white_win' %}
+                                                    <span class="badge bg-danger">Loss</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">Draw</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">No match history yet</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
 {% block extra_js %}
+<!-- Chart.js library for rating history chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Example chart initialization - would need to fetch actual data from backend
-        function initRatingChart() {
-            const ctx = document.getElementById('ratingsChart').getContext('2d');
-            
-            // Sample data - would be replaced with actual rating history
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-            const ratings = [1500, 1530, 1520, 1550, 1570, 1590];
-            
-            if (typeof Chart !== 'undefined') {
-                new Chart(ctx, {
+        // Initialize the rating history chart
+        const chartContainer = document.getElementById('ratingsChart');
+        if (!chartContainer) return;
+        
+        // Clear existing content
+        chartContainer.innerHTML = '';
+        
+        // Create a canvas element for Chart.js
+        const canvas = document.createElement('canvas');
+        chartContainer.appendChild(canvas);
+        
+        // Get player ID from data attribute
+        const playerId = chartContainer.getAttribute('data-player-id');
+        
+        // Fetch rating history data
+        fetch(`/player/${playerId}/rating-history/`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data || data.length === 0) {
+                    chartContainer.innerHTML = '<div class="text-center py-4">No rating history available</div>';
+                    return;
+                }
+                
+                // Group data by time control
+                const blitzData = data.filter(item => item.time_control === 'blitz');
+                const rapidData = data.filter(item => item.time_control === 'rapid');
+                
+                // Extract all unique dates
+                const allDates = [...new Set(data.map(item => item.date))].sort();
+                
+                // Find global min and max ratings for y-axis scale
+                const allRatings = [
+                    ...blitzData.map(item => item.rating),
+                    ...rapidData.map(item => item.rating),
+                ].filter(rating => rating !== null);
+                
+                const minRating = Math.min(...allRatings, 1400) - 50;
+                const maxRating = Math.max(...allRatings, 1600) + 50;
+                
+                // Create the chart
+                const ctx = canvas.getContext('2d');
+                const chart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: months,
-                        datasets: [{
-                            label: 'Rating',
-                            data: ratings,
-                            borderColor: '#3a5caa',
-                            backgroundColor: 'rgba(58, 92, 170, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.2,
-                            fill: true
-                        }]
+                        datasets: [
+                            {
+                                label: 'Blitz',
+                                data: blitzData,
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 1,
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                tension: 0.1,
+                                parsing: {
+                                    xAxisKey: 'date',
+                                    yAxisKey: 'rating'
+                                }
+                            },
+                            {
+                                label: 'Rapid',
+                                data: rapidData,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 1,
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                tension: 0.1,
+                                parsing: {
+                                    xAxisKey: 'date',
+                                    yAxisKey: 'rating'
+                                }
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: function(context) {
+                                        const dataIndex = context.dataIndex;
+                                        const datasetIndex = context.datasetIndex;
+                                        const datasetLabel = context.dataset.label.toLowerCase();
+                                        const item = context.dataset.data[dataIndex];
+                                        
+                                        if (!item.tournament) {
+                                            return [];
+                                        }
+                                        
+                                        return [
+                                            `Tournament: ${item.tournament}`,
+                                            item.opponent ? `Opponent: ${item.opponent}` : ''
+                                        ].filter(line => line);
+                                    }
+                                }
+                            }
+                        },
                         scales: {
                             y: {
-                                beginAtZero: false,
-                                min: Math.min(...ratings) - 50,
-                                max: Math.max(...ratings) + 50
+                                min: minRating,
+                                max: maxRating,
+                                title: {
+                                    display: true,
+                                    text: 'Rating'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                },
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
                             }
                         }
                     }
                 });
-            }
-        }
-        
-        // Attempt to initialize chart if Chart.js is loaded
-        if (typeof Chart !== 'undefined') {
-            initRatingChart();
-        } else {
-            console.log('Chart.js not loaded, skipping chart initialization');
-        }
+            })
+            .catch(error => {
+                console.error('Error fetching rating history:', error);
+                chartContainer.innerHTML = '<div class="text-center py-4">Error loading rating history</div>';
+            });
+            
+        // Set a fixed height for the container
+        chartContainer.style.height = '250px';
     });
 </script>
+{% endblock %}
 {% endblock %}
