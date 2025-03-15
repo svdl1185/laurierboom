@@ -812,12 +812,13 @@ class ProfileView(TemplateView):
         # Calculate number of tournaments played
         tournaments_participated = profile_user.tournaments.filter(is_completed=True)
         context['tournament_count'] = tournaments_participated.count()
-        
+
         # Calculate number of tournaments won
         tournaments_won = 0
         avg_position = 0
         avg_points = 0
-        
+        avg_total_players = 0  # Add this variable
+
         if context['tournament_count'] > 0:
             # Count tournaments where the user was ranked 1st
             for tournament in tournaments_participated:
@@ -837,10 +838,18 @@ class ProfileView(TemplateView):
             if standings.exists():
                 avg_position = standings.aggregate(Avg('rank'))['rank__avg']
                 avg_points = standings.aggregate(Avg('score'))['score__avg']
-        
+                
+                # Calculate average number of participants
+                total_participants = 0
+                for tournament in tournaments_participated:
+                    total_participants += tournament.participants.count()
+                
+                avg_total_players = total_participants / context['tournament_count']
+
         context['tournaments_won'] = tournaments_won
         context['avg_position'] = avg_position if avg_position else 0
         context['avg_points'] = avg_points if avg_points else 0
+        context['avg_total_players'] = avg_total_players
         
         return context
     
