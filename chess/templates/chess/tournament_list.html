@@ -1,222 +1,607 @@
 <!-- templates/chess/tournament_list.html -->
 {% extends 'chess/base.html' %}
 
-{% block title %}Tournaments - De Laurierboom Chess{% endblock %}
+{% block title %}Tournaments - Bar Blitz{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Base styles */
+    body {
+        background-color: #1a2721;
+        color: #ffffff;
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    /* Tournament header styles */
+    .tournament-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffffff;
+        margin-top: 2rem;
+        margin-bottom: 0.5rem;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Panel styles */
+    .tournament-panel {
+        background-color: #19e893;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .tournament-panel-title {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #000000;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Filter toggle styles */
+    .filter-toggles {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+        background-color: white;
+        border-radius: 10px;
+        padding: 0.5rem;
+    }
+    
+    .filter-toggle {
+        background-color: transparent;
+        border: none;
+        padding: 0.5rem 1rem;
+        margin: 0 0.25rem;
+        border-radius: 5px;
+        font-weight: 600;
+        color: #000;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .filter-toggle.active {
+        background-color: #19e893;
+        color: #000;
+    }
+    
+    .filter-toggle:hover:not(.active) {
+        background-color: #f0f0f0;
+    }
+    
+    /* Tournament row styling */
+    .tournament-list {
+        background-color: white;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .tournament-row {
+        display: flex;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+        position: relative;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .tournament-row:last-child {
+        border-bottom: none;
+    }
+    
+    .tournament-row:hover {
+        background-color: rgba(0,0,0,0.05);
+        transform: translateX(3px);
+    }
+    
+    .tournament-row.live {
+        background-color: rgba(255, 215, 0, 0.1);
+    }
+    
+    .tournament-row:nth-child(odd):not(.live) {
+        background-color: rgba(0,0,0,0.02);
+    }
+    
+    .tournament-date-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 50px;
+        text-align: center;
+        margin-right: 1.25rem;
+    }
+    
+    .tournament-date-day {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #000000;
+    }
+    
+    .tournament-date-month {
+        font-size: 0.9rem;
+        color: #000000;
+    }
+    
+    .tournament-info-block {
+        flex: 1;
+    }
+    
+    .tournament-title-text {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #000000;
+        margin-bottom: 0.25rem;
+    }
+    
+    .tournament-details {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: rgba(0,0,0,0.7);
+    }
+    
+    .tournament-time {
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .tournament-time i {
+        margin-right: 0.35rem;
+        opacity: 0.7;
+    }
+    
+    .tournament-location {
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .tournament-location i {
+        margin-right: 0.35rem;
+        opacity: 0.7;
+    }
+    
+    .tournament-type-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-right: 0.75rem;
+    }
+    
+    .tournament-type-badge.swiss {
+        background-color: #d6e4ff;
+        color: #0040a0;
+    }
+    
+    .tournament-type-badge.round-robin {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+    
+    .tournament-type-badge.double-round-robin {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .tournament-type-badge.tbd {
+        background-color: #e9ecef;
+        color: #495057;
+    }
+    
+    /* Tournament status styling */
+    .tournament-status-block {
+        margin-left: 1rem;
+        white-space: nowrap;
+        min-width: 70px;
+        text-align: right;
+    }
+    
+    .tournament-status {
+        display: inline-block;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+    }
+    
+    .tournament-status.live {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .tournament-status.full {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .tournament-status.spots {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    /* Past tournaments styling */
+    .past-tournament {
+        background-color: white;
+    }
+    
+    .past-tournament:nth-child(odd) {
+        background-color: rgba(0,0,0,0.03);
+    }
+    
+    .tournament-date-year {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 0.2rem;
+    }
+    
+    .tournament-players {
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .tournament-players i {
+        margin-right: 0.35rem;
+        opacity: 0.7;
+    }
+    
+    /* Enhanced winner display */
+    .tournament-winners-container {
+        display: flex;
+        flex-direction: column;
+        min-width: 160px;
+        margin-left: auto;
+    }
+    
+    .tournament-place {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.3rem;
+    }
+    
+    .tournament-place:last-child {
+        margin-bottom: 0;
+    }
+    
+    .place-trophy {
+        font-size: 1.25rem;
+        margin-right: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 25px;
+    }
+    
+    .place-name {
+        font-weight: 600;
+        color: #000;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 130px;
+    }
+    
+    .first-place .place-name {
+        color: #000;
+    }
+    
+    .second-place .place-name {
+        color: #555;
+        font-size: 0.9rem;
+    }
+    
+    /* Completely restructured layout */
+    .past-tournament {
+        display: grid;
+        grid-template-columns: 3fr 2fr 3fr; /* Three column layout */
+        align-items: center;
+        padding: 1rem;
+        background-color: white;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Left section with date and info */
+    .tournament-left-section {
+        display: flex;
+        align-items: center;
+    }
+    
+    .tournament-date-block {
+        text-align: center;
+        margin-right: 15px;
+    }
+    
+    .tournament-date-day {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #000000;
+    }
+    
+    .tournament-date-month {
+        font-size: 0.9rem;
+        color: #000000;
+    }
+    
+    .tournament-date-year {
+        font-size: 0.8rem;
+        color: #666;
+    }
+    
+    .tournament-info-main {
+        flex: 1;
+    }
+    
+    .tournament-title-text {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #000000;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Center section - truly centered */
+    .tournament-center-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .players-count-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-size: 0.95rem;
+    }
+    
+    .players-count-display i {
+        margin-right: 5px;
+        color: #666;
+    }
+    
+    .location-info-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-size: 0.95rem;
+    }
+    
+    .location-info-display i {
+        margin-right: 5px;
+        color: #666;
+    }
+    
+    /* Right section with winners */
+    .tournament-winners-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-end;
+    }
+    
+    .tournament-place {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.3rem;
+    }
+    
+    .tournament-place:last-child {
+        margin-bottom: 0;
+    }
+    
+    .place-trophy {
+        font-size: 1.25rem;
+        margin-right: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 25px;
+    }
+    
+    .place-name {
+        font-weight: 600;
+        color: #000;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 130px;
+    }
+    
+    .first-place .place-name {
+        color: #000;
+    }
+    
+    .second-place .place-name {
+        color: #555;
+        font-size: 0.9rem;
+    }
+    
+    /* Button Styles */
+    .create-btn {
+        background-color: #19e893;
+        color: #000000;
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        display: inline-block;
+        text-decoration: none;
+    }
+    
+    .create-btn:hover {
+        background-color: #15cb7f;
+        text-decoration: none;
+        color: #000000;
+    }
+    
+    .create-btn i {
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1>Tournaments</h1>
-            {% if user.is_staff %}
-                <a href="{% url 'tournament_create' %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create Tournament
-                </a>
-            {% endif %}
-        </div>
+<div class="page-container">
+    <h1 class="tournament-title">Tournaments</h1>
+    
+    {% if user.is_staff %}
+    <div class="text-end mb-3">
+        <a href="{% url 'tournament_create' %}" class="create-btn">
+            <i class="fas fa-plus"></i> Create Tournament
+        </a>
     </div>
-</div>
-
-<!-- Time Control Filter -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-outline-primary active" data-filter="all">All Time Controls</button>
-            {% comment %} <button type="button" class="btn btn-outline-primary" data-filter="bullet">Bullet</button> {% endcomment %}
-            <button type="button" class="btn btn-outline-primary" data-filter="blitz">Blitz</button>
-            <button type="button" class="btn btn-outline-primary" data-filter="rapid">Rapid</button>
-            {% comment %} <button type="button" class="btn btn-outline-primary" data-filter="classical">Classical</button> {% endcomment %}
+    {% endif %}
+    
+    <!-- Upcoming Tournaments -->
+    <div class="tournament-panel">
+        <h2 class="tournament-panel-title">Upcoming Tournaments</h2>
+        
+        {% if tournament.time_control %}
+        <div class="filter-toggles">
+            <button class="filter-toggle active" data-filter="all">All</button>
+            <button class="filter-toggle" data-filter="bullet">Bullet</button>
+            <button class="filter-toggle" data-filter="blitz">Blitz</button>
+            <button class="filter-toggle" data-filter="rapid">Rapid</button>
+            <button class="filter-toggle" data-filter="classical">Classical</button>
         </div>
-    </div>
-</div>
-
-<!-- Upcoming Tournaments -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card border-0 shadow">
-            <div class="card-header bg-dark text-white py-3">
-                <h2 class="card-title mb-0">
-                    <i class="fas fa-calendar-alt me-2"></i>Upcoming Tournaments
-                </h2>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover tournament-table mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tournament</th>
-                                <th>Date</th>
-                                <th>Format</th>
-                                <th>Time Control</th>
-                                <th class="text-center">Players</th>
-                                <th class="text-end"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for tournament in upcoming_tournaments %}
-                                <tr class="tournament-table-row" 
-                                    onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'"
-                                    data-time-control="{% if tournament.time_control %}{{ tournament.time_control }}{% else %}all{% endif %}">
-                                    <td class="tournament-name">
-                                        <strong>{{ tournament.name }}</strong>
-                                        {% if tournament.description %}
-                                            <div class="small text-muted mt-1">{{ tournament.description|truncatechars:60 }}</div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="d-flex flex-column">
-                                            <span>{{ tournament.date }}</span>
-                                            {% if tournament.start_time %}
-                                                <span class="text-muted small">{{ tournament.start_time }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="tournament-type-badge {% if tournament.tournament_type == 'swiss' %}swiss{% elif tournament.tournament_type == 'round_robin' %}round-robin{% elif tournament.tournament_type == 'double_round_robin' %}double-round-robin{% else %}tbd{% endif %}">
-                                            {% if tournament.tournament_type == 'round_robin' %}
-                                                Round Robin
-                                            {% elif tournament.tournament_type == 'double_round_robin' %}
-                                                Double Round Robin
-                                            {% elif tournament.tournament_type == 'swiss' %}
-                                                Swiss
-                                            {% else %}
-                                                Type TBD
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="tournament-type-badge time-{% if tournament.time_control %}{{ tournament.time_control }}{% else %}tbd{% endif %}">
-                                            {% if tournament.time_control == 'bullet' %}
-                                                Bullet
-                                            {% elif tournament.time_control == 'blitz' %}
-                                                Blitz
-                                            {% elif tournament.time_control == 'rapid' %}
-                                                Rapid
-                                            {% elif tournament.time_control == 'classical' %}
-                                                Classical
-                                            {% else %}
-                                                Time TBD
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="player-count">
-                                            <i class="fas fa-users me-1"></i>{{ tournament.num_participants }}
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <i class="fas fa-chevron-right text-muted"></i>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="6" class="text-center py-4">No upcoming tournaments scheduled</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        {% endif %}
+        
+        <div class="tournament-list">
+            {% for tournament in upcoming_tournaments %}
+                <div class="tournament-row {% if tournament.has_started %}live{% endif %}" 
+                     onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'"
+                     data-time-control="{% if tournament.time_control %}{{ tournament.time_control }}{% else %}all{% endif %}">
+                    <div class="tournament-date-block">
+                        <div class="tournament-date-day">{{ tournament.date|date:"d" }}</div>
+                        <div class="tournament-date-month">{{ tournament.date|date:"M" }}</div>
+                    </div>
+                    <div class="tournament-info-block">
+                        <div class="tournament-title-text">{{ tournament.name }}</div>
+                        <div class="tournament-details">
+                            <span class="tournament-type-badge {% if tournament.tournament_type == 'swiss' %}swiss{% elif tournament.tournament_type == 'round_robin' %}round-robin{% elif tournament.tournament_type == 'double_round_robin' %}double-round-robin{% else %}tbd{% endif %}">
+                                {% if tournament.tournament_type == 'round_robin' %}
+                                    Round Robin
+                                {% elif tournament.tournament_type == 'double_round_robin' %}
+                                    Double Round Robin
+                                {% elif tournament.tournament_type == 'swiss' %}
+                                    Swiss
+                                {% else %}
+                                    Type TBD
+                                {% endif %}
+                            </span>
+                            <span class="tournament-time">
+                                <i class="fas fa-clock"></i>
+                                {{ tournament.start_time|default:"5 p.m." }}
+                            </span>
+                            <span class="tournament-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ tournament.location|default:"De Laurierboom, Amsterdam" }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="tournament-status-block">
+                        {% if tournament.has_started %}
+                            <span class="tournament-status live">Live</span>
+                        {% elif tournament.is_full %}
+                            <span class="tournament-status full">Full</span>
+                        {% else %}
+                            <span class="tournament-status spots">{{ tournament.participants.count }}/{{ tournament.max_participants }}</span>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
+            {% empty %}
+                <div class="text-center py-4" style="color: #000000;">
+                    <p class="m-0">No upcoming tournaments scheduled</p>
+                    <p class="small m-0">Check back soon for new events!</p>
+                </div>
+            {% endfor %}
         </div>
     </div>
-</div>
-
-<!-- Past Tournaments -->
-<div class="row">
-    <div class="col-12">
-        <div class="card border-0 shadow">
-            <div class="card-header bg-dark text-white py-3">
-                <h2 class="card-title mb-0">
-                    <i class="fas fa-history me-2"></i>Past Tournaments
-                </h2>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover tournament-table mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tournament</th>
-                                <th>Date</th>
-                                <th>Format</th>
-                                <th>Time Control</th>
-                                <th>Winner</th>
-                                <th class="text-center">Players</th>
-                                <th class="text-end"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for tournament in past_tournaments %}
-                                <tr class="tournament-table-row" 
-                                    onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'"
-                                    data-time-control="{% if tournament.time_control %}{{ tournament.time_control }}{% else %}all{% endif %}">
-                                    <td class="tournament-name">
-                                        <strong>{{ tournament.name }}</strong>
-                                    </td>
-                                    <td>{{ tournament.date }}</td>
-                                    <td>
-                                        <span class="tournament-type-badge {% if tournament.tournament_type == 'swiss' %}swiss{% elif tournament.tournament_type == 'round_robin' %}round-robin{% elif tournament.tournament_type == 'double_round_robin' %}double-round-robin{% else %}tbd{% endif %}">
-                                            {% if tournament.tournament_type == 'round_robin' %}
-                                                Round Robin
-                                            {% elif tournament.tournament_type == 'double_round_robin' %}
-                                                Double Round Robin
-                                            {% elif tournament.tournament_type == 'swiss' %}
-                                                Swiss
-                                            {% else %}
-                                                Type TBD
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="tournament-type-badge time-{% if tournament.time_control %}{{ tournament.time_control }}{% else %}tbd{% endif %}">
-                                            {% if tournament.time_control == 'bullet' %}
-                                                Bullet
-                                            {% elif tournament.time_control == 'blitz' %}
-                                                Blitz
-                                            {% elif tournament.time_control == 'rapid' %}
-                                                Rapid
-                                            {% elif tournament.time_control == 'classical' %}
-                                                Classical
-                                            {% else %}
-                                                Time TBD
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if tournament.winner %}
-                                            <div class="d-flex flex-column">
-                                                <div class="winner-name">
-                                                    <i class="fas text-warning me-1"></i>
-                                                    {{ tournament.winner.get_full_name|default:tournament.winner.username }}
-                                                </div>
-                                                {% if tournament.runner_up %}
-                                                    <div class="runner-up-name small text-muted">
-                                                        <i class="fas text-secondary me-1"></i>
-                                                        {{ tournament.runner_up.get_full_name|default:tournament.runner_up.username }}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="player-count">
-                                            <i class="fas fa-users me-1"></i>{{ tournament.num_participants }}
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <i class="fas fa-chevron-right text-muted"></i>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center py-4">No past tournaments</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    
+    <!-- Past Tournaments -->
+    <div class="tournament-panel">
+        <h2 class="tournament-panel-title">Past Tournaments</h2>
+        
+        <div class="tournament-list">
+            {% for tournament in past_tournaments %}
+                <div class="tournament-row past-tournament" 
+                     onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'"
+                     data-time-control="{% if tournament.time_control %}{{ tournament.time_control }}{% else %}all{% endif %}">
+                    
+                    <!-- Left: Date and Tournament Name -->
+                    <div class="tournament-left-section">
+                        <div class="tournament-date-block">
+                            <div class="tournament-date-day">{{ tournament.date|date:"d" }}</div>
+                            <div class="tournament-date-month">{{ tournament.date|date:"M" }}</div>
+                            <div class="tournament-date-year">{{ tournament.date|date:"Y" }}</div>
+                        </div>
+                        
+                        <div class="tournament-info-main">
+                            <div class="tournament-title-text">{{ tournament.name }} - completed</div>
+                            <div class="tournament-type-badge {% if tournament.tournament_type == 'swiss' %}swiss{% elif tournament.tournament_type == 'round_robin' %}round-robin{% elif tournament.tournament_type == 'double_round_robin' %}double-round-robin{% else %}tbd{% endif %}">
+                                {% if tournament.tournament_type == 'round_robin' %}
+                                    Round Robin
+                                {% elif tournament.tournament_type == 'double_round_robin' %}
+                                    Double Round Robin
+                                {% elif tournament.tournament_type == 'swiss' %}
+                                    Swiss
+                                {% else %}
+                                    Type TBD
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Middle: Players and Location (true center) -->
+                    <div class="tournament-center-section">
+                        <div class="players-count-display">
+                            <i class="fas fa-users"></i> {{ tournament.participants.count }} players
+                        </div>
+                        <div class="location-info-display">
+                            <i class="fas fa-map-marker-alt"></i> {{ tournament.location|default:"De Laurierboom, Amsterdam" }}
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Winners -->
+                    <div class="tournament-winners-section">
+                        {% if tournament.winner %}
+                            <div class="tournament-place first-place">
+                                <div class="place-trophy">🏆</div>
+                                <div class="place-name">{{ tournament.winner.get_full_name|default:tournament.winner.username }}</div>
+                            </div>
+                            
+                            {% if tournament.runner_up %}
+                            <div class="tournament-place second-place">
+                                <div class="place-trophy">🥈</div>
+                                <div class="place-name">{{ tournament.runner_up.get_full_name|default:tournament.runner_up.username }}</div>
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
+            {% empty %}
+                <div class="text-center py-4" style="color: #000000;">
+                    <p class="m-0">No past tournaments</p>
+                </div>
+            {% endfor %}
         </div>
     </div>
 </div>
@@ -225,8 +610,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Time control filters
-    const filterButtons = document.querySelectorAll('[data-filter]');
-    const tournaments = document.querySelectorAll('.tournament-table-row');
+    const filterButtons = document.querySelectorAll('.filter-toggle');
+    const tournaments = document.querySelectorAll('.tournament-row');
     
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
