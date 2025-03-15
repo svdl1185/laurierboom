@@ -1215,3 +1215,55 @@ def player_rating_history(request, player_id):
     
     except User.DoesNotExist:
         return JsonResponse({'error': 'Player not found'}, status=404)
+    
+def register_for_tournament(request, tournament_id):
+    """View for players to register for tournaments"""
+    if not request.user.is_authenticated:
+        # Store the intended tournament URL in the session for redirect after login
+        next_url = reverse_lazy('tournament_detail', kwargs={'pk': tournament_id})
+        return redirect(f"{reverse_lazy('login')}?next={next_url}")
+    
+    # Prevent superusers/staff from registering
+    if request.user.is_staff or request.user.is_superuser:
+        messages.error(request, "Administrators cannot participate in tournaments")
+        return redirect('tournament_detail', pk=tournament_id)
+    
+    tournament = get_object_or_404(Tournament, pk=tournament_id)
+    
+    # Check various conditions that would prevent registration
+    if tournament.is_completed:
+        messages.error(request, "This tournament is already completed")
+    elif tournament.has_started:
+        messages.error(request, "Cannot register after tournament has started")
+    elif request.user in tournament.participants.all():
+        messages.info(request, "You are already registered for this tournament")
+    elif tournament.is_full():
+        messages.error(request, f"Sorry, this tournament is full ({tournament.max_participants} participants maximum)")
+    else:
+        # All conditions passed, register the user
+        tournament.participants.add(request.user)
+        messages.success(request, f"You have successfully registered for {tournament.name}")
+    
+    return redirect('tournament_detail', pk=tournament_id)
+
+def unregister_from_tournament(request, tournament_id):
+    """View for players to unregister from tournaments"""
+    if not request.user.is_authenticated:
+        messages.error(request, "You must be logged in to unregister from tournaments")
+        return redirect('login')
+    
+    tournament = get_object_or_404(Tournament, pk=tournament_id)
+    
+    # Check if they're registered and if it's possible to unregister
+    if tournament.is_completed:
+        messages.error(request, "This tournament is already completed")
+    elif tournament.has_started:
+        messages.error(request, "Cannot unregister after tournament has started")
+    elif request.user not in tournament.participants.all():
+        messages.info(request, "You are not registered for this tournament")
+    else:
+        # All conditions passed, unregister the user
+        tournament.participants.remove(request.user)
+        messages.success(request, f"You have been unregistered from {tournament.name}")
+    
+    return redirect('tournament_detail', pk=tournament_id)

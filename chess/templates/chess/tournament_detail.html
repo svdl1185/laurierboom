@@ -688,11 +688,40 @@
                             </tbody>
                         </table>
                     </div>
-
+                    <br>
                     {% if user.is_staff %}
-                    <a href="#" class="btn btn-light add-player-btn" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
-                        <i class="fas fa-plus"></i> Add Player
+                    <a href="#" class="btn btn-success add-player-btn" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
+                        <i class="fas fa-plus me-2"></i>Add Player
                     </a>
+                    {% else %}
+                        {% if user.is_authenticated and user not in tournament.participants.all and not tournament.is_full %}
+                        <form method="post" action="{% url 'tournament_register' tournament.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-user-plus me-2"></i>Register for Tournament
+                            </button>
+                        </form>
+                        {% elif user.is_authenticated and user in tournament.participants.all %}
+                        <div class="alert alert-info d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-check-circle me-2"></i> You are registered for this tournament
+                            </div>
+                            <form method="post" action="{% url 'tournament_unregister' tournament.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to unregister from this tournament?');">
+                                    <i class="fas fa-user-minus me-1"></i>Unregister
+                                </button>
+                            </form>
+                        </div>
+                        {% elif user.is_authenticated and tournament.is_full %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-circle me-2"></i> Tournament is full
+                        </div>
+                        {% elif not user.is_authenticated %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> <a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to register for this tournament
+                        </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -959,7 +988,8 @@
         {% endif %}
     </div>
 
-<!-- COMPLETED PHASE -->
+
+    <!-- COMPLETED PHASE -->
 {% elif tournament.is_completed %}
     <div class="page-container">
         <h1 class="tournament-title">{{ tournament.name }}</h1>
