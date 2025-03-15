@@ -484,6 +484,296 @@
         font-weight: 600;
         color: #212529;
     }
+
+    .default-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        color: #6c757d;
+        font-size: 5rem;
+    }
+
+    .tournament-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        background-color: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .tournament-item {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .tournament-item:last-child {
+        border-bottom: none;
+    }
+    
+    .tournament-item:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        transform: translateX(5px);
+    }
+    
+    .tournament-content {
+        flex: 1;
+    }
+    
+    .tournament-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #000000;
+        margin-bottom: 0.25rem;
+    }
+    
+    .tournament-date {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    /* Badge styles */
+    .bg-blue-100 {
+        background-color: #dbeafe;
+    }
+    
+    .text-blue-800 {
+        color: #1e40af;
+    }
+    
+    .bg-gray-200 {
+        background-color: #e5e7eb;
+    }
+    
+    .text-gray-800 {
+        color: #1f2937;
+    }
+    
+    .bg-blue-500 {
+        background-color: #3b82f6;
+    }
+    
+    .rounded-lg {
+        border-radius: 0.5rem;
+    }
+    
+    .gap-2 {
+        gap: 0.5rem;
+    }
+
+    .single-rating-badge {
+        display: inline-block;
+        background-color: #f8f9fa;
+        color: #212529;
+        font-size: 1.2rem;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 15px;
+        margin: 0 auto;
+    }
+    
+    .rating-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-right: 0.5rem;
+    }
+    
+    .rating-type {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .tournament-container {
+        background-color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+    
+    .tournament-section-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #000;
+    }
+    
+    .clean-tournament-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 2rem 0;
+    }
+    
+    .clean-tournament-list:last-child {
+        margin-bottom: 0;
+    }
+    
+    .clean-tournament-item {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    
+    .clean-tournament-item:hover {
+        transform: translateX(5px);
+    }
+    
+    .clean-tournament-item.empty {
+        justify-content: center;
+        padding: 1.5rem;
+        cursor: default;
+    }
+    
+    .clean-tournament-item.empty:hover {
+        transform: none;
+    }
+    
+    .tournament-main-info {
+        flex: 1;
+    }
+    
+    .tournament-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #000;
+        margin-bottom: 0.3rem;
+    }
+    
+    .tournament-date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .tournament-badges {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .tournament-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .tournament-badge.upcoming {
+        background-color: #cfe2ff;
+        color: #084298;
+    }
+    
+    .tournament-badge.completed {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .tournament-badge.place {
+        background-color: #4c6ef5;
+        color: white;
+    }
+
+    .tournament-section {
+        background-color: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 10px 0 15px 0;
+    }
+    
+    .tournament-list {
+        margin-bottom: 20px;
+    }
+    
+    .tournament-item {
+        background-color: #f5f5f5;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+    
+    .tournament-item:hover {
+        background-color: #efefef;
+    }
+    
+    .tournament-left {
+        flex: 1;
+    }
+    
+    .tournament-name {
+        font-weight: 600;
+        color: #000;
+        margin-bottom: 3px;
+    }
+    
+    .tournament-date {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .place-badge {
+        background-color: #4c6ef5;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: 500;
+        font-size: 14px;
+    }
+    
+    .tournament-item.empty {
+        justify-content: center;
+        padding: 15px;
+        text-align: center;
+        cursor: default;
+    }
+
+    .rating-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 15px 0;
+    }
+
+    .rating-label {
+        font-size: 16px;
+        font-weight: 500;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .rating-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #000;
+        background-color: #f5f5f5;
+        padding: 8px 25px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 10px 0 15px 0;
+        color: #000000;
+    }
 </style>
 {% endblock %}
 
@@ -500,49 +790,21 @@
                 <h2 class="profile-panel-title">Profile</h2>
                 
                 <div class="profile-picture-container">
-                    <!-- Default profile picture if none provided -->
-                    <img src="{% if profile_user.socialaccount_set.exists and profile_user.socialaccount_set.first.get_avatar_url %}{{ profile_user.socialaccount_set.first.get_avatar_url }}{% else %}https://via.placeholder.com/150{% endif %}" class="profile-picture" alt="Profile Picture">
+                    {% if profile_user.socialaccount_set.exists and profile_user.socialaccount_set.first.get_avatar_url %}
+                        <img src="{{ profile_user.socialaccount_set.first.get_avatar_url }}" class="profile-picture" alt="Profile Picture">
+                    {% else %}
+                        <div class="profile-picture default-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
                 </div>
                 
                 <div class="info-container">
                     <!-- Ratings -->
                     <div class="info-item">
-                        <div class="info-label">Ratings</div>
-                        <div class="info-value">
-                            {% if profile_user.bullet_elo != 1500 %}
-                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-2 mb-2">
-                                <span class="fw-bold">{{ profile_user.bullet_elo|floatformat:0 }}</span>
-                                <span class="ms-1">Bullet</span>
-                              </div>
-                            {% endif %}
-                            
-                            {% if profile_user.blitz_elo != 1500 %}
-                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-2 mb-2">
-                                <span class="fw-bold">{{ profile_user.blitz_elo|floatformat:0 }}</span>
-                                <span class="ms-1">Blitz</span>
-                              </div>
-                            {% endif %}
-                            
-                            {% if profile_user.rapid_elo != 1500 %}
-                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill me-2 mb-2">
-                                <span class="fw-bold">{{ profile_user.rapid_elo|floatformat:0 }}</span>
-                                <span class="ms-1">Rapid</span>
-                              </div>
-                            {% endif %}
-                            
-                            {% if profile_user.classical_elo != 1500 %}
-                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill mb-2">
-                                <span class="fw-bold">{{ profile_user.classical_elo|floatformat:0 }}</span>
-                                <span class="ms-1">Classical</span>
-                              </div>
-                            {% endif %}
-                            
-                            {% if profile_user.bullet_elo == 1500 and profile_user.blitz_elo == 1500 and profile_user.rapid_elo == 1500 and profile_user.classical_elo == 1500 %}
-                              <div class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill">
-                                <span class="fw-bold">1500</span>
-                                <span class="ms-1">Default Rating</span>
-                              </div>
-                            {% endif %}
+                        <div class="rating-section">
+                            <div class="rating-label">RATING</div>
+                            <div class="rating-value">{{ profile_user.blitz_elo|floatformat:0 }}</div>
                         </div>
                     </div>
                     
@@ -614,46 +876,45 @@
             </div>
             
             <!-- Tournament List Panel -->
-            <div class="profile-panel">
-                <h2 class="profile-panel-title">Tournaments</h2>
+            <div class="tournament-panel">
+                <h2 class="tournament-panel-title">Tournaments</h2>
                 
-                <div class="info-container">
-                    <h5 class="mb-3">Upcoming Tournaments</h5>
-                    <ul class="tournament-list">
+                <!-- Tournament list  -->
+                <div class="tournament-section">
+                    <h3 class="section-title">Upcoming Tournaments</h3>
+                    <div class="tournament-list">
                         {% for tournament in upcoming_tournaments %}
-                            <li class="tournament-item" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
-                                <div class="tournament-name">{{ tournament.name }}</div>
-                                <div class="tournament-date">{{ tournament.date }}</div>
-                                <span class="tournament-status status-upcoming">Upcoming</span>
-                            </li>
-                        {% empty %}
-                            <li class="tournament-item">
-                                <div class="text-muted">No upcoming tournaments</div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    
-                    <hr class="my-3">
-                    
-                    <h5 class="mb-3">Past Tournaments</h5>
-                    <ul class="tournament-list">
-                        {% for tournament in past_tournaments %}
-                            <li class="tournament-item" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
-                                <div class="tournament-name">{{ tournament.name }}</div>
-                                <div class="tournament-date">{{ tournament.date }}</div>
-                                <div class="d-flex justify-content-between align-items-center mt-1">
-                                    <span class="tournament-status status-completed">Completed</span>
-                                    {% if tournament.standings %}
-                                        <span class="badge bg-primary">{{ tournament.standings.rank }} place</span>
-                                    {% endif %}
+                            <div class="tournament-item" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
+                                <div class="tournament-left">
+                                    <div class="tournament-name">{{ tournament.name }}</div>
+                                    <div class="tournament-date">{{ tournament.date }}</div>
                                 </div>
-                            </li>
+                            </div>
                         {% empty %}
-                            <li class="tournament-item">
-                                <div class="text-muted">No past tournaments</div>
-                            </li>
+                            <div class="tournament-item empty">
+                                <div class="text-muted">No upcoming tournaments</div>
+                            </div>
                         {% endfor %}
-                    </ul>
+                    </div>
+                    
+                    <h3 class="section-title">Past Tournaments</h3>
+                    <div class="tournament-list">
+                        {% for tournament in past_tournaments %}
+                            <div class="tournament-item" onclick="window.location.href='{% url 'tournament_detail' tournament.id %}'">
+                                <div class="tournament-left">
+                                    <div class="tournament-name">{{ tournament.name }}</div>
+                                    <div class="tournament-date">{{ tournament.date }}</div>
+                                </div>
+                                {% if tournament.standings %}
+                                    <div class="place-badge">{{ tournament.standings.rank }}{% if tournament.standings.rank == 1 %}st{% elif tournament.standings.rank == 2 %}nd{% elif tournament.standings.rank == 3 %}rd{% else %}th{% endif %} place</div>
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <div class="tournament-item empty">
+                                <div class="text-muted">No past tournaments</div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -948,23 +1209,6 @@
                                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                                 borderWidth: 2,
                                 pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                                pointBorderColor: '#fff',
-                                pointBorderWidth: 1,
-                                pointRadius: 4,
-                                pointHoverRadius: 6,
-                                tension: 0.1,
-                                parsing: {
-                                    xAxisKey: 'date',
-                                    yAxisKey: 'rating'
-                                }
-                            },
-                            {
-                                label: 'Rapid',
-                                data: rapidData,
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                borderWidth: 2,
-                                pointBackgroundColor: 'rgba(75, 192, 192, 1)',
                                 pointBorderColor: '#fff',
                                 pointBorderWidth: 1,
                                 pointRadius: 4,

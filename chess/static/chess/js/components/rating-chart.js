@@ -22,30 +22,32 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      // Group data by time control
-      // const bulletData = data.filter(item => item.time_control === 'bullet');
-      const blitzData = data.filter(item => item.time_control === 'blitz');
-      const rapidData = data.filter(item => item.time_control === 'rapid');
-      // const classicalData = data.filter(item => item.time_control === 'classical');
+      // Group data by tournament rather than by individual match
+      const tournaments = {};
       
-      // Process data for each time control
-      const processedData = {
-        // bullet: processByDateWithFallback(bulletData),
-        blitz: processByDateWithFallback(blitzData),
-        rapid: processByDateWithFallback(rapidData),
-        // classical: processByDateWithFallback(classicalData),
-      };
+      // Group matches by tournament and date
+      data.forEach(item => {
+        const key = `${item.tournament}_${item.date}`;
+        if (!tournaments[key]) {
+          tournaments[key] = {
+            date: item.date,
+            tournament: item.tournament,
+            rating: item.rating,
+            time_control: item.time_control
+          };
+        }
+      });
+      
+      // Convert to array and sort by date
+      const processedData = Object.values(tournaments).sort((a, b) => 
+        new Date(a.date) - new Date(b.date)
+      );
       
       // Extract all dates for x-axis
-      const allDates = [...new Set(data.map(item => item.date))].sort();
+      const allDates = [...new Set(processedData.map(item => item.date))].sort();
       
-      // Find global min and max ratings for y-axis scale
-      const allRatings = [
-        // ...processedData.bullet.map(item => item.rating),
-        ...processedData.blitz.map(item => item.rating),
-        ...processedData.rapid.map(item => item.rating),
-        // ...processedData.classical.map(item => item.rating),
-      ].filter(rating => rating !== null);
+      // Find min and max ratings for y-axis scale
+      const allRatings = processedData.map(item => item.rating).filter(rating => rating !== null);
       
       const minRating = Math.min(...allRatings, 1400) - 50;
       const maxRating = Math.max(...allRatings, 1600) + 50;
@@ -57,10 +59,13 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
           labels: allDates,
           datasets: [
-            // Bullet dataset removed completely
             {
               label: 'Blitz',
-              data: processedData.blitz,
+              data: processedData.map(item => ({
+                x: item.date,
+                y: item.rating,
+                tournament: item.tournament
+              })),
               borderColor: 'rgba(54, 162, 235, 1)',
               backgroundColor: 'rgba(54, 162, 235, 0.2)',
               borderWidth: 2,
@@ -69,30 +74,8 @@ document.addEventListener('DOMContentLoaded', function() {
               pointBorderWidth: 1,
               pointRadius: 4,
               pointHoverRadius: 6,
-              tension: 0.1,
-              parsing: {
-                xAxisKey: 'date',
-                yAxisKey: 'rating'
-              }
-            },
-            {
-              label: 'Rapid',
-              data: processedData.rapid,
-              borderColor: 'rgba(75, 192, 192, 1)',
-              backgroundColor: 'rgba(75, 192, 192, 0.2)',
-              borderWidth: 2,
-              pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 1,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              tension: 0.1,
-              parsing: {
-                xAxisKey: 'date',
-                yAxisKey: 'rating'
-              }
+              tension: 0.1
             }
-            // Classical dataset removed completely
           ]
         },
         options: {
@@ -101,23 +84,17 @@ document.addEventListener('DOMContentLoaded', function() {
           plugins: {
             legend: {
               position: 'top',
+              labels: {
+                boxWidth: 12
+              }
             },
             tooltip: {
               callbacks: {
-                afterLabel: function(context) {
-                  const dataIndex = context.dataIndex;
-                  const datasetIndex = context.datasetIndex;
-                  const datasetLabel = context.dataset.label.toLowerCase();
-                  const dataArray = processedData[datasetLabel];
-                  
-                  if (!dataArray[dataIndex] || !dataArray[dataIndex].tournament) {
-                    return [];
-                  }
-                  
-                  return [
-                    `Tournament: ${dataArray[dataIndex].tournament}`,
-                    dataArray[dataIndex].opponent ? `Opponent: ${dataArray[dataIndex].opponent}` : ''
-                  ].filter(line => line);
+                title: function(context) {
+                  return context[0].raw.tournament;
+                },
+                label: function(context) {
+                  return 'Rating: ' + context.raw.y;
                 }
               }
             }
@@ -152,19 +129,4 @@ document.addEventListener('DOMContentLoaded', function() {
       console.error('Error fetching rating history:', error);
       chartContainer.innerHTML = '<div class="text-center py-4">Error loading rating history</div>';
     });
-    
-  // Helper function to process data by date and fill in gaps
-  function processByDateWithFallback(data) {
-    if (!data || data.length === 0) return [];
-    
-    // Group data by date and take the last rating for each date
-    const groupedData = {};
-    data.forEach(item => {
-      const date = item.date;
-      groupedData[date] = item;
-    });
-    
-    // Convert back to array
-    return Object.values(groupedData);
-  }
 });

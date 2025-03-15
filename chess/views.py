@@ -1170,51 +1170,48 @@ def player_rating_history(request, player_id):
     try:
         player = User.objects.get(pk=player_id)
         
-        # Get all matches where this player participated
-        matches = Match.objects.filter(
-            Q(white_player=player) | Q(black_player=player),
-            result__in=['white_win', 'black_win', 'draw']  # Only completed matches
-        ).order_by('round__tournament__date', 'round__number')
-        
-        # Track ratings by time control
-        ratings = {
-            'bullet': 1500,
-            'blitz': 1500, 
-            'rapid': 1500,
-            'classical': 1500
-        }
+        # Get all completed tournaments where this player participated
+        tournaments = Tournament.objects.filter(
+            participants=player,
+            is_completed=True
+        ).order_by('date')
         
         data = []
         
-        for match in matches:
-            tournament_name = match.tournament.name
-            date = match.tournament.date.strftime('%b %d, %Y')
-            time_control = match.tournament.time_control or 'blitz'  # Default to blitz
+        for tournament in tournaments:
+            time_control = tournament.time_control or 'blitz'
             
-            # Determine if player won or lost
-            if (match.white_player == player and match.result == 'white_win') or \
-               (match.black_player == player and match.result == 'black_win'):
-                rating_change = 10
-            elif (match.white_player == player and match.result == 'black_win') or \
-                 (match.black_player == player and match.result == 'white_win'):
-                rating_change = -10
-            else:
-                rating_change = 0
-            
-            # Update the appropriate rating
-            ratings[time_control] += rating_change
-            
-            # Add data point
-            data.append({
-                'date': date,
-                'rating': ratings[time_control],
-                'time_control': time_control,
-                'tournament': tournament_name,
-                'opponent': match.white_player.username if match.black_player == player else match.black_player.username
-            })
+            # Get player's standing in this tournament
+            try:
+                standing = TournamentStanding.objects.get(
+                    tournament=tournament,
+                    player=player
+                )
+                
+                # Determine which rating field to use based on time control
+                if time_control == 'bullet':
+                    rating = player.bullet_elo
+                elif time_control == 'blitz':
+                    rating = player.blitz_elo
+                elif time_control == 'rapid':
+                    rating = player.rapid_elo
+                elif time_control == 'classical':
+                    rating = player.classical_elo
+                else:
+                    rating = player.elo
+                
+                # Add tournament data point
+                data.append({
+                    'date': tournament.date.strftime('%b %d, %Y'),
+                    'rating': rating,
+                    'time_control': time_control,
+                    'tournament': tournament.name,
+                    'standing': standing.score
+                })
+            except TournamentStanding.DoesNotExist:
+                pass
         
         return JsonResponse(data, safe=False)
     
     except User.DoesNotExist:
         return JsonResponse({'error': 'Player not found'}, status=404)
-    
