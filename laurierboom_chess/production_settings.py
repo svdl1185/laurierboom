@@ -32,11 +32,36 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'whitenoise.runserver_nostatic',  # Add whitenoise
+    'django.contrib.sites',  # Required for allauth
+    'allauth',  # Required for social authentication
+    'allauth.account',  # Required for allauth
+    'allauth.socialaccount',  # Required for social login
+    'allauth.socialaccount.providers.google',  # Google auth provider
     'chess',  # our chess tournament app
 ]
 
 # Configure the custom user model
 AUTH_USER_MODEL = 'chess.User'
+
+SITE_ID = 1  # Required for allauth
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Provider specific settings for allauth
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
+            'secret': os.environ.get('GOOGLE_CLIENT_SECRET'),
+            'key': ''
+        },
+        'SCOPE': ['profile', 'email'],
+    }
+}
 
 # Define the custom CSP middleware
 class CSPMiddleware:
@@ -59,6 +84,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'laurierboom_chess.production_settings.CSPMiddleware',  # Add the custom CSP middleware
+    'allauth.account.middleware.AccountMiddleware',  # Required for allauth
 ]
 
 ROOT_URLCONF = 'laurierboom_chess.urls'
@@ -117,6 +143,12 @@ USE_TZ = True
 # Login/logout redirects
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
+
+# Allauth settings
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_LOGIN_ON_GET = True
+ACCOUNT_LOGOUT_ON_GET = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
