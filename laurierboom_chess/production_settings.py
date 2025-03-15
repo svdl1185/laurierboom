@@ -152,6 +152,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"  # Added to ensure proper protocol for callbacks
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -177,5 +178,8 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_DOMAIN = '.laurierboom.com'
-    CSRF_TRUSTED_ORIGINS = ['https://laurierboom.com', 'https://www.laurierboom.com']
+    SESSION_COOKIE_DOMAIN = 'laurierboom.com'  # Removed the leading dot
+    CSRF_TRUSTED_ORIGINS = [
+        'https://laurierboom.com', 
+        'https://www.laurierboom.com',
+    ]
