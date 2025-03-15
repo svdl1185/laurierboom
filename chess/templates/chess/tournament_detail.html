@@ -636,16 +636,14 @@
                     <h2 class="tournament-panel-title">Participants</h2>
                     
                     <div class="standings-table-container">
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1rem; border-bottom: 1px solid #f0f0f0; background-color: #f8f9fa;">
-                            <span style="font-weight: 600;">#</span>
-                            <span style="font-weight: 600;">Player</span>
-                            <span style="font-weight: 600;">Rating</span>
-                            {% if user.is_staff %}
-                            <span style="width: 50px;"></span>
-                            {% endif %}
-                        </div>
                         <table class="table standings-table mb-0">
-                            <thead
+                            <thead style="background-color: #f8f9fa; border-bottom: 1px solid #eee;">
+                                <tr>
+                                    <th class="ps-3" style="width: 70px; color: #000000 !important; font-weight: 600; padding: 0.75rem 1rem;">#</th>
+                                    <th style="color: #000000 !important; font-weight: 600; padding: 0.75rem 1rem;">Player</th>
+                                    <th class="text-end pe-3" style="color: #000000 !important; font-weight: 600; padding: 0.75rem 1rem;">Score</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 {% for player in tournament.participants.all %}
                                     <tr onclick="window.location.href='{% url 'profile_detail' player.id %}'">
