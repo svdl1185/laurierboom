@@ -1300,6 +1300,7 @@ def player_rating_history(request, player_id):
                     'rating': round(entry.rating),  # Round to nearest integer
                     'time_control': entry.time_control,
                     'tournament': entry.tournament.name,
+                    'location': entry.tournament.location,
                     'standing': None  # Could look this up if needed
                 })
                 
@@ -1315,6 +1316,7 @@ def player_rating_history(request, player_id):
                     'rating': round(initial_rating),  # Round to nearest integer
                     'time_control': data[0]['time_control'],
                     'tournament': 'Initial Rating',
+                    'location': 'N/A',
                     'standing': None
                 })
         

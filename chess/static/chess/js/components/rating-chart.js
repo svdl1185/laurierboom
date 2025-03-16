@@ -1,4 +1,4 @@
-// Updated rating-chart.js with better data handling
+// Complete updated rating-chart.js with new tooltip format
 document.addEventListener('DOMContentLoaded', function() {
   const chartContainer = document.getElementById('rating-history-chart');
   if (!chartContainer) return;
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
             color = '#9966ff';
             break;
           default:
-            color = '#19e893';  // Default green color from your theme
+            color = '#19e893';  // Default green color from the theme
         }
         
         return {
@@ -67,16 +67,18 @@ document.addEventListener('DOMContentLoaded', function() {
           data: controlData.map(item => ({
             x: item.date,
             y: item.rating,
-            tournament: item.tournament
+            tournament: item.tournament,
+            date: item.date,
+            location: item.location
           })),
           borderColor: color,
           backgroundColor: color + '20', // Add transparency
-          borderWidth: 2,
+          borderWidth: 3,
           pointBackgroundColor: color,
           pointBorderColor: '#fff',
-          pointBorderWidth: 1,
-          pointRadius: 5,
-          pointHoverRadius: 8,
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 9,
           tension: 0.2,
           fill: false
         };
@@ -92,11 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'top',
-              labels: {
-                boxWidth: 12,
-                color: '#666'
-              }
+              display: false  // Hide the legend to make it cleaner
             },
             tooltip: {
               backgroundColor: '#1a2721',
@@ -105,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
               titleFont: {
                 family: "'Roboto', sans-serif",
                 weight: 'bold',
-                size: 14
+                size: 15
               },
               bodyFont: {
                 family: "'Roboto', sans-serif",
@@ -116,15 +114,29 @@ document.addEventListener('DOMContentLoaded', function() {
               displayColors: false,
               callbacks: {
                 title: function(context) {
+                  // Row 1: Tournament name as title
                   return context[0].raw.tournament;
                 },
                 label: function(context) {
-                  return 'Rating: ' + Math.round(context.raw.y); // Ensure integer display
+                  // Row 2: Rating
+                  let label = 'Rating: ' + Math.round(context.raw.y);
+                  
+                  // Row 3: Date (on a new line)
+                  if (context.raw.date) {
+                    label += '\n' + context.raw.date;
+                  }
+                  
+                  // Row 4: Location (on a new line)
+                  if (context.raw.location) {
+                    label += '\n' + context.raw.location;
+                  }
+                  
+                  return label;
                 }
               },
               // Custom tooltip layout
-              titleMarginBottom: 8,
-              bodySpacing: 6,
+              titleMarginBottom: 10,
+              bodySpacing: 8,
               xPadding: 12,
               yPadding: 12
             }
@@ -135,33 +147,37 @@ document.addEventListener('DOMContentLoaded', function() {
               max: maxRating,
               title: {
                 display: true,
-                text: 'Rating'
+                text: 'Rating',
+                font: {
+                  weight: 'bold',
+                  size: 14
+                }
               },
               grid: {
                 color: 'rgba(200, 200, 200, 0.1)'
               },
               ticks: {
-                color: '#666'
+                color: '#666',
+                font: {
+                  size: 12
+                }
               }
             },
             x: {
-              title: {
-                display: true,
-                text: 'Date'
-              },
-              ticks: {
-                color: '#666',
-                maxRotation: 45,
-                minRotation: 45
-              },
-              grid: {
-                display: false
-              }
+              display: false  // Hide the x-axis completely
             }
           },
           elements: {
             line: {
-              tension: 0.4 // Makes the line smoother
+              tension: 0.4  // Makes the line smoother
+            }
+          },
+          layout: {
+            padding: {
+              top: 10,
+              right: 20,
+              bottom: 10,
+              left: 10
             }
           }
         }
