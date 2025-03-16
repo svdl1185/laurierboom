@@ -1,4 +1,4 @@
-// static/chess/js/components/rating-chart.js
+// Updated rating-chart.js with better data handling
 document.addEventListener('DOMContentLoaded', function() {
   const chartContainer = document.getElementById('rating-history-chart');
   if (!chartContainer) return;
@@ -22,62 +22,71 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      // Group data by tournament rather than by individual match
-      const tournaments = {};
-      
-      // Group matches by tournament and date
-      data.forEach(item => {
-        const key = `${item.tournament}_${item.date}`;
-        if (!tournaments[key]) {
-          tournaments[key] = {
-            date: item.date,
-            tournament: item.tournament,
-            rating: item.rating,
-            time_control: item.time_control
-          };
-        }
+      // Sort data by date if needed
+      data.sort((a, b) => {
+        return new Date(a.date) - new Date(b.date);
       });
       
-      // Convert to array and sort by date
-      const processedData = Object.values(tournaments).sort((a, b) => 
-        new Date(a.date) - new Date(b.date)
-      );
-      
       // Extract all dates for x-axis
-      const allDates = [...new Set(processedData.map(item => item.date))].sort();
+      const allDates = data.map(item => item.date);
       
-      // Find min and max ratings for y-axis scale
-      const allRatings = processedData.map(item => item.rating).filter(rating => rating !== null);
+      // Find min and max ratings for y-axis scale with a bit of padding
+      const allRatings = data.map(item => item.rating).filter(rating => rating !== null);
       
-      const minRating = Math.min(...allRatings, 1400) - 50;
-      const maxRating = Math.max(...allRatings, 1600) + 50;
+      const minRating = Math.floor((Math.min(...allRatings) - 50) / 100) * 100;
+      const maxRating = Math.ceil((Math.max(...allRatings) + 50) / 100) * 100;
+      
+      // Group data by time control
+      const timeControls = [...new Set(data.map(item => item.time_control))];
+      
+      // Create datasets for each time control
+      const datasets = timeControls.map(timeControl => {
+        const controlData = data.filter(item => item.time_control === timeControl);
+        
+        // Define colors based on time control
+        let color;
+        switch(timeControl) {
+          case 'bullet':
+            color = '#ff4d4d';
+            break;
+          case 'blitz':
+            color = '#4da6ff';
+            break;
+          case 'rapid':
+            color = '#4dff4d';
+            break;
+          case 'classical':
+            color = '#9966ff';
+            break;
+          default:
+            color = '#19e893';  // Default green color from your theme
+        }
+        
+        return {
+          label: timeControl.charAt(0).toUpperCase() + timeControl.slice(1),
+          data: controlData.map(item => ({
+            x: item.date,
+            y: item.rating,
+            tournament: item.tournament
+          })),
+          borderColor: color,
+          backgroundColor: color + '20', // Add transparency
+          borderWidth: 2,
+          pointBackgroundColor: color,
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          tension: 0.2,
+          fill: false
+        };
+      });
       
       // Create the chart
       const ctx = canvas.getContext('2d');
       const chart = new Chart(ctx, {
         type: 'line',
-        data: {
-          labels: allDates,
-          datasets: [
-            {
-              label: 'Blitz',
-              data: processedData.map(item => ({
-                x: item.date,
-                y: item.rating,
-                tournament: item.tournament
-              })),
-              borderColor: 'rgba(54, 162, 235, 1)',
-              backgroundColor: 'rgba(54, 162, 235, 0.2)',
-              borderWidth: 2,
-              pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 1,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              tension: 0.1
-            }
-          ]
-        },
+        data: { datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -85,18 +94,39 @@ document.addEventListener('DOMContentLoaded', function() {
             legend: {
               position: 'top',
               labels: {
-                boxWidth: 12
+                boxWidth: 12,
+                color: '#666'
               }
             },
             tooltip: {
+              backgroundColor: '#1a2721',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              titleFont: {
+                family: "'Roboto', sans-serif",
+                weight: 'bold',
+                size: 14
+              },
+              bodyFont: {
+                family: "'Roboto', sans-serif",
+                size: 14
+              },
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: false,
               callbacks: {
                 title: function(context) {
                   return context[0].raw.tournament;
                 },
                 label: function(context) {
-                  return 'Rating: ' + context.raw.y;
+                  return 'Rating: ' + Math.round(context.raw.y); // Ensure integer display
                 }
-              }
+              },
+              // Custom tooltip layout
+              titleMarginBottom: 8,
+              bodySpacing: 6,
+              xPadding: 12,
+              yPadding: 12
             }
           },
           scales: {
@@ -106,6 +136,12 @@ document.addEventListener('DOMContentLoaded', function() {
               title: {
                 display: true,
                 text: 'Rating'
+              },
+              grid: {
+                color: 'rgba(200, 200, 200, 0.1)'
+              },
+              ticks: {
+                color: '#666'
               }
             },
             x: {
@@ -114,9 +150,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 text: 'Date'
               },
               ticks: {
+                color: '#666',
                 maxRotation: 45,
                 minRotation: 45
+              },
+              grid: {
+                display: false
               }
+            }
+          },
+          elements: {
+            line: {
+              tension: 0.4 // Makes the line smoother
             }
           }
         }
