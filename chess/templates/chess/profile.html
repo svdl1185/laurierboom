@@ -1021,58 +1021,76 @@
 
             <!-- Accolades Panel -->
             <div class="profile-panel">
-                <h2 class="profile-panel-title">Accolades</h2>
+                <h2 class="profile-panel-title">Trophies</h2>
                 
                 <div class="info-container">
-                    <div class="accolades-grid">
-                        <!-- Emotional Support Bear -->
-                        <div class="accolade-item">
-                            <div class="accolade-icon">
-                                <i class="fas fa-paw"></i>
+                    {% if accolades.support_bear > 0 or accolades.dummies > 0 or accolades.goat > 0 or accolades.truce_seeker > 0 %}
+                        <div class="accolades-grid">
+                            <!-- Emotional Support Bear - only show if earned -->
+                            {% if accolades.support_bear > 0 %}
+                            <div class="accolade-item">
+                                <div class="accolade-icon">
+                                    <i class="fas fa-paw"></i>
+                                </div>
+                                <div class="accolade-info">
+                                    <div class="accolade-name">Emotional Support Bear</div>
+                                    <div class="accolade-desc">No wins in a tournament</div>
+                                </div>
+                                <div class="accolade-count">{{ accolades.support_bear }}</div>
                             </div>
-                            <div class="accolade-info">
-                                <div class="accolade-name">Emotional Support Bear</div>
-                                <div class="accolade-desc">No wins in a tournament</div>
+                            {% endif %}
+                            
+                            <!-- Chess for Dummies - only show if earned -->
+                            {% if accolades.dummies > 0 %}
+                            <div class="accolade-item">
+                                <div class="accolade-icon">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <div class="accolade-info">
+                                    <div class="accolade-name">Chess for Dummies</div>
+                                    <div class="accolade-desc">Last place in a tournament</div>
+                                </div>
+                                <div class="accolade-count">{{ accolades.dummies }}</div>
                             </div>
-                            <div class="accolade-count">{{ accolades.support_bear|default:"0" }}</div>
+                            {% endif %}
+                            
+                            <!-- The Ace - only show if earned -->
+                            {% if accolades.goat > 0 %}
+                            <div class="accolade-item">
+                                <div class="accolade-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="accolade-info">
+                                    <div class="accolade-name">The Ace</div>
+                                    <div class="accolade-desc">Won all games in a tournament</div>
+                                </div>
+                                <div class="accolade-count">{{ accolades.goat }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Truce Seeker - only show if earned -->
+                            {% if accolades.truce_seeker > 0 %}
+                            <div class="accolade-item">
+                                <div class="accolade-icon">
+                                    <i class="fas fa-handshake"></i>
+                                </div>
+                                <div class="accolade-info">
+                                    <div class="accolade-name">Truce Seeker</div>
+                                    <div class="accolade-desc">50%+ draws in a tournament</div>
+                                </div>
+                                <div class="accolade-count">{{ accolades.truce_seeker }}</div>
+                            </div>
+                            {% endif %}
                         </div>
-                        
-                        <!-- Chess for Dummies -->
-                        <div class="accolade-item">
-                            <div class="accolade-icon">
-                                <i class="fas fa-book"></i>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-trophy text-muted" style="font-size: 3rem;"></i>
                             </div>
-                            <div class="accolade-info">
-                                <div class="accolade-name">Chess for Dummies</div>
-                                <div class="accolade-desc">Last place in a tournament</div>
-                            </div>
-                            <div class="accolade-count">{{ accolades.dummies|default:"0" }}</div>
+                            <p class="text-muted">No trophies earned yet</p>
+                            <p class="small text-muted">Participate in tournaments to earn trophies!</p>
                         </div>
-                        
-                        <!-- The Ace -->
-                        <div class="accolade-item">
-                            <div class="accolade-icon">
-                                <i class="fas fa-trophy"></i>
-                            </div>
-                            <div class="accolade-info">
-                                <div class="accolade-name">The Ace</div>
-                                <div class="accolade-desc">Won all games in a tournament</div>
-                            </div>
-                            <div class="accolade-count">{{ accolades.goat|default:"0" }}</div>
-                        </div>
-                        
-                        <!-- Truce Seeker -->
-                        <div class="accolade-item">
-                            <div class="accolade-icon">
-                                <i class="fas fa-handshake"></i>
-                            </div>
-                            <div class="accolade-info">
-                                <div class="accolade-name">Truce Seeker</div>
-                                <div class="accolade-desc">50%+ draws in a tournament</div>
-                            </div>
-                            <div class="accolade-count">{{ accolades.truce_seeker|default:"0" }}</div>
-                        </div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
             
