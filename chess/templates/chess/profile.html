@@ -1197,28 +1197,12 @@
                 // Group data by time control
                 const timeControls = [...new Set(data.map(item => item.time_control))];
                 
-                // Create datasets for each time control
+                // Define the bright green color used throughout the site
+                const brightGreen = '#19e893';
+                
+                // Create datasets for each time control with unified color scheme
                 const datasets = timeControls.map(timeControl => {
                     const controlData = data.filter(item => item.time_control === timeControl);
-                    
-                    // Define colors based on time control
-                    let color;
-                    switch(timeControl) {
-                        case 'bullet':
-                            color = '#ff4d4d';
-                            break;
-                        case 'blitz':
-                            color = '#4da6ff';
-                            break;
-                        case 'rapid':
-                            color = '#4dff4d';
-                            break;
-                        case 'classical':
-                            color = '#9966ff';
-                            break;
-                        default:
-                            color = '#19e893';  // Default green color from the theme
-                    }
                     
                     return {
                         label: timeControl.charAt(0).toUpperCase() + timeControl.slice(1),
@@ -1227,16 +1211,16 @@
                             y: item.rating,
                             tournament: item.tournament,
                             date: item.date,
-                            location: item.location
+                            location: item.location || 'De Laurierboom, Amsterdam'
                         })),
-                        borderColor: color,
-                        backgroundColor: color + '20', // Add transparency
+                        borderColor: brightGreen,
+                        backgroundColor: brightGreen + '20', // Add transparency
                         borderWidth: 3,
-                        pointBackgroundColor: color,
+                        pointBackgroundColor: brightGreen,
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 9,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
                         tension: 0.2,
                         fill: false
                     };
@@ -1255,48 +1239,43 @@
                                 display: false  // Hide the legend to make it cleaner
                             },
                             tooltip: {
-                                backgroundColor: '#1a2721',
+                                backgroundColor: 'rgba(26, 39, 33, 0.9)',
                                 titleColor: '#fff',
                                 bodyColor: '#fff',
                                 titleFont: {
                                     family: "'Roboto', sans-serif",
                                     weight: 'bold',
-                                    size: 15
+                                    size: 14
                                 },
                                 bodyFont: {
                                     family: "'Roboto', sans-serif",
-                                    size: 14
+                                    size: 13
                                 },
-                                padding: 12,
-                                cornerRadius: 8,
+                                padding: 10,
+                                cornerRadius: 6,
                                 displayColors: false,
                                 callbacks: {
                                     title: function(context) {
-                                        // Row 1: Tournament name as title
+                                        // Tournament name as title
                                         return context[0].raw.tournament;
                                     },
                                     label: function(context) {
-                                        // Row 2: Rating
-                                        let label = 'Rating: ' + Math.round(context.raw.y);
+                                        // Cleaner, more organized tooltip content
+                                        let ratingText = Math.round(context.raw.y);
+                                        let dateText = context.raw.date;
                                         
-                                        // Row 3: Date (on a new line)
-                                        if (context.raw.date) {
-                                            label += '\n' + context.raw.date;
-                                        }
-                                        
-                                        // Row 4: Location (on a new line)
-                                        if (context.raw.location) {
-                                            label += '\n' + context.raw.location;
-                                        }
-                                        
-                                        return label;
+                                        // Return a simplified, cleaner label
+                                        return [
+                                            `Rating: ${ratingText}`,
+                                            `Date: ${dateText}`
+                                        ];
                                     }
                                 },
-                                // Custom tooltip layout
-                                titleMarginBottom: 10,
-                                bodySpacing: 8,
-                                xPadding: 12,
-                                yPadding: 12
+                                // Clean tooltip layout
+                                titleMarginBottom: 8,
+                                bodySpacing: 4,
+                                xPadding: 10,
+                                yPadding: 10
                             }
                         },
                         scales: {
@@ -1309,7 +1288,8 @@
                                     font: {
                                         weight: 'bold',
                                         size: 14
-                                    }
+                                    },
+                                    color: '#333'
                                 },
                                 grid: {
                                     color: 'rgba(200, 200, 200, 0.1)'
@@ -1327,8 +1307,12 @@
                         },
                         elements: {
                             line: {
-                                tension: 0.4  // Makes the line smoother
+                                tension: 0.3  // Makes the line slightly smoother
                             }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'nearest'
                         },
                         layout: {
                             padding: {
