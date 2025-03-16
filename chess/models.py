@@ -73,8 +73,6 @@ class User(AbstractUser):
             return self.get_full_name()
         return self.username
 
-# Update to models.py - Adding max_participants field to Tournament model
-
 class Tournament(models.Model):
     TIME_CONTROL_CHOICES = [
         ('bullet', 'Bullet'),
@@ -185,6 +183,23 @@ class TournamentStanding(models.Model):
     
     def __str__(self):
         return f"{self.player.username} - {self.score} points"
+
+class PlayerRatingHistory(models.Model):
+    """
+    Model to track player rating history after each tournament
+    """
+    player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rating_history')
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    date = models.DateField()
+    rating = models.FloatField()
+    time_control = models.CharField(max_length=20, choices=Tournament.TIME_CONTROL_CHOICES)
+    
+    def __str__(self):
+        return f"{self.player.username} - {self.tournament.name} - {self.rating}"
+    
+    class Meta:
+        unique_together = ('player', 'tournament')
+        ordering = ['date']
 
 # Glicko-2 implementation functions
 def update_glicko2_ratings(match):
@@ -326,7 +341,6 @@ def update_glicko2_ratings(match):
     
     white_player.save()
     black_player.save()
-
 
 @receiver(social_account_added)
 def social_account_added_handler(request, sociallogin, **kwargs):

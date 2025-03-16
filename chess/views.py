@@ -9,9 +9,10 @@ from django.db.models import F, Count, Sum, Q, Avg
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.generic import TemplateView
 from django.utils import timezone
+import datetime
 from django.contrib.auth.decorators import login_required
 
-from .models import Tournament, User, Match, Round, TournamentStanding
+from .models import PlayerRatingHistory, Tournament, User, Match, Round, TournamentStanding
 from .forms import EmptyForm, MatchResultForm, ProfileEditForm, SimplePlayerRegistrationForm, StartTournamentSettingsForm, TournamentForm, UserEditForm, UserRegistrationForm, AddPlayerToTournamentForm
 from .utils import generate_swiss_pairings, generate_round_robin_pairings, update_tournament_standings
 
@@ -1096,6 +1097,29 @@ def complete_tournament(request, tournament_id):
     # Update tournament standings one last time
     update_tournament_standings(tournament)
     
+    # Save rating history for each participant
+    for participant in tournament.participants.all():
+        # Determine which rating to use based on tournament time control
+        if tournament.time_control == 'bullet':
+            rating = participant.bullet_elo
+        elif tournament.time_control == 'blitz':
+            rating = participant.blitz_elo
+        elif tournament.time_control == 'rapid':
+            rating = participant.rapid_elo
+        elif tournament.time_control == 'classical':
+            rating = participant.classical_elo
+        else:
+            rating = participant.elo
+            
+        # Create the rating history entry
+        PlayerRatingHistory.objects.create(
+            player=participant,
+            tournament=tournament,
+            date=tournament.date,
+            rating=round(rating),  # Store as rounded integer
+            time_control=tournament.time_control
+        )
+    
     # Mark the tournament as completed
     tournament.is_completed = True
     tournament.save()
@@ -1179,52 +1203,88 @@ def player_rating_history(request, player_id):
     try:
         player = User.objects.get(pk=player_id)
         
-        # Get all completed tournaments where this player participated
-        tournaments = Tournament.objects.filter(
-            participants=player,
-            is_completed=True
+        # Get player's rating history entries
+        history_entries = PlayerRatingHistory.objects.filter(
+            player=player
         ).order_by('date')
         
-        data = []
-        
-        for tournament in tournaments:
-            time_control = tournament.time_control or 'blitz'
+        # If we have no history entries (for older players), use completed tournaments
+        if not history_entries.exists():
+            # Legacy approach - get completed tournaments where player participated
+            tournaments = Tournament.objects.filter(
+                participants=player,
+                is_completed=True
+            ).order_by('date')
             
-            # Get player's standing in this tournament
-            try:
-                standing = TournamentStanding.objects.get(
-                    tournament=tournament,
-                    player=player
-                )
+            data = []
+            
+            # Try to estimate historical ratings based on current rating
+            for tournament in tournaments:
+                time_control = tournament.time_control or 'blitz'
                 
-                # Determine which rating field to use based on time control
-                if time_control == 'bullet':
-                    rating = player.bullet_elo
-                elif time_control == 'blitz':
-                    rating = player.blitz_elo
-                elif time_control == 'rapid':
-                    rating = player.rapid_elo
-                elif time_control == 'classical':
-                    rating = player.classical_elo
-                else:
-                    rating = player.elo
-                
-                # Add tournament data point
+                # Get player's standing in this tournament
+                try:
+                    standing = TournamentStanding.objects.get(
+                        tournament=tournament,
+                        player=player
+                    )
+                    
+                    # Determine which rating field to use based on time control
+                    if time_control == 'bullet':
+                        rating = player.bullet_elo
+                    elif time_control == 'blitz':
+                        rating = player.blitz_elo
+                    elif time_control == 'rapid':
+                        rating = player.rapid_elo
+                    elif time_control == 'classical':
+                        rating = player.classical_elo
+                    else:
+                        rating = player.elo
+                    
+                    # Add tournament data point
+                    data.append({
+                        'date': tournament.date.strftime('%b %d, %Y'),
+                        'rating': rating,
+                        'time_control': time_control,
+                        'tournament': tournament.name,
+                        'standing': standing.score
+                    })
+                except TournamentStanding.DoesNotExist:
+                    pass
+        else:
+            # New approach - use the stored rating history
+            data = []
+            
+            for entry in history_entries:
+                # Add history entry data point with rounded rating
                 data.append({
-                    'date': tournament.date.strftime('%b %d, %Y'),
-                    'rating': rating,
-                    'time_control': time_control,
-                    'tournament': tournament.name,
-                    'standing': standing.score
+                    'date': entry.date.strftime('%b %d, %Y'),
+                    'rating': round(entry.rating),  # Round to nearest integer
+                    'time_control': entry.time_control,
+                    'tournament': entry.tournament.name,
+                    'standing': None  # Could look this up if needed
                 })
-            except TournamentStanding.DoesNotExist:
-                pass
+                
+            # Add initial starting rating if we have history entries
+            if data:
+                # Add starting rating entry (before first tournament)
+                initial_rating = 1500  # Default starting rating
+                first_entry_date = datetime.datetime.strptime(data[0]['date'], '%b %d, %Y').date()
+                initial_date = (first_entry_date - datetime.timedelta(days=7)).strftime('%b %d, %Y')
+                
+                data.insert(0, {
+                    'date': initial_date,
+                    'rating': round(initial_rating),  # Round to nearest integer
+                    'time_control': data[0]['time_control'],
+                    'tournament': 'Initial Rating',
+                    'standing': None
+                })
         
         return JsonResponse(data, safe=False)
     
     except User.DoesNotExist:
         return JsonResponse({'error': 'Player not found'}, status=404)
-    
+
 def register_for_tournament(request, tournament_id):
     """View for players to register for tournaments"""
     if not request.user.is_authenticated:
