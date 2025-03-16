@@ -385,31 +385,44 @@ class TournamentDetailView(DetailView):
             if rounds.exists():
                 context['current_round'] = rounds.latest('number')
                 context['current_matches'] = context['current_round'].matches.all()
+                
+                # No more rounds to complete - set a flag to hide the "Complete Current Round" button
+                context['all_rounds_completed'] = True
             else:
                 context['current_round'] = None
                 context['current_matches'] = []
         
-        # Check if this is the final round for admin controls visibility
-        if tournament.num_rounds and rounds.exists():
-            context['is_final_round'] = rounds.latest('number').number >= tournament.num_rounds
+        # Calculate the expected number of rounds for this tournament
+        participant_count = tournament.participants.count()
+        
+        # Special handling for 2-player tournaments
+        if participant_count == 2:
+            if tournament.tournament_type == 'round_robin':
+                expected_rounds = 1
+            elif tournament.tournament_type == 'double_round_robin':
+                expected_rounds = 2
+            else:  # Swiss
+                expected_rounds = tournament.num_rounds
         else:
-            context['is_final_round'] = False
+            # Standard calculation for more participants
+            if tournament.tournament_type == 'round_robin':
+                if participant_count % 2 == 1:
+                    expected_rounds = participant_count
+                else:
+                    expected_rounds = participant_count - 1
+            elif tournament.tournament_type == 'double_round_robin':
+                if participant_count % 2 == 1:
+                    expected_rounds = participant_count * 2
+                else:
+                    expected_rounds = (participant_count - 1) * 2
+            else:  # Swiss
+                expected_rounds = tournament.num_rounds
         
-        # Add available players for dropdown
-        if self.request.user.is_staff and not tournament.is_completed:
-            # Get already registered player IDs
-            registered_player_ids = tournament.participants.values_list('id', flat=True)
-            
-            # Get available players (not registered, not staff/superuser)
-            available_players = User.objects.filter(
-                is_active=True, 
-                is_staff=False, 
-                is_superuser=False
-            ).exclude(id__in=registered_player_ids).order_by('first_name', 'last_name')
-            
-            context['available_players'] = available_players
+        # Check if all expected rounds exist and are completed
+        completed_rounds_count = rounds.filter(is_completed=True).count()
+        context['can_end_tournament'] = (completed_rounds_count >= expected_rounds)
         
-        # For board numbers assignment:
+        # For board numbers assignment (unchanged)
         if context['current_round'] and context['current_matches']:
             current_matches = list(context['current_matches'])
             
@@ -431,8 +444,22 @@ class TournamentDetailView(DetailView):
             
             context['current_matches'] = current_matches
         
+        # Add available players for dropdown (unchanged)
+        if self.request.user.is_staff and not tournament.is_completed:
+            # Get already registered player IDs
+            registered_player_ids = tournament.participants.values_list('id', flat=True)
+            
+            # Get available players (not registered, not staff/superuser)
+            available_players = User.objects.filter(
+                is_active=True, 
+                is_staff=False, 
+                is_superuser=False
+            ).exclude(id__in=registered_player_ids).order_by('first_name', 'last_name')
+            
+            context['available_players'] = available_players
+        
         return context
-    
+
 class CreateTournamentView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     """View for creating new tournaments (admin only)"""
     model = Tournament
@@ -1028,20 +1055,31 @@ def complete_round(request, tournament_id, round_id):
     # Update tournament standings
     update_tournament_standings(tournament)
     
-    # Calculate the planned total rounds based on tournament type
+    # Calculate the planned total rounds based on tournament type and participants count
     participant_count = tournament.participants.count()
-    if tournament.tournament_type == 'round_robin':
-        if participant_count % 2 == 1:
-            planned_rounds = participant_count
-        else:
-            planned_rounds = participant_count - 1
-    elif tournament.tournament_type == 'double_round_robin':
-        if participant_count % 2 == 1:
-            planned_rounds = participant_count * 2
-        else:
-            planned_rounds = (participant_count - 1) * 2
-    else:  # Swiss
-        planned_rounds = tournament.num_rounds
+    
+    # Special handling for 2-player Round Robin
+    if participant_count == 2:
+        if tournament.tournament_type == 'round_robin':
+            planned_rounds = 1
+        elif tournament.tournament_type == 'double_round_robin':
+            planned_rounds = 2
+        else:  # Swiss
+            planned_rounds = tournament.num_rounds
+    else:
+        # Normal calculation for more than 2 players
+        if tournament.tournament_type == 'round_robin':
+            if participant_count % 2 == 1:
+                planned_rounds = participant_count
+            else:
+                planned_rounds = participant_count - 1
+        elif tournament.tournament_type == 'double_round_robin':
+            if participant_count % 2 == 1:
+                planned_rounds = participant_count * 2
+            else:
+                planned_rounds = (participant_count - 1) * 2
+        else:  # Swiss
+            planned_rounds = tournament.num_rounds
     
     # Check if there are more rounds to be played
     if round_obj.number < planned_rounds:
@@ -1068,8 +1106,8 @@ def complete_round(request, tournament_id, round_id):
         else:
             messages.info(request, f"Round {round_obj.number} completed. Round {round_obj.number + 1} already exists.")
     else:
-        # All planned rounds are done
-        messages.success(request, f"Round {round_obj.number} completed. All planned rounds are now finished.")
+        # All planned rounds are done - inform the admin
+        messages.success(request, f"Round {round_obj.number} completed. All planned rounds are now finished. You can end the tournament.")
     
     return redirect('tournament_detail', pk=tournament_id)
 

@@ -869,7 +869,7 @@
                 <h3>Admin Controls</h3>
                 <div class="card">
                     <div class="card-body">
-                        {% if current_round %}
+                        {% if current_round and not all_rounds_completed %}
                             <form method="post" action="{% url 'complete_round' tournament.id current_round.id %}" class="d-inline mb-3" 
                                 onsubmit="return confirm('Are all matches complete? This will generate the next round.');">
                                 {% csrf_token %}
@@ -879,16 +879,14 @@
                             </form>
                         {% endif %}
                 
-                        {% if user.is_staff and rounds %}
-                            {% if current_round and rounds|length == tournament.num_rounds and current_round.is_completed %}
-                                <form method="post" action="{% url 'complete_tournament' tournament.id %}" class="d-inline ms-2" 
-                                    onsubmit="return confirm('Are you sure you want to complete this tournament? This cannot be undone.');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger">
-                                        <i class="fas fa-flag-checkered me-2"></i>End Tournament
-                                    </button>
-                                </form>
-                            {% endif %}
+                        {% if user.is_staff and can_end_tournament %}
+                            <form method="post" action="{% url 'complete_tournament' tournament.id %}" class="d-inline ms-2" 
+                                onsubmit="return confirm('Are you sure you want to complete this tournament? This cannot be undone.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-flag-checkered me-2"></i>End Tournament
+                                </button>
+                            </form>
                         {% endif %}
                     </div>
                 </div>
