@@ -536,5 +536,422 @@ def check_achievements(user):
         )
         if created:
             new_achievements.append(achievement)
+
+
+    # --- COMMUNITY ACHIEVEMENTS ---
+    
+    # Social Butterfly - Play against 15 different opponents
+    opponents = set()
+    for match in all_matches:
+        if match.white_player == user:
+            opponents.add(match.black_player.id)
+        else:
+            opponents.add(match.white_player.id)
+    
+    if len(opponents) >= 15:
+        achievement, created = Achievement.objects.get_or_create(
+            user=user, 
+            achievement_type='social_butterfly'
+        )
+        if created:
+            new_achievements.append(achievement)
+    
+    # Rival Nemesis - Win 3 consecutive games against the same opponent
+    # Group matches by opponent
+    opponent_matches = {}
+    for match in all_matches:
+        if match.white_player == user and match.result == 'white_win':
+            opponent_id = match.black_player.id
+            if opponent_id not in opponent_matches:
+                opponent_matches[opponent_id] = []
+            opponent_matches[opponent_id].append((match.tournament.date, match.round.number, 'win'))
+        elif match.black_player == user and match.result == 'black_win':
+            opponent_id = match.white_player.id
+            if opponent_id not in opponent_matches:
+                opponent_matches[opponent_id] = []
+            opponent_matches[opponent_id].append((match.tournament.date, match.round.number, 'win'))
+        elif match.white_player == user and match.result != 'white_win':
+            opponent_id = match.black_player.id
+            if opponent_id not in opponent_matches:
+                opponent_matches[opponent_id] = []
+            opponent_matches[opponent_id].append((match.tournament.date, match.round.number, 'not_win'))
+        elif match.black_player == user and match.result != 'black_win':
+            opponent_id = match.white_player.id
+            if opponent_id not in opponent_matches:
+                opponent_matches[opponent_id] = []
+            opponent_matches[opponent_id].append((match.tournament.date, match.round.number, 'not_win'))
+    
+    # Check for 3 consecutive wins against any opponent
+    for opponent_id, matches in opponent_matches.items():
+        # Sort by date and round
+        matches.sort()
+        consecutive_wins = 0
+        max_consecutive_wins = 0
+        
+        for _, _, result in matches:
+            if result == 'win':
+                consecutive_wins += 1
+                max_consecutive_wins = max(max_consecutive_wins, consecutive_wins)
+            else:
+                consecutive_wins = 0
+        
+        if max_consecutive_wins >= 3:
+            achievement, created = Achievement.objects.get_or_create(
+                user=user, 
+                achievement_type='rival_nemesis'
+            )
+            if created:
+                new_achievements.append(achievement)
+            break
+    
+    # Bar Legend - Participate in 10 consecutive weekly tournaments
+    all_tournaments = user.tournaments.order_by('date')
+    if all_tournaments.count() >= 10:
+        # Convert to list for easier manipulation
+        tournament_dates = list(all_tournaments.values_list('date', flat=True))
+        
+        # Check for consecutive weekly tournaments
+        consecutive_weeks = 1
+        max_consecutive_weeks = 1
+        
+        for i in range(1, len(tournament_dates)):
+            # If the difference between tournaments is 5-9 days, consider it weekly
+            days_diff = (tournament_dates[i] - tournament_dates[i-1]).days
+            if 5 <= days_diff <= 9:
+                consecutive_weeks += 1
+                max_consecutive_weeks = max(max_consecutive_weeks, consecutive_weeks)
+            else:
+                consecutive_weeks = 1
+        
+        if max_consecutive_weeks >= 10:
+            achievement, created = Achievement.objects.get_or_create(
+                user=user,
+                achievement_type='bar_legend'
+            )
+            if created:
+                new_achievements.append(achievement)
+    
+    # --- MILESTONE ACHIEVEMENTS ---
+    
+    # Century Club - Play 100 rated games
+    total_games = all_matches.count()
+    if total_games >= 100:
+        achievement, created = Achievement.objects.get_or_create(
+            user=user,
+            achievement_type='century_club'
+        )
+        if created:
+            new_achievements.append(achievement)
+    
+    # Blitz Marathon - Play 10 games in a single day
+    # Group matches by date
+    matches_by_date = {}
+    for match in all_matches:
+        match_date = match.tournament.date
+        if match_date not in matches_by_date:
+            matches_by_date[match_date] = 0
+        matches_by_date[match_date] += 1
+    
+    # Check if any date has 10+ games
+    for date, count in matches_by_date.items():
+        if count >= 10:
+            achievement, created = Achievement.objects.get_or_create(
+                user=user,
+                achievement_type='blitz_marathon'
+            )
+            if created:
+                new_achievements.append(achievement)
+            break
+    
+    # --- WHIMSICAL ACHIEVEMENTS ---
+    
+    # Phoenix Rising - Lose 3 consecutive games then win the next 3
+    if all_matches.count() >= 6:
+        results = []
+        for match in all_matches.order_by('tournament__date', 'round__number'):
+            if (match.white_player == user and match.result == 'white_win') or \
+               (match.black_player == user and match.result == 'black_win'):
+                results.append('win')
+            elif match.result != 'draw':  # Only count definite losses
+                results.append('loss')
+        
+        # Look for pattern: loss, loss, loss, win, win, win
+        for i in range(len(results) - 5):
+            if results[i:i+6] == ['loss', 'loss', 'loss', 'win', 'win', 'win']:
+                achievement, created = Achievement.objects.get_or_create(
+                    user=user,
+                    achievement_type='phoenix_rising'
+                )
+                if created:
+                    new_achievements.append(achievement)
+                break
+    
+    # Draw Magnet - Draw 3 consecutive games
+    if all_matches.count() >= 3:
+        consecutive_draws = 0
+        max_consecutive_draws = 0
+        
+        for match in all_matches.order_by('tournament__date', 'round__number'):
+            if match.result == 'draw':
+                consecutive_draws += 1
+                max_consecutive_draws = max(max_consecutive_draws, consecutive_draws)
+            else:
+                consecutive_draws = 0
+        
+        if max_consecutive_draws >= 3:
+            achievement, created = Achievement.objects.get_or_create(
+                user=user,
+                achievement_type='draw_magnet'
+            )
+            if created:
+                new_achievements.append(achievement)
+    
+    # Last Stand - Win your final game after losing all previous games in a tournament
+    for tournament in tournaments:
+        tournament_matches = Match.objects.filter(
+            tournament=tournament
+        ).filter(
+            Q(white_player=user) | Q(black_player=user)
+        ).exclude(result='pending').order_by('round__number')
+        
+        if tournament_matches.count() >= 2:
+            # Get only the user's results
+            results = []
+            for match in tournament_matches:
+                if (match.white_player == user and match.result == 'white_win') or \
+                   (match.black_player == user and match.result == 'black_win'):
+                    results.append('win')
+                elif match.result == 'draw':
+                    results.append('draw')
+                else:
+                    results.append('loss')
+            
+            # Check if all games were losses except the last one which was a win
+            if all(result == 'loss' for result in results[:-1]) and results[-1] == 'win':
+                achievement, created = Achievement.objects.get_or_create(
+                    user=user,
+                    achievement_type='last_stand',
+                    tournament=tournament
+                )
+                if created:
+                    new_achievements.append(achievement)
+    
+    # --- ACHIEVEMENT TROPHIES ---
+    
+    # Grand Slam - Win tournaments in all four time controls
+    time_control_wins = set()
+    for tournament in tournaments:
+        try:
+            standing = TournamentStanding.objects.get(
+                tournament=tournament,
+                player=user,
+                rank=1
+            )
+            time_control_wins.add(tournament.time_control)
+        except TournamentStanding.DoesNotExist:
+            pass
+    
+    # Check if all 4 time controls have been won
+    if len(time_control_wins) >= 4:  # bullet, blitz, rapid, classical
+        achievement, created = Achievement.objects.get_or_create(
+            user=user,
+            achievement_type='grand_slam'
+        )
+        if created:
+            new_achievements.append(achievement)
+    
+    # Format Master - Win tournaments in all three formats
+    format_wins = set()
+    for tournament in tournaments:
+        if tournament.tournament_type:  # Skip tournaments with no defined type
+            try:
+                standing = TournamentStanding.objects.get(
+                    tournament=tournament,
+                    player=user,
+                    rank=1
+                )
+                format_wins.add(tournament.tournament_type)
+            except TournamentStanding.DoesNotExist:
+                pass
+    
+    # Check if all 3 formats have been won
+    all_formats = {'swiss', 'round_robin', 'double_round_robin'}
+    if format_wins >= all_formats:
+        achievement, created = Achievement.objects.get_or_create(
+            user=user,
+            achievement_type='format_master'
+        )
+        if created:
+            new_achievements.append(achievement)
+    
+    # Seasonal Champion - Win tournaments in Spring, Summer, Fall, and Winter
+    season_wins = set()
+    for tournament in tournaments:
+        try:
+            standing = TournamentStanding.objects.get(
+                tournament=tournament,
+                player=user,
+                rank=1
+            )
+            # Determine season based on month
+            month = tournament.date.month
+            if 3 <= month <= 5:
+                season_wins.add('spring')
+            elif 6 <= month <= 8:
+                season_wins.add('summer')
+            elif 9 <= month <= 11:
+                season_wins.add('fall')
+            else:  # 12, 1, 2
+                season_wins.add('winter')
+        except TournamentStanding.DoesNotExist:
+            pass
+    
+    # Check if all 4 seasons have been won
+    if len(season_wins) >= 4:
+        achievement, created = Achievement.objects.get_or_create(
+            user=user,
+            achievement_type='seasonal_champion'
+        )
+        if created:
+            new_achievements.append(achievement)
+    
+    # The Perfectionist - Complete 5 tournaments without a single loss
+    perfect_tournaments = 0
+    for tournament in tournaments:
+        tournament_matches = Match.objects.filter(
+            tournament=tournament
+        ).filter(
+            Q(white_player=user) | Q(black_player=user)
+        ).exclude(result='pending')
+        
+        # Check if there are any losses
+        has_loss = False
+        for match in tournament_matches:
+            if (match.white_player == user and match.result == 'black_win') or \
+               (match.black_player == user and match.result == 'white_win'):
+                has_loss = True
+                break
+        
+        if not has_loss and tournament_matches.exists():
+            perfect_tournaments += 1
+    
+    if perfect_tournaments >= 5:
+        achievement, created = Achievement.objects.get_or_create(
+            user=user,
+            achievement_type='the_perfectionist'
+        )
+        if created:
+            new_achievements.append(achievement)
+    
+    # --- UNCONVENTIONAL ACHIEVEMENTS ---
+    
+    # Comeback King/Queen - Win a tournament after being in bottom half before final round
+    for tournament in tournaments:
+        # Check if user won this tournament
+        try:
+            standing = TournamentStanding.objects.get(
+                tournament=tournament,
+                player=user,
+                rank=1
+            )
+            
+            # If tournament had at least 2 rounds, check standing before final round
+            rounds = tournament.rounds.order_by('number')
+            if rounds.count() >= 2:
+                penultimate_round = rounds.order_by('-number')[1]  # Second to last round
+                
+                # Calculate standings after penultimate round
+                # This is simplified - ideally we would get historical standings
+                matches_before_final = Match.objects.filter(
+                    tournament=tournament,
+                    round__number__lte=penultimate_round.number
+                ).exclude(result='pending')
+                
+                # Count points for each player
+                player_points = {}
+                for match in matches_before_final:
+                    if match.result == 'white_win':
+                        if match.white_player.id not in player_points:
+                            player_points[match.white_player.id] = 0
+                        player_points[match.white_player.id] += 1
+                    elif match.result == 'black_win':
+                        if match.black_player.id not in player_points:
+                            player_points[match.black_player.id] = 0
+                        player_points[match.black_player.id] += 1
+                    elif match.result == 'draw':
+                        if match.white_player.id not in player_points:
+                            player_points[match.white_player.id] = 0
+                        if match.black_player.id not in player_points:
+                            player_points[match.black_player.id] = 0
+                        player_points[match.white_player.id] += 0.5
+                        player_points[match.black_player.id] += 0.5
+                
+                # Sort players by points
+                sorted_players = sorted(player_points.items(), key=lambda x: x[1], reverse=True)
+                
+                # Check if user was in bottom half
+                player_position = next((i for i, (pid, _) in enumerate(sorted_players) if pid == user.id), -1)
+                if player_position >= len(sorted_players) / 2:
+                    achievement, created = Achievement.objects.get_or_create(
+                        user=user,
+                        achievement_type='comeback_king',
+                        tournament=tournament
+                    )
+                    if created:
+                        new_achievements.append(achievement)
+        except TournamentStanding.DoesNotExist:
+            continue
+    
+    # Late Bloomer - Win your first tournament after playing in 10+ tournaments
+    first_win = None
+    for tournament in tournaments.order_by('date'):
+        try:
+            standing = TournamentStanding.objects.get(
+                tournament=tournament,
+                player=user,
+                rank=1
+            )
+            first_win = tournament
+            break
+        except TournamentStanding.DoesNotExist:
+            continue
+    
+    if first_win:
+        # Count tournaments before this win
+        tournaments_before_win = tournaments.filter(date__lt=first_win.date).count()
+        if tournaments_before_win >= 10:
+            achievement, created = Achievement.objects.get_or_create(
+                user=user,
+                achievement_type='late_bloomer',
+                tournament=first_win
+            )
+            if created:
+                new_achievements.append(achievement)
+    
+    # Score Maximizer - Score 90%+ of possible points in a tournament with 5+ rounds
+    for tournament in tournaments:
+        rounds = tournament.rounds.count()
+        if rounds >= 5:
+            try:
+                standing = TournamentStanding.objects.get(
+                    tournament=tournament,
+                    player=user
+                )
+                
+                # Calculate maximum possible points
+                # In a tournament with n rounds, max points is n
+                max_points = rounds
+                
+                # Check if scored 90%+ of possible points
+                if standing.score >= 0.9 * max_points:
+                    achievement, created = Achievement.objects.get_or_create(
+                        user=user,
+                        achievement_type='score_maximizer',
+                        tournament=tournament
+                    )
+                    if created:
+                        new_achievements.append(achievement)
+            except TournamentStanding.DoesNotExist:
+                continue
     
     return new_achievements

@@ -250,16 +250,43 @@ class Achievement(models.Model):
         ('classical_conqueror', 'Classical Conqueror'),
         
         # Rating-based
-        ('rating_1600', 'Candidate Master'),
-        ('rating_1800', 'FIDE Master'),
-        ('rating_2000', 'International Master'),
-        ('rating_2200', 'Grandmaster'),
+        ('rating_1600', 'Rising Star'),
+        ('rating_1800', 'Advanced Player'),
+        ('rating_2000', 'Expert Player'),
+        ('rating_2200', 'Master Player'),
         
         # Existing achievements
         ('support_bear', 'Emotional Support Bear'),
         ('dummies', 'Chess for Dummies'),
         ('goat', 'The Ace'),
         ('truce_seeker', 'Truce Seeker'),
+
+        # Community Trophies
+        ('social_butterfly', 'Social Butterfly'),
+        ('rival_nemesis', 'Rival Nemesis'),
+        ('kingmaker', 'Kingmaker'),
+        ('bar_legend', 'Bar Legend'),
+
+        # Milestone Trophies
+        ('century_club', 'Century Club'),
+        ('blitz_marathon', 'Blitz Marathon'),
+
+        # Whimsical Trophies
+        ('phoenix_rising', 'Phoenix Rising'),
+        ('draw_magnet', 'Draw Magnet'),
+        ('the_spoiler', 'The Spoiler'),
+        ('last_stand', 'Last Stand'),
+
+        # Achievement Trophies
+        ('grand_slam', 'Grand Slam'),
+        ('format_master', 'Format Master'),
+        ('seasonal_champion', 'Seasonal Champion'),
+        ('the_perfectionist', 'The Perfectionist'),
+
+        # Unconventional Trophies
+        ('comeback_king', 'Comeback King/Queen'),
+        ('late_bloomer', 'Late Bloomer'),
+        ('score_maximizer', 'Score Maximizer'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='achievements')
@@ -338,6 +365,33 @@ class Achievement(models.Model):
             'dummies': 'fa-book',
             'goat': 'fa-trophy',
             'truce_seeker': 'fa-handshake',
+
+            # Community Trophies
+            'social_butterfly': 'fa-users',
+            'rival_nemesis': 'fa-user-secret',
+            'kingmaker': 'fa-chess-king',
+            'bar_legend': 'fa-glass-cheers',
+            
+            # Milestone Trophies
+            'century_club': 'fa-hundred-points',
+            'blitz_marathon': 'fa-running',
+            
+            # Whimsical Trophies
+            'phoenix_rising': 'fa-phoenix-framework',
+            'draw_magnet': 'fa-magnet',
+            'the_spoiler': 'fa-ban',
+            'last_stand': 'fa-flag',
+            
+            # Achievement Trophies
+            'grand_slam': 'fa-award',
+            'format_master': 'fa-certificate',
+            'seasonal_champion': 'fa-sun',
+            'the_perfectionist': 'fa-check-double',
+            
+            # Unconventional Trophies
+            'comeback_king': 'fa-arrow-up',
+            'late_bloomer': 'fa-hourglass-end',
+            'score_maximizer': 'fa-percentage',
         }
         return icons.get(self.achievement_type, 'fa-award')
     
@@ -401,6 +455,33 @@ class Achievement(models.Model):
             'dummies': 'Last place in a tournament',
             'goat': 'Won all games in a tournament',
             'truce_seeker': '50%+ draws in a tournament',
+
+            # Community Trophies
+            'social_butterfly': 'Play against 15 different opponents',
+            'rival_nemesis': 'Win 3 consecutive games against the same opponent',
+            'kingmaker': 'Beat a tournament leader in the final round, changing who wins',
+            'bar_legend': 'Participate in 10 consecutive weekly tournaments',
+            
+            # Milestone Trophies
+            'century_club': 'Play 100 rated games',
+            'blitz_marathon': 'Play 10 games in a single day',
+            
+            # Whimsical Trophies
+            'phoenix_rising': 'Lose 3 consecutive games then win the next 3',
+            'draw_magnet': 'Draw 3 consecutive games',
+            'the_spoiler': 'Defeat a player on a 5+ game winning streak',
+            'last_stand': 'Win your final game after losing all previous games in a tournament',
+            
+            # Achievement Trophies
+            'grand_slam': 'Win tournaments in all four time controls',
+            'format_master': 'Win tournaments in all three formats',
+            'seasonal_champion': 'Win tournaments in Spring, Summer, Fall, and Winter',
+            'the_perfectionist': 'Complete 5 tournaments without a single loss',
+            
+            # Unconventional Trophies
+            'comeback_king': 'Win a tournament after being in bottom half before final round',
+            'late_bloomer': 'Win your first tournament after playing in 10+ tournaments',
+            'score_maximizer': 'Score 90%+ of possible points in a tournament with 5+ rounds',
         }
         return descriptions.get(self.achievement_type, 'Achievement unlocked!')
     
@@ -424,6 +505,33 @@ class Achievement(models.Model):
             'rating_1800': 'blue',
             'rating_2000': 'purple',
             'rating_2200': 'red',
+
+            # Community Trophies
+            'social_butterfly': 'purple',
+            'rival_nemesis': 'red',
+            'kingmaker': 'gold',
+            'bar_legend': 'blue',
+            
+            # Milestone Trophies
+            'century_club': 'silver',
+            'blitz_marathon': 'green',
+            
+            # Whimsical Trophies
+            'phoenix_rising': 'red',
+            'draw_magnet': 'silver',
+            'the_spoiler': 'green',
+            'last_stand': 'gold',
+            
+            # Achievement Trophies
+            'grand_slam': 'gold',
+            'format_master': 'purple',
+            'seasonal_champion': 'green',
+            'the_perfectionist': 'blue',
+            
+            # Unconventional Trophies
+            'comeback_king': 'gold',
+            'late_bloomer': 'green',
+            'score_maximizer': 'purple',
         }
         return colors.get(self.achievement_type, 'teal')  # Default color
 
