@@ -12,7 +12,7 @@ from django.utils import timezone
 import datetime
 from django.contrib.auth.decorators import login_required
 
-from .models import PlayerRatingHistory, Tournament, User, Match, Round, TournamentStanding
+from .models import Achievement, PlayerRatingHistory, Tournament, User, Match, Round, TournamentStanding
 from .forms import EmptyForm, MatchResultForm, ProfileEditForm, SimplePlayerRegistrationForm, StartTournamentSettingsForm, TournamentForm, UserEditForm, UserRegistrationForm, AddPlayerToTournamentForm
 from .utils import generate_swiss_pairings, generate_round_robin_pairings, update_tournament_standings
 
@@ -833,8 +833,60 @@ class ProfileView(TemplateView):
         combined_matches.sort(key=lambda x: (x.round.tournament.date, x.round.number), reverse=True)
         context['recent_matches'] = combined_matches[:10]  # Keep only the 10 most recent
         
-        # Calculate accolades for the user based on their tournament performance
-        context['accolades'] = self.calculate_accolades(profile_user)
+        # Get user achievements
+        from .models import Achievement
+        
+        # Check for new achievements (only if viewing own profile)
+        if context['is_own_profile']:
+            from .achievement_service import check_achievements
+            new_achievements = check_achievements(profile_user)
+            context['new_achievements'] = new_achievements
+        
+        # Organize achievements by category
+        achievements = Achievement.objects.filter(user=profile_user).order_by('-date_achieved')
+        
+        # Group achievements by category for display
+        achievement_categories = {
+            'tournament_victories': [],  # Tournament wins
+            'tournament_medals': [],     # 2nd and 3rd place medals
+            'streaks': [],               # Winning streaks
+            'special_performances': [],  # Perfect tournaments, etc.
+            'formats': [],               # Format specialists
+            'time_controls': [],         # Time control specialists
+            'rating_milestones': [],     # Rating achievements
+            'other': []                  # Other unique achievements
+        }
+        
+        # Categorize achievements
+        tournament_victories = ['tournament_win_1', 'tournament_win_3', 'tournament_win_5', 'tournament_win_10']
+        tournament_medals = ['silver_medal_3', 'silver_medal_5', 'bronze_medal_3', 'bronze_medal_5']
+        streaks = ['hat_trick', 'winning_streak_5', 'winning_streak_10', 'white_dominator', 'black_defender']
+        special_performances = ['clean_sweep', 'perfect_score', 'undefeated', 'comeback_kid', 'underdog', 'giant_slayer',
+                              'support_bear', 'dummies', 'goat', 'truce_seeker']
+        formats = ['swiss_master', 'round_robin_champion', 'double_round_robin_king']
+        time_controls = ['bullet_blitzer', 'blitz_boss', 'rapid_ruler', 'classical_conqueror']
+        rating_milestones = ['rating_1600', 'rating_1800', 'rating_2000', 'rating_2200']
+        
+        for achievement in achievements:
+            if achievement.achievement_type in tournament_victories:
+                achievement_categories['tournament_victories'].append(achievement)
+            elif achievement.achievement_type in tournament_medals:
+                achievement_categories['tournament_medals'].append(achievement)
+            elif achievement.achievement_type in streaks:
+                achievement_categories['streaks'].append(achievement)
+            elif achievement.achievement_type in special_performances:
+                achievement_categories['special_performances'].append(achievement)
+            elif achievement.achievement_type in formats:
+                achievement_categories['formats'].append(achievement)
+            elif achievement.achievement_type in time_controls:
+                achievement_categories['time_controls'].append(achievement)
+            elif achievement.achievement_type in rating_milestones:
+                achievement_categories['rating_milestones'].append(achievement)
+            else:
+                achievement_categories['other'].append(achievement)
+        
+        context['achievement_categories'] = achievement_categories
+        context['total_achievements'] = achievements.count()
         
         # Tournament statistics
         # Calculate number of tournaments played
@@ -854,7 +906,7 @@ class ProfileView(TemplateView):
                     standing = tournament.standings.get(player=profile_user, rank=1)
                     if standing:
                         tournaments_won += 1
-                except:
+                except TournamentStanding.DoesNotExist:
                     pass
                 
             # Calculate average position and points
@@ -880,69 +932,7 @@ class ProfileView(TemplateView):
         context['avg_total_players'] = avg_total_players
         
         return context
-    
-    def calculate_accolades(self, user):
-        """Calculate accolades for the user based on their tournament performance"""
-        accolades = {
-            'support_bear': 0,  # No wins in a tournament
-            'dummies': 0,       # Last place in a tournament
-            'goat': 0,          # Perfect score in a tournament
-            'truce_seeker': 0,  # 50%+ draws
-        }
-        
-        # Get all completed tournaments the user participated in
-        tournaments = Tournament.objects.filter(
-            participants=user,
-            is_completed=True
-        )
-        
-        for tournament in tournaments:
-            # Get user's matches in this tournament
-            user_matches = Match.objects.filter(
-                Q(white_player=user) | Q(black_player=user),
-                tournament=tournament
-            ).exclude(result='pending')
-            
-            if not user_matches.exists():
-                continue
-                
-            # Count wins, losses, draws
-            wins = 0
-            draws = 0
-            total = user_matches.count()
-            
-            for match in user_matches:
-                if (match.white_player == user and match.result == 'white_win') or \
-                   (match.black_player == user and match.result == 'black_win'):
-                    wins += 1
-                elif match.result == 'draw':
-                    draws += 1
-            
-            # Calculate accolades
-            if wins == 0 and total > 0:
-                accolades['support_bear'] += 1
-                
-            # Check if user was last place
-            try:
-                standing = TournamentStanding.objects.get(
-                    tournament=tournament,
-                    player=user
-                )
-                participants_count = tournament.participants.count()
-                
-                if standing.rank == participants_count:
-                    accolades['dummies'] += 1
-                    
-                if standing.rank == 1 and wins == total:
-                    accolades['goat'] += 1
-            except TournamentStanding.DoesNotExist:
-                pass
-                
-            # Check for truce seeker
-            if total > 0 and (draws / total) >= 0.5:
-                accolades['truce_seeker'] += 1
-                
-        return accolades
+
 
 @login_required
 def profile_edit(request):
@@ -1157,6 +1147,13 @@ def complete_tournament(request, tournament_id):
             rating=round(rating),  # Store as rounded integer
             time_control=tournament.time_control
         )
+        
+        # Check for achievements
+        from .achievement_service import check_achievements
+        new_achievements = check_achievements(participant)
+        if new_achievements:
+            achievement_names = [dict(Achievement.ACHIEVEMENT_TYPES).get(a.achievement_type) for a in new_achievements]
+            messages.info(request, f"{participant.get_full_name()} earned new achievements: {', '.join(achievement_names)}")
     
     # Mark the tournament as completed
     tournament.is_completed = True
@@ -1227,12 +1224,22 @@ def inline_match_result(request, match_id):
     if result not in valid_results:
         return JsonResponse({'success': False, 'error': f'Invalid result: {result}. Expected one of {valid_results}'})
     
+    # Record previous result for achievement checking
+    previous_result = match.result
+    
     # Update the match
     match.result = result
     match.save()
     
     # Update tournament standings
     update_tournament_standings(tournament)
+    
+    # Only check for achievements if the result is final (not pending)
+    if result != 'pending' and (previous_result == 'pending' or previous_result != result):
+        from .achievement_service import check_achievements
+        # Check achievements for both players
+        check_achievements(match.white_player)
+        check_achievements(match.black_player)
     
     return JsonResponse({'success': True})
 

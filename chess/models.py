@@ -201,6 +201,232 @@ class PlayerRatingHistory(models.Model):
         unique_together = ('player', 'tournament')
         ordering = ['date']
 
+class Achievement(models.Model):
+    """Model to track player achievements and trophies"""
+    ACHIEVEMENT_TYPES = [
+        # Tournament win milestones
+        ('tournament_win_1', 'Tournament Champion'),
+        ('tournament_win_3', 'Triple Crown'),
+        ('tournament_win_5', 'Dominator'),
+        ('tournament_win_10', 'Dynasty Builder'),
+        
+        # Tournament placements
+        ('silver_medal_3', 'Silver Collector'),
+        ('silver_medal_5', 'Silver Hoarder'),
+        ('bronze_medal_3', 'Bronze Collector'),
+        ('bronze_medal_5', 'Bronze Hoarder'),
+        
+        # Streaks and special performance
+        ('hat_trick', 'Hat Trick'),
+        ('winning_streak_5', 'Winning Streak'),
+        ('winning_streak_10', 'Unstoppable'),
+        ('white_dominator', 'White Dominator'),
+        ('black_defender', 'Black Defender'),
+        
+        # Perfect performance
+        ('clean_sweep', 'Clean Sweep'),
+        ('perfect_score', 'Perfect Score'),
+        ('undefeated', 'Undefeated'),
+        
+        # Experience-based
+        ('tournament_veteran_10', 'Tournament Veteran'),
+        ('tournament_veteran_25', 'Tournament Master'),
+        ('tournament_veteran_50', 'Tournament Legend'),
+        
+        # Special game outcomes
+        ('comeback_kid', 'Comeback Kid'),
+        ('underdog', 'Underdog'),
+        ('giant_slayer', 'Giant Slayer'),
+        
+        # Format specialists
+        ('swiss_master', 'Swiss Master'),
+        ('round_robin_champion', 'Round Robin Champion'),
+        ('double_round_robin_king', 'Double Round Robin King'),
+        
+        # Time control specialists
+        ('bullet_blitzer', 'Bullet Blitzer'),
+        ('blitz_boss', 'Blitz Boss'),
+        ('rapid_ruler', 'Rapid Ruler'),
+        ('classical_conqueror', 'Classical Conqueror'),
+        
+        # Rating-based
+        ('rating_1600', 'Candidate Master'),
+        ('rating_1800', 'FIDE Master'),
+        ('rating_2000', 'International Master'),
+        ('rating_2200', 'Grandmaster'),
+        
+        # Existing achievements
+        ('support_bear', 'Emotional Support Bear'),
+        ('dummies', 'Chess for Dummies'),
+        ('goat', 'The Ace'),
+        ('truce_seeker', 'Truce Seeker'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='achievements')
+    achievement_type = models.CharField(max_length=50, choices=ACHIEVEMENT_TYPES)
+    date_achieved = models.DateTimeField(auto_now_add=True)
+    count = models.IntegerField(default=1)  # For counting achievements (e.g. "3 tournament wins")
+    tournament = models.ForeignKey(Tournament, on_delete=models.SET_NULL, null=True, blank=True)  # Optional link to specific tournament
+    
+    class Meta:
+        unique_together = ('user', 'achievement_type')
+        ordering = ['-date_achieved']
+    
+    def __str__(self):
+        achievement_name = dict(self.ACHIEVEMENT_TYPES).get(self.achievement_type, self.achievement_type)
+        if self.count > 1:
+            return f"{self.user.username} - {achievement_name} (x{self.count})"
+        return f"{self.user.username} - {achievement_name}"
+    
+    @property
+    def icon(self):
+        """Return the appropriate Font Awesome icon class for this achievement"""
+        icons = {
+            # Tournament victories
+            'tournament_win_1': 'fa-trophy',
+            'tournament_win_3': 'fa-trophy',
+            'tournament_win_5': 'fa-trophy',
+            'tournament_win_10': 'fa-crown',
+            
+            # Medals
+            'silver_medal_3': 'fa-medal',
+            'silver_medal_5': 'fa-medal',
+            'bronze_medal_3': 'fa-medal',
+            'bronze_medal_5': 'fa-medal',
+            
+            # Streaks
+            'hat_trick': 'fa-bolt',
+            'winning_streak_5': 'fa-bolt',
+            'winning_streak_10': 'fa-bolt-lightning',
+            'white_dominator': 'fa-chess-pawn',
+            'black_defender': 'fa-chess-pawn',
+            
+            # Perfect performance
+            'clean_sweep': 'fa-broom',
+            'perfect_score': 'fa-star',
+            'undefeated': 'fa-shield',
+            
+            # Experience
+            'tournament_veteran_10': 'fa-chess',
+            'tournament_veteran_25': 'fa-chess-board',
+            'tournament_veteran_50': 'fa-chess-king',
+            
+            # Special outcomes
+            'comeback_kid': 'fa-arrow-up',
+            'underdog': 'fa-dog',
+            'giant_slayer': 'fa-dragon',
+            
+            # Format specialists
+            'swiss_master': 'fa-sitemap',
+            'round_robin_champion': 'fa-circle',
+            'double_round_robin_king': 'fa-circle-notch',
+            
+            # Time control
+            'bullet_blitzer': 'fa-bolt',
+            'blitz_boss': 'fa-rocket',
+            'rapid_ruler': 'fa-stopwatch',
+            'classical_conqueror': 'fa-hourglass',
+            
+            # Rating
+            'rating_1600': 'fa-chart-line',
+            'rating_1800': 'fa-chart-line',
+            'rating_2000': 'fa-chart-line',
+            'rating_2200': 'fa-chess-king',
+            
+            # Existing
+            'support_bear': 'fa-paw',
+            'dummies': 'fa-book',
+            'goat': 'fa-trophy',
+            'truce_seeker': 'fa-handshake',
+        }
+        return icons.get(self.achievement_type, 'fa-award')
+    
+    @property
+    def description(self):
+        """Return a description of how to earn this achievement"""
+        descriptions = {
+            # Tournament victories
+            'tournament_win_1': 'Win your first tournament',
+            'tournament_win_3': 'Win 3 tournaments',
+            'tournament_win_5': 'Win 5 tournaments',
+            'tournament_win_10': 'Win 10 tournaments',
+            
+            # Medals
+            'silver_medal_3': 'Finish 2nd place in 3 tournaments',
+            'silver_medal_5': 'Finish 2nd place in 5 tournaments',
+            'bronze_medal_3': 'Finish 3rd place in 3 tournaments',
+            'bronze_medal_5': 'Finish 3rd place in 5 tournaments',
+            
+            # Streaks
+            'hat_trick': 'Win 3 consecutive games',
+            'winning_streak_5': 'Win 5 consecutive games',
+            'winning_streak_10': 'Win 10 consecutive games',
+            'white_dominator': 'Win 5 consecutive games as White',
+            'black_defender': 'Win 5 consecutive games as Black',
+            
+            # Perfect performance
+            'clean_sweep': 'Win all games in a tournament round',
+            'perfect_score': 'Win all games in a tournament',
+            'undefeated': 'Complete a tournament without losing',
+            
+            # Experience
+            'tournament_veteran_10': 'Participate in 10 tournaments',
+            'tournament_veteran_25': 'Participate in 25 tournaments',
+            'tournament_veteran_50': 'Participate in 50 tournaments',
+            
+            # Special outcomes
+            'comeback_kid': 'Win a tournament after losing the first game',
+            'underdog': 'Beat a player rated 200+ points above you',
+            'giant_slayer': 'Beat the top-rated player in a tournament',
+            
+            # Format specialists
+            'swiss_master': 'Win a Swiss format tournament',
+            'round_robin_champion': 'Win a Round Robin tournament',
+            'double_round_robin_king': 'Win a Double Round Robin tournament',
+            
+            # Time control
+            'bullet_blitzer': 'Win a Bullet tournament',
+            'blitz_boss': 'Win a Blitz tournament',
+            'rapid_ruler': 'Win a Rapid tournament',
+            'classical_conqueror': 'Win a Classical tournament',
+            
+            # Rating
+            'rating_1600': 'Reach a rating of 1600',
+            'rating_1800': 'Reach a rating of 1800',
+            'rating_2000': 'Reach a rating of 2000', 
+            'rating_2200': 'Reach a rating of 2200',
+            
+            # Existing
+            'support_bear': 'No wins in a tournament',
+            'dummies': 'Last place in a tournament',
+            'goat': 'Won all games in a tournament',
+            'truce_seeker': '50%+ draws in a tournament',
+        }
+        return descriptions.get(self.achievement_type, 'Achievement unlocked!')
+    
+    @property
+    def color(self):
+        """Return appropriate color class for this achievement"""
+        colors = {
+            # Color groups by achievement type
+            'tournament_win_1': 'gold',
+            'tournament_win_3': 'gold',
+            'tournament_win_5': 'gold', 
+            'tournament_win_10': 'gold',
+            
+            'silver_medal_3': 'silver',
+            'silver_medal_5': 'silver',
+            
+            'bronze_medal_3': 'bronze',
+            'bronze_medal_5': 'bronze',
+            
+            'rating_1600': 'green',
+            'rating_1800': 'blue',
+            'rating_2000': 'purple',
+            'rating_2200': 'red',
+        }
+        return colors.get(self.achievement_type, 'teal')  # Default color
+
 # Glicko-2 implementation functions
 def update_glicko2_ratings(match):
     """Update Glicko-2 ratings based on match result and time control"""
