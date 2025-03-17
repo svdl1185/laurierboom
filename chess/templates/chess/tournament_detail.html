@@ -1358,6 +1358,13 @@
         // Run the function when the page loads
         setupTwoColumnStandings();
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Refresh de pagina elke 30 seconden
+        setInterval(function() {
+            window.location.reload();
+        }, 60000);  // Pas de tijd aan naar wens
+    });
 </script>
 {% endblock %}
 {% endblock %}
