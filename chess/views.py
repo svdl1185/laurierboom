@@ -360,8 +360,8 @@ class TournamentDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         tournament = self.get_object()
         
-        # Get tournament standings
-        standings = tournament.standings.all().order_by('-score', 'rank')
+        # Get tournament standings ordered by score (descending) and rating (descending)
+        standings = tournament.standings.all().order_by('-score', '-player__elo')
         context['standings'] = standings
         
         # Get all rounds in order
@@ -972,8 +972,14 @@ def add_player_to_tournament(request, tournament_id):
     
     tournament = get_object_or_404(Tournament, pk=tournament_id)
     
+    # Controleer of het toernooi al is gestart of voltooid
     if tournament.is_completed or tournament.has_started:
         messages.error(request, "Cannot add players after tournament has started")
+        return redirect('tournament_detail', pk=tournament_id)
+    
+    # Controleer of het toernooi al vol is
+    if tournament.participants.count() >= tournament.max_participants:
+        messages.error(request, f"Cannot add more players. The tournament is full ({tournament.max_participants} participants maximum).")
         return redirect('tournament_detail', pk=tournament_id)
     
     if request.method == 'POST':
@@ -981,12 +987,13 @@ def add_player_to_tournament(request, tournament_id):
         if player_id:
             try:
                 player = User.objects.get(id=player_id)
-                # Double check that player is not a superuser or staff
+                # Controleer of de speler geen superuser of staff is
                 if player.is_superuser or player.is_staff:
                     messages.error(request, "Cannot add superuser or staff to tournaments")
                 elif player in tournament.participants.all():
                     messages.info(request, f"{player.get_full_name() or player.username} is already registered for this tournament")
                 else:
+                    # Voeg de speler toe aan het toernooi
                     tournament.participants.add(player)
                     messages.success(request, f"{player.get_full_name() or player.username} added to tournament successfully")
             except User.DoesNotExist:

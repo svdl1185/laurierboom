@@ -633,7 +633,14 @@
             <!-- Right Column: Participants -->
             <div class="col-md-7">
                 <div class="tournament-panel" style="position: relative;">
-                    <h2 class="tournament-panel-title">Participants</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 class="tournament-panel-title">Participants</h2>
+                        {% if user.is_staff and not tournament.is_full %}
+                            <a href="#" class="btn btn-success add-player-btn" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
+                                <i class="fas fa-plus me-2"></i>Add Player
+                            </a>
+                        {% endif %}
+                    </div>
                     
                     <div class="standings-table-container">
                         <table class="table standings-table mb-0">
@@ -687,19 +694,14 @@
                         </table>
                     </div>
                     <br>
-                    {% if user.is_staff %}
-                    <a href="#" class="btn btn-success add-player-btn" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
-                        <i class="fas fa-plus me-2"></i>Add Player
-                    </a>
-                    {% else %}
-                        {% if user.is_authenticated and user not in tournament.participants.all and not tournament.is_full %}
+                    {% if user.is_authenticated and user not in tournament.participants.all and not tournament.is_full and not user.is_staff%}
                         <form method="post" action="{% url 'tournament_register' tournament.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-success">
                                 <i class="fas fa-user-plus me-2"></i>Register for Tournament
                             </button>
                         </form>
-                        {% elif user.is_authenticated and user in tournament.participants.all %}
+                    {% elif user.is_authenticated and user in tournament.participants.all %}
                         <div class="alert alert-info d-flex justify-content-between align-items-center">
                             <div>
                                 <i class="fas fa-check-circle me-2"></i> You are registered for this tournament
@@ -711,15 +713,14 @@
                                 </button>
                             </form>
                         </div>
-                        {% elif user.is_authenticated and tournament.is_full %}
+                    {% elif user.is_authenticated and tournament.is_full %}
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-circle me-2"></i> Tournament is full
                         </div>
-                        {% elif not user.is_authenticated %}
+                    {% elif not user.is_authenticated %}
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i> <a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to register for this tournament
                         </div>
-                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -824,7 +825,6 @@
             <div class="col-md-5">
                 <div class="tournament-panel">
                     <h2 class="tournament-panel-title">Round {{ current_round.number }}</h2>
-                    
                     <table class="tournament-table" style="width: 100%;">
                         <thead style="background-color: #f8f9fa; border-bottom: 1px solid #eee;">
                             <tr>
@@ -838,7 +838,22 @@
                             {% for match in current_matches %}
                                 <tr>
                                     <td style="width: 10%; text-align: left; color: #000000 !important; font-weight: bold;">{{ forloop.counter }}</td>
-                                    <td style="width: 25%; text-align: left; color: #000000 !important; font-weight: bold;">{{ match.white_player.get_full_name|default:match.white_player.username }}</td>
+                                    <td style="width: 25%; text-align: left; color: #000000 !important; font-weight: bold;">
+                                        {{ match.white_player.get_full_name|default:match.white_player.username }}
+                                        <div style="font-size: 0.875rem; color: #666;">
+                                            {% if tournament.time_control == 'bullet' %}
+                                                {{ match.white_player.bullet_elo|floatformat:0 }}
+                                            {% elif tournament.time_control == 'blitz' %}
+                                                {{ match.white_player.blitz_elo|floatformat:0 }}
+                                            {% elif tournament.time_control == 'rapid' %}
+                                                {{ match.white_player.rapid_elo|floatformat:0 }}
+                                            {% elif tournament.time_control == 'classical' %}
+                                                {{ match.white_player.classical_elo|floatformat:0 }}
+                                            {% else %}
+                                                {{ match.white_player.elo|floatformat:0 }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
                                     <td style="width: 30%; text-align: center; color: #000000 !important; font-weight: bold;">
                                         {% if match.result == 'white_win' %}
                                             1 - 0
@@ -850,7 +865,22 @@
                                             ... - ...
                                         {% endif %}
                                     </td>
-                                    <td style="width: 25%; text-align: left; color: #000000 !important; font-weight: bold;">{{ match.black_player.get_full_name|default:match.black_player.username }}</td>
+                                    <td style="width: 25%; text-align: left; color: #000000 !important; font-weight: bold;">
+                                        {{ match.black_player.get_full_name|default:match.black_player.username }}
+                                        <div style="font-size: 0.875rem; color: #666;">
+                                            {% if tournament.time_control == 'bullet' %}
+                                                {{ match.black_player.bullet_elo|floatformat:0 }}
+                                            {% elif tournament.time_control == 'blitz' %}
+                                                {{ match.black_player.blitz_elo|floatformat:0 }}
+                                            {% elif tournament.time_control == 'rapid' %}
+                                                {{ match.black_player.rapid_elo|floatformat:0 }}
+                                            {% elif tournament.time_control == 'classical' %}
+                                                {{ match.black_player.classical_elo|floatformat:0 }}
+                                            {% else %}
+                                                {{ match.black_player.elo|floatformat:0 }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
                                 </tr>
                             {% empty %}
                                 <tr>
