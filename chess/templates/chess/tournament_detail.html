@@ -13,7 +13,7 @@
     }
     
     .page-container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
         padding: 0 1rem;
     }
@@ -1289,8 +1289,8 @@
             
             const rows = table.querySelectorAll('tbody tr');
             
-            // If we have more than 10 rows, split into two columns
-            if (rows.length > 10) {
+            // Check if the screen width is greater than 768px (typical breakpoint for tablets and desktops)
+            if (rows.length > 10 && window.innerWidth > 768) {
                 // Create a single container with white background to hold both tables
                 const whiteContainer = document.createElement('div');
                 whiteContainer.className = 'bg-white rounded-lg overflow-hidden';
