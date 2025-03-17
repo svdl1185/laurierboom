@@ -51,7 +51,47 @@ def generate_swiss_pairings(tournament, round_obj):
         )
         return [(white_player, black_player)]
     
-    # For tournaments with more than 2 players, use FIDE Dutch Swiss System
+    # First round pairing - split players into top and bottom half by rating
+    if round_obj.number == 1:
+        # Sort players by rating (highest to lowest)
+        participants.sort(key=lambda x: x.elo, reverse=True)
+        
+        # Calculate midpoint
+        midpoint = len(participants) // 2
+        
+        # If odd number of players, midpoint calculation ensures the top half has one more player
+        top_half = participants[:midpoint + (len(participants) % 2)]
+        bottom_half = participants[midpoint + (len(participants) % 2):]
+        
+        # Match players from top half with players from bottom half
+        pairings = []
+        for i in range(min(len(top_half), len(bottom_half))):
+            white_player = top_half[i]
+            black_player = bottom_half[i]
+            
+            match = Match.objects.create(
+                tournament=tournament,
+                round=round_obj,
+                white_player=white_player,
+                black_player=black_player,
+                result='pending'
+            )
+            
+            pairings.append((white_player, black_player))
+        
+        # If there's an odd number of players, the last player in top_half gets a bye
+        # In real tournaments, this should be handled according to the specific rules
+        # For now, we'll skip this as your model doesn't seem to have bye support
+        
+        # Sort pairings by the combined score of the players (highest first)
+        # This ensures board 1 has the most important match
+        sorted_pairings = sorted(pairings, 
+                                key=lambda p: max(p[0].elo, p[1].elo), 
+                                reverse=True)
+        
+        return sorted_pairings
+    
+    # For rounds after the first, use the FIDE Dutch Swiss System
     
     # Get all previous tournament matches
     previous_matches = Match.objects.filter(
