@@ -765,12 +765,13 @@
         <p class="tournament-location">{{ tournament.location }}</p>
         <div class="row">
             <!-- Left Column: Standings -->
-            <div class="col-md-5">
+            <div class="col-md-7">
                 <div class="tournament-panel">
                     <h2 class="tournament-panel-title">Standings</h2>
                     
                     <div class="standings-table-container">
-                        <table class="table standings-table mb-0">
+                        <!-- Keep the existing table structure exactly as it is -->
+                        <table class="table standings-table mb-0" id="standings-table">
                             <thead style="background-color: #f8f9fa; border-bottom: 1px solid #eee;">
                                 <tr>
                                     <th class="ps-3" style="width: 70px; color: #000000 !important; font-weight: 600; padding: 0.75rem 1rem;">Rank</th>
@@ -820,7 +821,7 @@
             </div>
             
             <!-- Right Column: Pairings -->
-            <div class="col-md-7">
+            <div class="col-md-5">
                 <div class="tournament-panel">
                     <h2 class="tournament-panel-title">Round {{ current_round.number }}</h2>
                     
@@ -1278,6 +1279,84 @@
                 this.setAttribute('data-original-value', this.value);
             });
         });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        function setupTwoColumnStandings() {
+            const container = document.querySelector('.standings-table-container');
+            const table = document.getElementById('standings-table');
+            if (!table) return;
+            
+            const rows = table.querySelectorAll('tbody tr');
+            
+            // If we have more than 10 rows, split into two columns
+            if (rows.length > 10) {
+                // Create a single container with white background to hold both tables
+                const whiteContainer = document.createElement('div');
+                whiteContainer.className = 'bg-white rounded-lg overflow-hidden';
+                whiteContainer.style.display = 'flex'; // Use flexbox for the layout
+                
+                // Left table
+                const leftTableDiv = document.createElement('div');
+                leftTableDiv.style.flex = '1';
+                leftTableDiv.style.borderRight = '4px solid #19e893'; // Green divider
+                
+                // Right table
+                const rightTableDiv = document.createElement('div');
+                rightTableDiv.style.flex = '1';
+                
+                // Create tables without borders that would stick out
+                const leftTable = table.cloneNode(true);
+                leftTable.id = 'left-standings-table';
+                leftTable.style.marginBottom = '0';
+                
+                const rightTable = table.cloneNode(true);
+                rightTable.id = 'right-standings-table';
+                rightTable.style.marginBottom = '0';
+                
+                // Clear the tables and repopulate with split data
+                const leftTbody = leftTable.querySelector('tbody');
+                const rightTbody = rightTable.querySelector('tbody');
+                
+                // Clear existing rows
+                leftTbody.innerHTML = '';
+                rightTbody.innerHTML = '';
+                
+                // Calculate the midpoint
+                const midpoint = Math.ceil(rows.length / 2);
+                
+                // Distribute rows
+                rows.forEach((row, index) => {
+                    if (index < midpoint) {
+                        leftTbody.appendChild(row.cloneNode(true));
+                    } else {
+                        rightTbody.appendChild(row.cloneNode(true));
+                    }
+                });
+                
+                // Assemble everything
+                leftTableDiv.appendChild(leftTable);
+                rightTableDiv.appendChild(rightTable);
+                
+                whiteContainer.appendChild(leftTableDiv);
+                whiteContainer.appendChild(rightTableDiv);
+                
+                // Clear the container and add our new layout
+                container.innerHTML = '';
+                container.appendChild(whiteContainer);
+                
+                // Re-attach click events
+                container.querySelectorAll('tr').forEach(row => {
+                    const url = row.getAttribute('onclick')?.toString().match(/'([^']+)'/)?.[1];
+                    if (url) {
+                        row.onclick = () => window.location.href = url;
+                    }
+                });
+            }
+        }
+        
+        // Run the function when the page loads
+        setupTwoColumnStandings();
     });
 </script>
 {% endblock %}
