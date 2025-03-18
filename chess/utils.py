@@ -565,25 +565,38 @@ def update_tournament_standings(tournament):
     # Calculate scores based on match results
     for match in matches:
         white_id = match.white_player.id
-        black_id = match.black_player.id
         
-        # Initialize scores if needed
+        # Initialize white player score if needed
         if white_id not in scores:
             scores[white_id] = 0
+            
+        # Check if this is a bye or has black player
+        if match.black_player is None:
+            # Handle byes - just award point to white player
+            if match.result == 'bye':
+                scores[white_id] += 1
+            # Handle white forfeit with no black player (unusual edge case)
+            elif match.result == 'white_forfeit':
+                pass  # No points awarded to anyone
+            continue  # Skip rest of loop for byes
+        
+        # For normal matches with two players
+        black_id = match.black_player.id
+        
+        # Initialize black player score if needed  
         if black_id not in scores:
             scores[black_id] = 0
         
         # Update scores based on match result
-        if match.result == 'white_win':
+        if match.result == 'white_win' or match.result == 'black_forfeit':
             scores[white_id] += 1
-        elif match.result == 'black_win':
+        elif match.result == 'black_win' or match.result == 'white_forfeit':
             scores[black_id] += 1
-        else:  # Draw
+        elif match.result == 'draw':
             scores[white_id] += 0.5
             scores[black_id] += 0.5
     
     # Make sure all participants have a standing entry, even if they have no score
-    # This ensures the tournament standings are complete for all participants
     for player in tournament.participants.all():
         if player.id not in scores:
             scores[player.id] = 0

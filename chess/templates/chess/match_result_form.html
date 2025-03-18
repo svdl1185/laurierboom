@@ -55,21 +55,13 @@
                         
                         <div class="mb-4">
                             <label for="{{ form.result.id_for_label }}" class="form-label fw-bold">Select Result</label>
-                            <select name="{{ form.result.name }}" 
-                                    id="{{ form.result.id_for_label }}" 
-                                    class="form-select form-select-lg {% if form.result.errors %}is-invalid{% endif %}">
-                                <option value="white_win" {% if form.result.value == 'white_win' %}selected{% endif %}>
-                                    1-0 (White wins)
-                                </option>
-                                <option value="black_win" {% if form.result.value == 'black_win' %}selected{% endif %}>
-                                    0-1 (Black wins)
-                                </option>
-                                <option value="draw" {% if form.result.value == 'draw' %}selected{% endif %}>
-                                    ½-½ (Draw)
-                                </option>
-                                <option value="pending" {% if form.result.value == 'pending' %}selected{% endif %}>
-                                    Pending (No result yet)
-                                </option>
+                            <select name="result" class="form-select form-select-sm result-select" data-match-id="{{ match.id }}">
+                                <option value="pending" {% if match.result == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="white_win" {% if match.result == 'white_win' %}selected{% endif %}>1-0 (White wins)</option>
+                                <option value="black_win" {% if match.result == 'black_win' %}selected{% endif %}>0-1 (Black wins)</option>
+                                <option value="draw" {% if match.result == 'draw' %}selected{% endif %}>½-½ (Draw)</option>
+                                <option value="white_forfeit" {% if match.result == 'white_forfeit' %}selected{% endif %}>+/- (White forfeit)</option>
+                                <option value="black_forfeit" {% if match.result == 'black_forfeit' %}selected{% endif %}>-/+ (Black forfeit)</option>
                             </select>
                             {% if form.result.errors %}
                                 <div class="text-danger mt-1 small">

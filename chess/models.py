@@ -152,14 +152,16 @@ class Match(models.Model):
         ('black_win', 'Black Win'),
         ('draw', 'Draw'),
         ('pending', 'Pending'),
-        ('bye', 'Bye'),  # New result type for byes
+        ('bye', 'Bye'),
+        ('white_forfeit', 'White Forfeit'),  # White player didn't show
+        ('black_forfeit', 'Black Forfeit'),  # Black player didn't show
     ]
     
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='matches')
     round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name='matches')
     white_player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='white_matches')
     black_player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='black_matches', null=True, blank=True)  # Allow null for byes
-    result = models.CharField(max_length=10, choices=RESULT_CHOICES, default='pending')
+    result = models.CharField(max_length=13, choices=RESULT_CHOICES, default='pending')
     
     def __str__(self):
         if self.black_player:
@@ -175,7 +177,6 @@ class Match(models.Model):
         # Only if result is set and not pending
         if not is_new and self.result not in ['pending', 'bye'] and self.black_player is not None:
             update_glicko2_ratings(self)
-
 
 class TournamentStanding(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='standings')
@@ -293,6 +294,7 @@ class Achievement(models.Model):
         ('comeback_king', 'Comeback King/Queen'),
         ('late_bloomer', 'Late Bloomer'),
         ('score_maximizer', 'Score Maximizer'),
+        ('early_departure', 'Missing Poster'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='achievements')
@@ -543,6 +545,10 @@ class Achievement(models.Model):
 
 # Glicko-2 implementation functions
 def update_glicko2_ratings(match):
+
+    if match.result in ['white_forfeit', 'black_forfeit']:
+        return  # Exit the function early - no rating changes
+    
     """Update Glicko-2 ratings based on match result and time control"""
     white_player = match.white_player
     black_player = match.black_player

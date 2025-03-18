@@ -568,9 +568,14 @@ class StartTournamentView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             else:  # Swiss
                 planned_rounds = tournament.num_rounds
             
-            # Initialize tournament standings
-            for player in tournament.participants.all():
-                TournamentStanding.objects.create(tournament=tournament, player=player, score=0)
+            # Initialize tournament standings with error handling
+            for participant in tournament.participants.all():
+                # Use get_or_create to avoid unique constraint issues
+                TournamentStanding.objects.get_or_create(
+                    tournament=tournament, 
+                    player=participant,
+                    defaults={'score': 0}
+                )
             
             messages.success(self.request, f"Tournament started! Round 1 pairings generated.")
         except Exception as e:
@@ -582,6 +587,7 @@ class StartTournamentView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return self.form_invalid(form)
         
         return HttpResponseRedirect(reverse_lazy('tournament_detail', kwargs={'pk': tournament.pk}))
+
 
 class EnterMatchResultView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """View for entering match results (admin only)"""
@@ -1243,7 +1249,7 @@ def inline_match_result(request, match_id):
     print(f"Received result: {result}")
     
     # Validate the result more explicitly
-    valid_results = ['white_win', 'black_win', 'draw', 'pending']
+    valid_results = ['white_win', 'black_win', 'draw', 'pending', 'white_forfeit', 'black_forfeit']
     if result not in valid_results:
         return JsonResponse({'success': False, 'error': f'Invalid result: {result}. Expected one of {valid_results}'})
     

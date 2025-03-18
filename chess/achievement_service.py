@@ -953,5 +953,23 @@ def check_achievements(user):
                         new_achievements.append(achievement)
             except TournamentStanding.DoesNotExist:
                 continue
+
+    # Count forfeits for a player
+    forfeited_matches = Match.objects.filter(
+        (Q(white_player=user) & Q(result='white_forfeit')) | 
+        (Q(black_player=user) & Q(result='black_forfeit'))
+    ).count()
+
+    if forfeited_matches >= 3:
+        achievement, created = Achievement.objects.get_or_create(
+            user=user, 
+            achievement_type='early_departure',
+            defaults={'count': forfeited_matches}
+        )
+        if created:
+            new_achievements.append(achievement)
+        else:
+            achievement.count = forfeited_matches
+            achievement.save()
     
     return new_achievements
