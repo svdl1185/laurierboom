@@ -905,36 +905,7 @@
             </div>
         </div>
 
-        {% if user.is_staff %}
-            <div class="admin-controls mt-4">
-                <h3>Admin Controls</h3>
-                <div class="card">
-                    <div class="card-body">
-                        {% if current_round and not all_rounds_completed %}
-                            <form method="post" action="{% url 'complete_round' tournament.id current_round.id %}" class="d-inline mb-3" 
-                                onsubmit="return confirm('Are all matches complete? This will generate the next round.');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-warning">
-                                    <i class="fas fa-check-circle me-1"></i> Complete Current Round
-                                </button>
-                            </form>
-                        {% endif %}
-                
-                        {% if user.is_staff and can_end_tournament %}
-                            <form method="post" action="{% url 'complete_tournament' tournament.id %}" class="d-inline ms-2" 
-                                onsubmit="return confirm('Are you sure you want to complete this tournament? This cannot be undone.');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-flag-checkered me-2"></i>End Tournament
-                                </button>
-                            </form>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-            
-        <!-- Match Result Editing Controls for Staff -->
+        <!-- Modified section for tournament rounds in tournament_detail.html -->
         {% if user.is_staff and not tournament.is_completed %}
             <!-- All Rounds Accordion Section for Previous Rounds -->
             <div class="row mt-4">
@@ -966,9 +937,10 @@
                                             data-bs-parent="#roundsAccordion">
                                             <div class="accordion-body">
                                                 <div class="table-responsive">
-                                                    <table class="table table-hover">
+                                                    <table class="table table-hover" id="round-table-{{ round_obj.number }}">
                                                         <thead>
                                                             <tr>
+                                                                <!-- Board number column will be added by JS -->
                                                                 <th>White</th>
                                                                 <th>Result</th>
                                                                 <th>Black</th>
@@ -976,13 +948,15 @@
                                                         </thead>
                                                         <tbody>
                                                             {% for match in round_obj.matches.all %}
-                                                                <tr>
+                                                                <tr data-match-id="{{ match.id }}">
                                                                     <td>{{ match.white_player.get_full_name|default:match.white_player.username }}</td>
                                                                     <td>
                                                                         {% if user.is_staff %}
                                                                             <form method="post" action="{% url 'inline_match_result' match.id %}" class="d-inline match-result-form">
                                                                                 {% csrf_token %}
-                                                                                <select name="result" class="form-select form-select-sm result-select" data-match-id="{{ match.id }}">
+                                                                                <select name="result" class="form-select form-select-sm result-select" 
+                                                                                        id="result-select-{{ match.id }}" 
+                                                                                        data-match-id="{{ match.id }}">
                                                                                     <option value="pending" {% if match.result == 'pending' %}selected{% endif %}>Pending</option>
                                                                                     <option value="white_win" {% if match.result == 'white_win' %}selected{% endif %}>1-0 (White wins)</option>
                                                                                     <option value="black_win" {% if match.result == 'black_win' %}selected{% endif %}>0-1 (Black wins)</option>
@@ -1026,8 +1000,8 @@
                                                                     </td>
                                                                 </tr>
                                                             {% empty %}
-                                                                <tr>
-                                                                    <td colspan="3" class="text-center">
+                                                                <tr class="empty-row">
+                                                                    <td colspan="4" class="text-center">
                                                                         No matches found for this round.
                                                                     </td>
                                                                 </tr>
@@ -1035,12 +1009,43 @@
                                                         </tbody>
                                                     </table>
                                                 </div>
+                                                <!-- Batch update button will be added here by JS -->
                                             </div>
                                         </div>
                                     </div>
                                 {% endfor %}
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Admin Controls Section Update (with Complete Current Round button) -->
+        {% if user.is_staff %}
+            <div class="admin-controls mt-4">
+                <h3>Admin Controls</h3>
+                <div class="card">
+                    <div class="card-body">
+                        {% if current_round and not all_rounds_completed %}
+                            <form method="post" action="{% url 'complete_round' tournament.id current_round.id %}" class="d-inline mb-3" 
+                                onsubmit="return confirm('Are all matches complete? This will generate the next round.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-check-circle me-1"></i> Complete Current Round
+                                </button>
+                            </form>
+                        {% endif %}
+                
+                        {% if user.is_staff and can_end_tournament %}
+                            <form method="post" action="{% url 'complete_tournament' tournament.id %}" class="d-inline ms-2" 
+                                onsubmit="return confirm('Are you sure you want to complete this tournament? This cannot be undone.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-flag-checkered me-2"></i>End Tournament
+                                </button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -1266,97 +1271,7 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const resultSelects = document.querySelectorAll('.result-select');
-        
-        resultSelects.forEach(select => {
-            select.addEventListener('change', function() {
-                const matchId = this.getAttribute('data-match-id');
-                const form = this.closest('form');
-                const originalValue = this.getAttribute('data-original-value');
-                
-                // Add visual feedback that the update is in progress
-                this.disabled = true;
-                const row = this.closest('tr');
-                if (row) {
-                    row.classList.add('bg-light');
-                }
-                
-                // Log what we're sending for debugging
-                console.log("Sending form data:", new FormData(form));
-                console.log("Current result value:", this.value);
-                
-                // Submit form via AJAX
-                const formData = new FormData();
-                formData.append('result', this.value); // Explicitly add the result value
-                formData.append('csrfmiddlewaretoken', form.querySelector('[name="csrfmiddlewaretoken"]').value);
-                
-                // Then send the request with this formData
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Response received:", data);  // Log the full response
-                    
-                    if (data.success) {
-                        // Success handling as before
-                        const successIndicator = document.createElement('span');
-                        successIndicator.className = 'text-success ms-2 fade-out';
-                        successIndicator.innerHTML = '<i class="fas fa-check-circle"></i> Saved';
-                        
-                        this.parentNode.appendChild(successIndicator);
-                        
-                        setTimeout(() => {
-                            if (successIndicator.parentNode) {
-                                successIndicator.parentNode.removeChild(successIndicator);
-                            }
-                        }, 2000);
-                        
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        // More detailed error message
-                        console.error('Error saving result:', data.error);
-                        alert('Error saving result: ' + (data.error || 'Unknown error'));
-                        
-                        if (originalValue) {
-                            this.value = originalValue;
-                        }
-                    }
-                    
-                    this.disabled = false;
-                    if (row) {
-                        row.classList.remove('bg-light');
-                    }
-                })
-                .catch(error => {
-                    console.error('Network or parsing error:', error);
-                    alert('Error saving result. Please check the console for details.');
-                    
-                    if (originalValue) {
-                        this.value = originalValue;
-                    }
-                    
-                    this.disabled = false;
-                    if (row) {
-                        row.classList.remove('bg-light');
-                    }
-                });
-            });
-            
-            select.addEventListener('focus', function() {
-                this.setAttribute('data-original-value', this.value);
-            });
-        });
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
+        // Setup two-column standings layout for large player counts
         function setupTwoColumnStandings() {
             const container = document.querySelector('.standings-table-container');
             const table = document.getElementById('standings-table');
@@ -1432,13 +1347,347 @@
         
         // Run the function when the page loads
         setupTwoColumnStandings();
-    });
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Refresh de pagina elke 30 seconden
+        // Auto-refresh for live tournament view (only for non-admin users)
+        {% if tournament.has_started and not tournament.is_completed and not user.is_staff %}
         setInterval(function() {
             window.location.reload();
-        }, 60000);  // Pas de tijd aan naar wens
+        }, 60000);  // Refresh every 60 seconds
+        {% endif %}
+
+        // Enhanced tournament admin controls (only for staff users)
+        {% if user.is_staff %}
+        // Store all changes before submitting
+        const pendingChanges = new Map();
+        
+        // Add board numbers to match rows
+        function addBoardNumbers() {
+            const roundTables = document.querySelectorAll('.accordion-body .table');
+            
+            roundTables.forEach(table => {
+                const rows = table.querySelectorAll('tbody tr:not(.empty-row)');
+                
+                rows.forEach((row, index) => {
+                    // Check if we already added a board number
+                    if (!row.querySelector('.board-number')) {
+                        // Create the board number cell
+                        const boardNumberCell = document.createElement('td');
+                        boardNumberCell.className = 'board-number text-center';
+                        boardNumberCell.style.width = '50px';
+                        boardNumberCell.style.fontWeight = 'bold';
+                        boardNumberCell.textContent = (index + 1);
+                        
+                        // Insert it as the first cell
+                        row.insertBefore(boardNumberCell, row.firstChild);
+                        
+                        // Add board number to header row if needed
+                        const headerRow = table.querySelector('thead tr');
+                        if (headerRow && !headerRow.querySelector('.board-header')) {
+                            const boardHeader = document.createElement('th');
+                            boardHeader.className = 'board-header text-center';
+                            boardHeader.style.width = '50px';
+                            boardHeader.textContent = '#';
+                            headerRow.insertBefore(boardHeader, headerRow.firstChild);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Create a single unified save button in the admin controls panel
+        function createUnifiedSaveButton() {
+            // Remove any existing save buttons
+            document.querySelectorAll('.batch-update-container, #unified-save-button').forEach(el => {
+                el.remove();
+            });
+            
+            // Find the admin controls panel
+            const adminPanel = document.querySelector('.admin-controls .card-body');
+            if (!adminPanel) return;
+            
+            // Create the unified save button
+            const saveButton = document.createElement('button');
+            saveButton.id = 'unified-save-button';
+            saveButton.type = 'button';
+            saveButton.className = 'btn btn-primary me-2';
+            saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Save All Changes';
+            saveButton.disabled = true;
+            
+            // Create status counter
+            const statusCounter = document.createElement('span');
+            statusCounter.className = 'ms-2 badge bg-secondary changes-counter';
+            statusCounter.textContent = '0 changes';
+            saveButton.appendChild(statusCounter);
+            
+            // Add event listener for saving changes
+            saveButton.addEventListener('click', submitAllChanges);
+            
+            // Insert at the beginning of the admin controls
+            const firstButton = adminPanel.querySelector('button, form');
+            if (firstButton) {
+                adminPanel.insertBefore(saveButton, firstButton);
+            } else {
+                adminPanel.appendChild(saveButton);
+            }
+        }
+        
+        // Update the highlight function to work with a unified button
+        function highlightPendingChanges() {
+            // Reset all highlights first
+            document.querySelectorAll('tr.pending-change').forEach(row => {
+                row.classList.remove('pending-change');
+            });
+            
+            // Count total changes
+            const totalChanges = pendingChanges.size;
+            
+            // Highlight rows with pending changes
+            pendingChanges.forEach((newValue, selectId) => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    const row = select.closest('tr');
+                    if (row) {
+                        row.classList.add('pending-change');
+                    }
+                }
+            });
+            
+            // Update the unified save button
+            const saveButton = document.getElementById('unified-save-button');
+            if (saveButton) {
+                saveButton.disabled = totalChanges === 0;
+                
+                const counter = saveButton.querySelector('.changes-counter');
+                if (counter) {
+                    counter.textContent = `${totalChanges} change${totalChanges !== 1 ? 's' : ''}`;
+                    
+                    // Update counter style based on number of changes
+                    counter.className = 'ms-2 badge changes-counter';
+                    counter.classList.add(totalChanges > 0 ? 'bg-warning text-dark' : 'bg-secondary');
+                    
+                    // Update the button color based on changes
+                    if (totalChanges > 0) {
+                        saveButton.classList.remove('btn-primary');
+                        saveButton.classList.add('btn-success');
+                    } else {
+                        saveButton.classList.remove('btn-success');
+                        saveButton.classList.add('btn-primary');
+                    }
+                }
+            }
+        }
+        
+        // Unified submit function for all changes
+        async function submitAllChanges() {
+            const totalChanges = pendingChanges.size;
+            if (totalChanges === 0) return;
+            
+            // Get unified save button
+            const saveButton = document.getElementById('unified-save-button');
+            if (!saveButton) return;
+            
+            // Show loading state
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            
+            // Process all pending changes
+            const promises = [];
+            
+            pendingChanges.forEach((newValue, selectId) => {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                
+                // Get the form and create the request
+                const form = select.closest('form');
+                if (!form) return;
+                
+                const matchId = select.getAttribute('data-match-id');
+                
+                // Create a request promise
+                const requestPromise = fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        return { success: true, matchId };
+                    } else {
+                        return { success: false, matchId, error: data.error };
+                    }
+                })
+                .catch(error => {
+                    return { success: false, matchId, error: error.toString() };
+                });
+                
+                promises.push(requestPromise);
+            });
+            
+            // Wait for all requests to complete
+            const results = await Promise.all(promises);
+            
+            // Check results and handle errors
+            const failures = results.filter(result => !result.success);
+            
+            if (failures.length > 0) {
+                // Show error message for failures
+                alert(`Failed to update ${failures.length} matches. Please check the console for details.`);
+                console.error('Failed updates:', failures);
+                
+                saveButton.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Some Updates Failed';
+                
+                // Only remove successful changes from pending changes
+                const failedMatchIds = failures.map(f => f.matchId);
+                
+                pendingChanges.forEach((value, selectId) => {
+                    const select = document.getElementById(selectId);
+                    if (!select) return;
+                    
+                    const matchId = select.getAttribute('data-match-id');
+                    if (!failedMatchIds.includes(matchId)) {
+                        pendingChanges.delete(selectId);
+                    }
+                });
+            } else {
+                // All successful - clear all pending changes
+                pendingChanges.clear();
+                
+                // Show success message
+                saveButton.innerHTML = '<i class="fas fa-check me-2"></i>Saved Successfully!';
+            }
+            
+            // Update UI
+            highlightPendingChanges();
+            
+            // Reload the page after successful save (give time to see the success message)
+            if (failures.length === 0) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                saveButton.disabled = false;
+            }
+        }
+        
+        // Add CSS styles for the admin controls
+        function addStyles() {
+            // Check if styles already exist
+            if (document.getElementById('tournament-admin-styles')) return;
+            
+            const styleElement = document.createElement('style');
+            styleElement.id = 'tournament-admin-styles';
+            styleElement.innerHTML = `
+                tr.pending-change {
+                    background-color: rgba(255, 193, 7, 0.15) !important;
+                }
+                
+                tr.pending-change td {
+                    font-weight: 600;
+                }
+                
+                .result-select {
+                    width: 100%;
+                    min-width: 170px;
+                }
+                
+                .board-number {
+                    background-color: #f8f9fa;
+                    border-right: 2px solid #dee2e6;
+                }
+                
+                .board-header {
+                    background-color: #f8f9fa;
+                    border-right: 2px solid #dee2e6;
+                }
+                
+                /* Green success button */
+                .btn-success {
+                    background-color: #48bb78;
+                    border-color: #48bb78;
+                }
+                
+                .btn-success:hover {
+                    background-color: #38a169;
+                    border-color: #38a169;
+                }
+                
+                /* Fix any layout issues with admin controls */
+                .admin-controls .card-body {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    align-items: center;
+                }
+                
+                #unified-save-button {
+                    min-width: 180px;
+                }
+            `;
+            document.head.appendChild(styleElement);
+        }
+        
+        // Set up event listeners for all dropdowns
+        function setupResultSelects() {
+            const resultSelects = document.querySelectorAll('.result-select');
+            
+            resultSelects.forEach(select => {
+                // Generate a unique ID for this select if it doesn't have one
+                if (!select.id) {
+                    select.id = `result-select-${select.getAttribute('data-match-id')}`;
+                }
+                
+                // Store the original value
+                select.setAttribute('data-original-value', select.value);
+                
+                // Remove any existing listeners to prevent duplicates
+                const newSelect = select.cloneNode(true);
+                if (select.parentNode) {
+                    select.parentNode.replaceChild(newSelect, select);
+                }
+                
+                // Add change event listener to the new select
+                newSelect.addEventListener('change', function() {
+                    const originalValue = this.getAttribute('data-original-value');
+                    const selectId = this.id;
+                    
+                    if (this.value !== originalValue) {
+                        // Add to pending changes
+                        pendingChanges.set(selectId, this.value);
+                    } else {
+                        // Remove from pending changes if changed back to original
+                        pendingChanges.delete(selectId);
+                    }
+                    
+                    // Update UI to reflect pending changes
+                    highlightPendingChanges();
+                });
+            });
+        }
+        
+        // Initialize all components
+        function init() {
+            // Add styles
+            addStyles();
+            
+            // Add board numbers
+            addBoardNumbers();
+            
+            // Create the unified save button in admin panel
+            createUnifiedSaveButton();
+            
+            // Setup result selects
+            setupResultSelects();
+            
+            // Initial update of UI
+            highlightPendingChanges();
+        }
+        
+        // Initialize the admin controls
+        init();
+        {% endif %}
     });
 </script>
 {% endblock %}
