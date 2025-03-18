@@ -77,6 +77,8 @@ def generate_swiss_pairings(tournament, round_obj):
             )
             standing.score += 1
             standing.save()
+
+            update_tournament_standings(tournament)
         
         # Calculate midpoint - with the bye player already removed for odd count
         midpoint = len(participants) // 2
@@ -260,6 +262,8 @@ def generate_swiss_pairings(tournament, round_obj):
         )
         standing.score += 1
         standing.save()
+
+        update_tournament_standings(tournament)
         
         # Remove the bye player from the participants for pairing
         # Create a list of keys to iterate over
@@ -648,6 +652,7 @@ def update_tournament_standings(tournament):
         if standing.rank != current_rank:
             standing.rank = current_rank
             standing.save()
+
 
 def update_fide_ratings():
     """Fetch and update FIDE ratings for all users with a FIDE ID"""

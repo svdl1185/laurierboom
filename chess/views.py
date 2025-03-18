@@ -588,7 +588,6 @@ class StartTournamentView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         
         return HttpResponseRedirect(reverse_lazy('tournament_detail', kwargs={'pk': tournament.pk}))
 
-
 class EnterMatchResultView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """View for entering match results (admin only)"""
     model = Match
@@ -1177,7 +1176,7 @@ def complete_tournament(request, tournament_id):
             time_control=tournament.time_control
         )
         
-        # Check for achievements
+        # Check for achievements - ONLY do this at tournament completion
         from .achievement_service import check_achievements
         new_achievements = check_achievements(participant)
         if new_achievements:
@@ -1258,13 +1257,7 @@ def inline_match_result(request, match_id):
     # Update tournament standings
     update_tournament_standings(tournament)
     
-    # Only check for achievements if the result is final (not pending)
-    if result != 'pending' and (previous_result == 'pending' or previous_result != result):
-        from .achievement_service import check_achievements
-        # Check achievements for both players, but only if they exist
-        check_achievements(match.white_player)
-        if match.black_player:  # Only check achievements for black_player if it exists
-            check_achievements(match.black_player)
+    # We will NOT check for achievements here anymore - only at tournament completion
     
     return JsonResponse({'success': True})
 
