@@ -371,7 +371,12 @@ class TournamentDetailView(DetailView):
         # Get all matches organized by round number
         rounds_matches = {}
         for round_obj in rounds:
-            rounds_matches[round_obj.number] = round_obj.matches.all()
+            # Separate normal matches and bye matches
+            normal_matches = list(round_obj.matches.filter(black_player__isnull=False))
+            bye_matches = list(round_obj.matches.filter(black_player__isnull=True, result='bye'))
+            
+            # Combine lists, with bye matches at the end
+            rounds_matches[round_obj.number] = normal_matches + bye_matches
         
         context['rounds_matches'] = rounds_matches
         
@@ -379,12 +384,18 @@ class TournamentDetailView(DetailView):
         try:
             current_round = rounds.filter(is_completed=False).earliest('number')
             context['current_round'] = current_round
-            context['current_matches'] = current_round.matches.all()
+            
+            # Get matches for current round, with bye matches at the end
+            normal_matches = list(current_round.matches.filter(black_player__isnull=False))
+            bye_matches = list(current_round.matches.filter(black_player__isnull=True, result='bye'))
+            context['current_matches'] = normal_matches + bye_matches
         except Round.DoesNotExist:
             # If all rounds are completed, set the last round as current
             if rounds.exists():
                 context['current_round'] = rounds.latest('number')
-                context['current_matches'] = context['current_round'].matches.all()
+                normal_matches = list(context['current_round'].matches.filter(black_player__isnull=False))
+                bye_matches = list(context['current_round'].matches.filter(black_player__isnull=True, result='bye'))
+                context['current_matches'] = normal_matches + bye_matches
                 
                 # No more rounds to complete - set a flag to hide the "Complete Current Round" button
                 context['all_rounds_completed'] = True
@@ -433,6 +444,11 @@ class TournamentDetailView(DetailView):
             
             # Calculate board values and assign board numbers
             for match in current_matches:
+                # Skip for bye matches
+                if match.black_player is None:
+                    match.board_value = 9999  # High value so byes appear last
+                    continue
+                    
                 white_rank = player_rankings.get(match.white_player.id, 999)
                 black_rank = player_rankings.get(match.black_player.id, 999)
                 match.board_value = white_rank + black_rank

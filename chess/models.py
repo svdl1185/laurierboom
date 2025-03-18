@@ -152,24 +152,30 @@ class Match(models.Model):
         ('black_win', 'Black Win'),
         ('draw', 'Draw'),
         ('pending', 'Pending'),
+        ('bye', 'Bye'),  # New result type for byes
     ]
     
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='matches')
     round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name='matches')
     white_player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='white_matches')
-    black_player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='black_matches')
+    black_player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='black_matches', null=True, blank=True)  # Allow null for byes
     result = models.CharField(max_length=10, choices=RESULT_CHOICES, default='pending')
     
     def __str__(self):
-        return f"{self.white_player.username} vs {self.black_player.username}"
+        if self.black_player:
+            return f"{self.white_player.username} vs {self.black_player.username}"
+        else:
+            return f"{self.white_player.username} - Bye"
     
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         super().save(*args, **kwargs)
         
-        # Update Glicko2 ratings if result is set and not pending
-        if not is_new and self.result != 'pending':
+        # Update Glicko2 ratings only for actual matches (not byes)
+        # Only if result is set and not pending
+        if not is_new and self.result not in ['pending', 'bye'] and self.black_player is not None:
             update_glicko2_ratings(self)
+
 
 class TournamentStanding(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='standings')

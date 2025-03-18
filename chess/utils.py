@@ -10,17 +10,15 @@ from .models import TournamentStanding, User, Match
 def generate_swiss_pairings(tournament, round_obj):
     """
     Generate pairings for a Swiss tournament round following FIDE Dutch Swiss System rules
-    
-    Implements:
-    1. Score groups
-    2. Color preference calculation (FIDE rules)
-    3. Avoiding rematches
-    4. Proper color allocation following FIDE criteria
+    with proper handling for an odd number of players (byes)
     """
     from .models import Match, TournamentStanding
     import math
     
     participants = list(tournament.participants.all())
+    
+    # Check if we have an odd number of players
+    has_odd_players = len(participants) % 2 == 1
     
     # Special case for exactly two players - alternate colors each round
     if len(participants) == 2:
@@ -51,17 +49,40 @@ def generate_swiss_pairings(tournament, round_obj):
         )
         return [(white_player, black_player)]
     
-    # First round pairing - split players into top and bottom half by rating
+    # First round pairing with bye handling - split players into top and bottom half by rating
     if round_obj.number == 1:
         # Sort players by rating (highest to lowest)
         participants.sort(key=lambda x: x.elo, reverse=True)
         
-        # Calculate midpoint
+        # Handle bye for odd number of players
+        if has_odd_players:
+            # The lowest-rated player gets a bye in the first round
+            bye_player = participants.pop()  # Remove the last player (lowest rated)
+            
+            # Create a bye match
+            Match.objects.create(
+                tournament=tournament,
+                round=round_obj,
+                white_player=bye_player,
+                black_player=None,  # No opponent indicates a bye
+                result='bye'  # Special result type for byes
+            )
+            
+            # Award 1 point for the bye
+            standing, created = TournamentStanding.objects.get_or_create(
+                tournament=tournament,
+                player=bye_player,
+                defaults={'score': 0}
+            )
+            standing.score += 1
+            standing.save()
+        
+        # Calculate midpoint - with the bye player already removed for odd count
         midpoint = len(participants) // 2
         
-        # If odd number of players, midpoint calculation ensures the top half has one more player
-        top_half = participants[:midpoint + (len(participants) % 2)]
-        bottom_half = participants[midpoint + (len(participants) % 2):]
+        # Split remaining players into top and bottom half
+        top_half = participants[:midpoint]
+        bottom_half = participants[midpoint:]
         
         # Match players from top half with players from bottom half
         pairings = []
@@ -79,24 +100,29 @@ def generate_swiss_pairings(tournament, round_obj):
             
             pairings.append((white_player, black_player))
         
-        # If there's an odd number of players, the last player in top_half gets a bye
-        # In real tournaments, this should be handled according to the specific rules
-        # For now, we'll skip this as your model doesn't seem to have bye support
-        
         # Sort pairings by the combined score of the players (highest first)
         # This ensures board 1 has the most important match
         sorted_pairings = sorted(pairings, 
-                                key=lambda p: max(p[0].elo, p[1].elo), 
-                                reverse=True)
+                              key=lambda p: max(p[0].elo, p[1].elo), 
+                              reverse=True)
         
         return sorted_pairings
     
-    # For rounds after the first, use the FIDE Dutch Swiss System
+    # For rounds after the first, use the FIDE Dutch Swiss System with bye handling
     
     # Get all previous tournament matches
     previous_matches = Match.objects.filter(
         tournament=tournament
     ).order_by('round__number')
+    
+    # Get all previous byes
+    bye_matches = previous_matches.filter(
+        black_player=None,
+        result='bye'
+    )
+    
+    # Get players who have already received a bye
+    players_with_bye = bye_matches.values_list('white_player_id', flat=True)
     
     # --- STEP 1: Prepare Player Data ---
     
@@ -113,7 +139,7 @@ def generate_swiss_pairings(tournament, round_obj):
             'color_pref': 0,  # 0=neutral, +ve=white preference, -ve=black preference
             # Magnitude: 1=mild, 2=strong (2 same in row), 3=absolute (CD >= |2|)
             'float_history': [],  # History of up/down floats (not used in basic implementation)
-            'received_bye': False  # Whether player has received a bye
+            'received_bye': player.id in players_with_bye  # Whether player has received a bye
         }
     
     # --- STEP 2: Calculate Standings ---
@@ -129,6 +155,10 @@ def generate_swiss_pairings(tournament, round_obj):
     
     # Process previous matches to gather color and opponent history
     for match in previous_matches:
+        # Skip bye matches for this part
+        if match.black_player is None:
+            continue
+            
         # Record opponent for white player
         white_id = match.white_player.id
         black_id = match.black_player.id
@@ -184,7 +214,50 @@ def generate_swiss_pairings(tournament, round_obj):
     for score, players in score_groups.items():
         players.sort(key=lambda x: x['player'].elo, reverse=True)
     
-    # --- STEP 6: Generate Pairings (FIDE Dutch Swiss) ---
+    # --- STEP 6: Handle Bye for Odd Number of Players ---
+    if has_odd_players:
+        # Find eligible players for a bye (players who haven't had a bye yet)
+        eligible_for_bye = [
+            info for player_id, info in player_info.items() 
+            if not info['received_bye']
+        ]
+        
+        # If no eligible players (everyone has had a bye), consider all players
+        if not eligible_for_bye:
+            eligible_for_bye = list(player_info.values())
+        
+        # Sort eligible players by score (ascending), then by rating (ascending)
+        eligible_for_bye.sort(key=lambda x: (x['score'], x['player'].elo))
+        
+        # Assign bye to the lowest scoring eligible player
+        bye_player = eligible_for_bye[0]['player']
+        
+        # Create a bye match
+        Match.objects.create(
+            tournament=tournament,
+            round=round_obj,
+            white_player=bye_player,
+            black_player=None,
+            result='bye'
+        )
+        
+        # Award 1 point for the bye
+        standing = TournamentStanding.objects.get(
+            tournament=tournament,
+            player=bye_player
+        )
+        standing.score += 1
+        standing.save()
+        
+        # Remove the bye player from the participants for pairing
+        for score, players in score_groups.items():
+            players[:] = [p for p in players if p['player'].id != bye_player.id]
+            
+            # If the score group is now empty, remove it
+            if not players:
+                score_groups.pop(score, None)
+    
+    # --- STEP 7: Generate Pairings (FIDE Dutch Swiss) ---
     
     pairings = []
     remaining_players = []
@@ -236,7 +309,7 @@ def generate_swiss_pairings(tournament, round_obj):
     
     # Handle any players that couldn't be paired
     # In a proper implementation, these would get byes
-    # But since the system doesn't handle byes, we'll just pair them sub-optimally
+    # But since we already handled byes earlier, we'll just pair them sub-optimally
     if len(remaining_players) >= 2:
         while len(remaining_players) >= 2:
             s1 = remaining_players[0]
@@ -252,7 +325,7 @@ def generate_swiss_pairings(tournament, round_obj):
             remaining_players.remove(s1)
             remaining_players.remove(s2)
     
-    # --- STEP 7: Sort Pairings by Importance ---
+    # --- STEP 8: Sort Pairings by Importance ---
     
     # Sort pairings by the combined score of the players (highest first)
     # This ensures that board 1 has the most important match (highest scoring players)
@@ -284,10 +357,10 @@ def generate_swiss_pairings(tournament, round_obj):
     
     # Sort the pairings by importance (highest combined score first, then by highest rating)
     sorted_pairings = sorted(scored_pairings, 
-                            key=lambda p: (p['combined_score'], p['max_rating']), 
-                            reverse=True)
+                          key=lambda p: (p['combined_score'], p['max_rating']), 
+                          reverse=True)
     
-    # --- STEP 8: Create Match Objects With Board Numbers ---
+    # --- STEP 9: Create Match Objects With Board Numbers ---
     
     # Create match objects for the sorted pairings
     pairings_result = []
@@ -302,9 +375,6 @@ def generate_swiss_pairings(tournament, round_obj):
             black_player=black,
             result='pending'
         )
-        
-        # Store the board number (not in the model but could be added if needed)
-        # You could add a board_number field to the Match model if you want to persist this
         
         pairings_result.append((white, black))
     

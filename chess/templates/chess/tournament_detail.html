@@ -855,31 +855,41 @@
                                         </div>
                                     </td>
                                     <td style="width: 30%; text-align: center; color: #000000 !important; font-weight: bold;">
-                                        {% if match.result == 'white_win' %}
-                                            1 - 0
-                                        {% elif match.result == 'black_win' %}
-                                            0 - 1
-                                        {% elif match.result == 'draw' %}
-                                            ½ - ½
-                                        {% else %}
-                                            ... - ...
+                                        {% if match.black_player %}
+                                            {% if match.result == 'white_win' %}
+                                                1 - 0
+                                            {% elif match.result == 'black_win' %}
+                                                0 - 1
+                                            {% elif match.result == 'draw' %}
+                                                ½ - ½
+                                            {% else %}
+                                                ... - ...
+                                            {% endif %}
+                                        {% elif match.result == 'bye' %}
+                                            <!-- Bye display -->
+                                            <span style="font-size: 1.5em;">🍺</span><br>
+                                            <small style="color: #198754; font-weight: 500;">Bye (1 point)</small>
                                         {% endif %}
                                     </td>
                                     <td style="width: 25%; text-align: left; color: #000000 !important; font-weight: bold;">
-                                        {{ match.black_player.get_full_name|default:match.black_player.username }}
-                                        <div style="font-size: 0.875rem; color: #666;">
-                                            {% if tournament.time_control == 'bullet' %}
-                                                {{ match.black_player.bullet_elo|floatformat:0 }}
-                                            {% elif tournament.time_control == 'blitz' %}
-                                                {{ match.black_player.blitz_elo|floatformat:0 }}
-                                            {% elif tournament.time_control == 'rapid' %}
-                                                {{ match.black_player.rapid_elo|floatformat:0 }}
-                                            {% elif tournament.time_control == 'classical' %}
-                                                {{ match.black_player.classical_elo|floatformat:0 }}
-                                            {% else %}
-                                                {{ match.black_player.elo|floatformat:0 }}
-                                            {% endif %}
-                                        </div>
+                                        {% if match.black_player %}
+                                            {{ match.black_player.get_full_name|default:match.black_player.username }}
+                                            <div style="font-size: 0.875rem; color: #666;">
+                                                {% if tournament.time_control == 'bullet' %}
+                                                    {{ match.black_player.bullet_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'blitz' %}
+                                                    {{ match.black_player.blitz_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'rapid' %}
+                                                    {{ match.black_player.rapid_elo|floatformat:0 }}
+                                                {% elif tournament.time_control == 'classical' %}
+                                                    {{ match.black_player.classical_elo|floatformat:0 }}
+                                                {% else %}
+                                                    {{ match.black_player.elo|floatformat:0 }}
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <span style="color: #666; font-style: italic;">Bye</span>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% empty %}
@@ -991,7 +1001,13 @@
                                                                             {% endif %}
                                                                         {% endif %}
                                                                     </td>
-                                                                    <td>{{ match.black_player.get_full_name|default:match.black_player.username }}</td>
+                                                                    <td>
+                                                                        {% if match.black_player %}
+                                                                            {{ match.black_player.get_full_name|default:match.black_player.username }}
+                                                                        {% else %}
+                                                                            <span style="color: #666; font-style: italic;">Bye</span>
+                                                                        {% endif %}
+                                                                    </td>
                                                                 </tr>
                                                             {% empty %}
                                                                 <tr>
@@ -1186,20 +1202,29 @@
                                                                 </a>
                                                             </td>
                                                             <td class="text-center">
-                                                                {% if match.result == 'white_win' %}
-                                                                    <span class="badge bg-success">1-0</span>
-                                                                {% elif match.result == 'black_win' %}
-                                                                    <span class="badge bg-success">0-1</span>
-                                                                {% elif match.result == 'draw' %}
-                                                                    <span class="badge bg-success">½-½</span>
-                                                                {% else %}
-                                                                    <span class="badge bg-secondary">-</span>
+                                                                {% if match.black_player %}
+                                                                    {% if match.result == 'white_win' %}
+                                                                        <span class="badge bg-success">1-0</span>
+                                                                    {% elif match.result == 'black_win' %}
+                                                                        <span class="badge bg-success">0-1</span>
+                                                                    {% elif match.result == 'draw' %}
+                                                                        <span class="badge bg-warning text-dark">½-½</span>
+                                                                    {% else %}
+                                                                        <span class="badge bg-secondary">Pending</span>
+                                                                    {% endif %}
+                                                                {% elif match.result == 'bye' %}
+                                                                    <span style="font-size: 1.2em;">🍺</span>
+                                                                    <span class="badge bg-success">+1</span>
                                                                 {% endif %}
                                                             </td>
                                                             <td>
-                                                                <a href="{% url 'profile_detail' match.black_player.id %}">
-                                                                    {{ match.black_player.get_full_name|default:match.black_player.username }}
-                                                                </a>
+                                                                {% if match.black_player %}
+                                                                    <a href="{% url 'profile_detail' match.black_player.id %}">
+                                                                        {{ match.black_player.get_full_name|default:match.black_player.username }}
+                                                                    </a>
+                                                                {% else %}
+                                                                    <span style="color: #666; font-style: italic;">Bye</span>
+                                                                {% endif %}
                                                             </td>
                                                         </tr>
                                                     {% endfor %}
