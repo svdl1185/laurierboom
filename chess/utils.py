@@ -10,7 +10,7 @@ from .models import TournamentStanding, User, Match
 def generate_swiss_pairings(tournament, round_obj):
     """
     Generate pairings for a Swiss tournament round following FIDE Dutch Swiss System rules
-    with proper handling for an odd number of players (byes)
+    with updated bye handling - giving byes to players in the middle of the standings
     """
     from .models import Match, TournamentStanding
     import math
@@ -56,8 +56,9 @@ def generate_swiss_pairings(tournament, round_obj):
         
         # Handle bye for odd number of players
         if has_odd_players:
-            # The lowest-rated player gets a bye in the first round
-            bye_player = participants.pop()  # Remove the last player (lowest rated)
+            # UPDATED: The middle-rated player gets a bye in the first round
+            middle_index = len(participants) // 2
+            bye_player = participants.pop(middle_index)  # Remove the middle player
             
             # Create a bye match
             Match.objects.create(
@@ -215,9 +216,8 @@ def generate_swiss_pairings(tournament, round_obj):
         players.sort(key=lambda x: x['player'].elo, reverse=True)
     
     # --- STEP 6: Handle Bye for Odd Number of Players ---
-# --- STEP 6: Handle Bye for Odd Number of Players ---
     if has_odd_players:
-        # Find eligible players for a bye (players who haven't had a bye yet)
+        # UPDATED: Find eligible players for a bye (players who haven't had a bye yet)
         eligible_for_bye = [
             info for player_id, info in player_info.items() 
             if not info['received_bye']
@@ -227,11 +227,22 @@ def generate_swiss_pairings(tournament, round_obj):
         if not eligible_for_bye:
             eligible_for_bye = list(player_info.values())
         
-        # Sort eligible players by score (ascending), then by rating (ascending)
-        eligible_for_bye.sort(key=lambda x: (x['score'], x['player'].elo))
+        # UPDATED: Instead of choosing the lowest scoring player, choose the one in the middle
+        # Sort eligible players by score
+        eligible_for_bye.sort(key=lambda x: x['score'])
         
-        # Assign bye to the lowest scoring eligible player
-        bye_player = eligible_for_bye[0]['player']
+        # Select the middle player from the sorted list
+        middle_index = len(eligible_for_bye) // 2
+        bye_player = eligible_for_bye[middle_index]['player']
+        
+        # If multiple players have the same score as the middle player, choose the lowest rated
+        middle_score = eligible_for_bye[middle_index]['score']
+        middle_score_players = [p for p in eligible_for_bye if p['score'] == middle_score]
+        
+        if len(middle_score_players) > 1:
+            # Sort by rating and pick the lowest rated
+            middle_score_players.sort(key=lambda x: x['player'].elo)
+            bye_player = middle_score_players[0]['player']
         
         # Create a bye match
         Match.objects.create(
