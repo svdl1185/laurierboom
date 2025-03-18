@@ -1220,17 +1220,21 @@
                                                             <td class="text-center">
                                                                 {% if match.black_player %}
                                                                     {% if match.result == 'white_win' %}
-                                                                        <span class="badge bg-success">1-0</span>
+                                                                        <span class="match-result-badge result-win">1-0</span>
                                                                     {% elif match.result == 'black_win' %}
-                                                                        <span class="badge bg-success">0-1</span>
+                                                                        <span class="match-result-badge result-win">0-1</span>
                                                                     {% elif match.result == 'draw' %}
-                                                                        <span class="badge bg-warning text-dark">½-½</span>
+                                                                        <span class="match-result-badge result-draw">½-½</span>
+                                                                    {% elif match.result == 'white_forfeit' %}
+                                                                        <span class="match-result-badge result-loss">+/- (White Forfeit)</span>
+                                                                    {% elif match.result == 'black_forfeit' %}
+                                                                        <span class="match-result-badge result-loss">-/+ (Black Forfeit)</span>
                                                                     {% else %}
-                                                                        <span class="badge bg-secondary">Pending</span>
+                                                                        <span class="match-result-badge result-pending">Pending</span>
                                                                     {% endif %}
                                                                 {% elif match.result == 'bye' %}
-                                                                    <span style="font-size: 1.2em;">🍺</span>
-                                                                    <span class="badge bg-success">+1</span>
+                                                                    <span style="font-size: 1.5em;">🍺</span><br>
+                                                                    <small class="match-result-badge result-win">Bye (+1)</small>
                                                                 {% endif %}
                                                             </td>
                                                             <td>

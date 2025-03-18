@@ -215,6 +215,7 @@ def generate_swiss_pairings(tournament, round_obj):
         players.sort(key=lambda x: x['player'].elo, reverse=True)
     
     # --- STEP 6: Handle Bye for Odd Number of Players ---
+# --- STEP 6: Handle Bye for Odd Number of Players ---
     if has_odd_players:
         # Find eligible players for a bye (players who haven't had a bye yet)
         eligible_for_bye = [
@@ -250,135 +251,139 @@ def generate_swiss_pairings(tournament, round_obj):
         standing.save()
         
         # Remove the bye player from the participants for pairing
-        for score, players in score_groups.items():
+        # Create a list of keys to iterate over
+        score_groups_keys = list(score_groups.keys())
+        
+        for score in score_groups_keys:
+            players = score_groups[score]
             players[:] = [p for p in players if p['player'].id != bye_player.id]
             
             # If the score group is now empty, remove it
             if not players:
-                score_groups.pop(score, None)
-    
-    # --- STEP 7: Generate Pairings (FIDE Dutch Swiss) ---
-    
-    pairings = []
-    remaining_players = []
-    
-    # Start with highest score group, work down to lowest
-    for score in sorted(score_groups.keys(), reverse=True):
-        group = score_groups[score]
+                del score_groups[score]
         
-        # Add any players that floated down from previous groups
-        group = remaining_players + group
+        # --- STEP 7: Generate Pairings (FIDE Dutch Swiss) ---
+        
+        pairings = []
         remaining_players = []
         
-        # While there are at least 2 players in the group
-        while len(group) >= 2:
-            # Start with the highest rated player in the group
-            s1 = group[0]
-            player1 = s1['player']
+        # Start with highest score group, work down to lowest
+        for score in sorted(score_groups.keys(), reverse=True):
+            group = score_groups[score]
             
-            # Try to find a compatible pairing
-            pair_found = False
-            for i in range(1, len(group)):
-                s2 = group[i]
-                player2 = s2['player']
+            # Add any players that floated down from previous groups
+            group = remaining_players + group
+            remaining_players = []
+            
+            # While there are at least 2 players in the group
+            while len(group) >= 2:
+                # Start with the highest rated player in the group
+                s1 = group[0]
+                player1 = s1['player']
                 
-                # Check if they've already played
-                if player2.id in s1['opponents']:
-                    continue
+                # Try to find a compatible pairing
+                pair_found = False
+                for i in range(1, len(group)):
+                    s2 = group[i]
+                    player2 = s2['player']
+                    
+                    # Check if they've already played
+                    if player2.id in s1['opponents']:
+                        continue
+                    
+                    # Try to determine colors
+                    white_player, black_player = determine_colors(s1, s2)
+                    
+                    if white_player and black_player:
+                        # Valid pairing found
+                        pairings.append((white_player, black_player))
+                        # Remove these players from the group
+                        group.remove(s1)
+                        group.remove(s2)
+                        pair_found = True
+                        break
                 
-                # Try to determine colors
+                # If no valid pairing found, float player to next group
+                if not pair_found:
+                    remaining_players.append(s1)
+                    group.remove(s1)
+            
+            # If one player remains, add to next group
+            if len(group) == 1:
+                remaining_players.append(group[0])
+        
+        # Handle any players that couldn't be paired
+        # In a proper implementation, these would get byes
+        # But since we already handled byes earlier, we'll just pair them sub-optimally
+        if len(remaining_players) >= 2:
+            while len(remaining_players) >= 2:
+                s1 = remaining_players[0]
+                s2 = remaining_players[1]
                 white_player, black_player = determine_colors(s1, s2)
                 
-                if white_player and black_player:
-                    # Valid pairing found
-                    pairings.append((white_player, black_player))
-                    # Remove these players from the group
-                    group.remove(s1)
-                    group.remove(s2)
-                    pair_found = True
-                    break
+                # If colors can't be determined, just assign arbitrarily
+                if not white_player or not black_player:
+                    white_player = s1['player']
+                    black_player = s2['player']
+                    
+                pairings.append((white_player, black_player))
+                remaining_players.remove(s1)
+                remaining_players.remove(s2)
+        
+        # --- STEP 8: Sort Pairings by Importance ---
+        
+        # Sort pairings by the combined score of the players (highest first)
+        # This ensures that board 1 has the most important match (highest scoring players)
+        scored_pairings = []
+        
+        for white, black in pairings:
+            # Get the scores of both players
+            white_score = 0
+            black_score = 0
             
-            # If no valid pairing found, float player to next group
-            if not pair_found:
-                remaining_players.append(s1)
-                group.remove(s1)
-        
-        # If one player remains, add to next group
-        if len(group) == 1:
-            remaining_players.append(group[0])
-    
-    # Handle any players that couldn't be paired
-    # In a proper implementation, these would get byes
-    # But since we already handled byes earlier, we'll just pair them sub-optimally
-    if len(remaining_players) >= 2:
-        while len(remaining_players) >= 2:
-            s1 = remaining_players[0]
-            s2 = remaining_players[1]
-            white_player, black_player = determine_colors(s1, s2)
+            for player_id, info in player_info.items():
+                if info['player'] == white:
+                    white_score = info['score']
+                elif info['player'] == black:
+                    black_score = info['score']
             
-            # If colors can't be determined, just assign arbitrarily
-            if not white_player or not black_player:
-                white_player = s1['player']
-                black_player = s2['player']
-                
-            pairings.append((white_player, black_player))
-            remaining_players.remove(s1)
-            remaining_players.remove(s2)
-    
-    # --- STEP 8: Sort Pairings by Importance ---
-    
-    # Sort pairings by the combined score of the players (highest first)
-    # This ensures that board 1 has the most important match (highest scoring players)
-    scored_pairings = []
-    
-    for white, black in pairings:
-        # Get the scores of both players
-        white_score = 0
-        black_score = 0
+            # Calculate the importance of this pairing
+            # Primary sort: Combined score (higher = more important)
+            # Secondary sort: Highest player rating (higher = more important)
+            combined_score = white_score + black_score
+            max_rating = max(white.elo, black.elo)
+            
+            scored_pairings.append({
+                'white': white,
+                'black': black,
+                'combined_score': combined_score,
+                'max_rating': max_rating
+            })
         
-        for player_id, info in player_info.items():
-            if info['player'] == white:
-                white_score = info['score']
-            elif info['player'] == black:
-                black_score = info['score']
+        # Sort the pairings by importance (highest combined score first, then by highest rating)
+        sorted_pairings = sorted(scored_pairings, 
+                            key=lambda p: (p['combined_score'], p['max_rating']), 
+                            reverse=True)
         
-        # Calculate the importance of this pairing
-        # Primary sort: Combined score (higher = more important)
-        # Secondary sort: Highest player rating (higher = more important)
-        combined_score = white_score + black_score
-        max_rating = max(white.elo, black.elo)
+        # --- STEP 9: Create Match Objects With Board Numbers ---
         
-        scored_pairings.append({
-            'white': white,
-            'black': black,
-            'combined_score': combined_score,
-            'max_rating': max_rating
-        })
-    
-    # Sort the pairings by importance (highest combined score first, then by highest rating)
-    sorted_pairings = sorted(scored_pairings, 
-                          key=lambda p: (p['combined_score'], p['max_rating']), 
-                          reverse=True)
-    
-    # --- STEP 9: Create Match Objects With Board Numbers ---
-    
-    # Create match objects for the sorted pairings
-    pairings_result = []
-    for board_number, pairing in enumerate(sorted_pairings, 1):
-        white = pairing['white']
-        black = pairing['black']
+        # Create match objects for the sorted pairings
+        pairings_result = []
+        for board_number, pairing in enumerate(sorted_pairings, 1):
+            white = pairing['white']
+            black = pairing['black']
+            
+            match = Match.objects.create(
+                tournament=tournament,
+                round=round_obj,
+                white_player=white,
+                black_player=black,
+                result='pending'
+            )
+            
+            pairings_result.append((white, black))
         
-        match = Match.objects.create(
-            tournament=tournament,
-            round=round_obj,
-            white_player=white,
-            black_player=black,
-            result='pending'
-        )
-        
-        pairings_result.append((white, black))
-    
-    return pairings_result
+        return pairings_result
 
 def determine_colors(s1, s2):
     """

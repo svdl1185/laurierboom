@@ -1230,10 +1230,6 @@ def inline_match_result(request, match_id):
     if not request.user.is_staff:
         return JsonResponse({'success': False, 'error': 'Permission denied'})
     
-    # Add debug logging
-    print(f"Request method: {request.method}")
-    print(f"POST data: {request.POST}")
-    
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Invalid request method'})
     
@@ -1246,7 +1242,6 @@ def inline_match_result(request, match_id):
     
     # Get the new result from the form
     result = request.POST.get('result')
-    print(f"Received result: {result}")
     
     # Validate the result more explicitly
     valid_results = ['white_win', 'black_win', 'draw', 'pending', 'white_forfeit', 'black_forfeit']
@@ -1266,9 +1261,10 @@ def inline_match_result(request, match_id):
     # Only check for achievements if the result is final (not pending)
     if result != 'pending' and (previous_result == 'pending' or previous_result != result):
         from .achievement_service import check_achievements
-        # Check achievements for both players
+        # Check achievements for both players, but only if they exist
         check_achievements(match.white_player)
-        check_achievements(match.black_player)
+        if match.black_player:  # Only check achievements for black_player if it exists
+            check_achievements(match.black_player)
     
     return JsonResponse({'success': True})
 
