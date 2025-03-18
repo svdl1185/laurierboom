@@ -9,6 +9,7 @@ def check_achievements(user):
     Returns a list of newly earned achievements.
     """
     from .models import Tournament, TournamentStanding, Match, Achievement
+    from django.db.models import Q
     
     # Track newly earned achievements to report back
     new_achievements = []
@@ -103,6 +104,7 @@ def check_achievements(user):
                 achievement_type='tournament_win_1',
                 count=first_places
             )
+            new_achievements.append(achievement)
             
     if first_places >= 3:
         achievement, created = Achievement.objects.get_or_create(
@@ -326,12 +328,20 @@ def check_achievements(user):
                 
                 # Undefeated
                 if total_games > 0 and losses == 0:
-                    achievement, created = Achievement.objects.get_or_create(
-                        user=user, 
+                    # First check if an identical achievement already exists
+                    existing_achievement = Achievement.objects.filter(
+                        user=user,
                         achievement_type='undefeated',
                         tournament=tournament
-                    )
-                    if created:
+                    ).first()
+                    
+                    if not existing_achievement:
+                        # Only create if it doesn't exist
+                        achievement = Achievement.objects.create(
+                            user=user,
+                            achievement_type='undefeated',
+                            tournament=tournament
+                        )
                         new_achievements.append(achievement)
                 
                 # Support Bear (No wins)

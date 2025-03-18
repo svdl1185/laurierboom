@@ -1167,13 +1167,15 @@ def complete_tournament(request, tournament_id):
         else:
             rating = participant.elo
             
-        # Create the rating history entry
-        PlayerRatingHistory.objects.create(
+        # Use get_or_create to avoid the unique constraint error
+        PlayerRatingHistory.objects.get_or_create(
             player=participant,
             tournament=tournament,
-            date=tournament.date,
-            rating=round(rating),  # Store as rounded integer
-            time_control=tournament.time_control
+            defaults={
+                'date': tournament.date,
+                'rating': round(rating),  # Store as rounded integer
+                'time_control': tournament.time_control
+            }
         )
         
         # Check for achievements - ONLY do this at tournament completion
