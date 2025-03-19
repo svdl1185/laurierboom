@@ -10,7 +10,7 @@ from .models import TournamentStanding, User, Match
 def generate_swiss_pairings(tournament, round_obj):
     """
     Generate pairings for a Swiss tournament round following FIDE Dutch Swiss System rules
-    with updated bye handling - giving byes to players in the middle of the standings
+    with updated bye handling and improved handling for situations where all players have the same score
     """
     from .models import Match, TournamentStanding
     import math
@@ -217,9 +217,104 @@ def generate_swiss_pairings(tournament, round_obj):
     for score, players in score_groups.items():
         players.sort(key=lambda x: x['player'].elo, reverse=True)
     
+    # --- SPECIAL HANDLING: When all players have the same score ---
+    if len(score_groups) == 1:
+        # All players have the same score - use a simplified pairing approach
+        # that focuses on avoiding rematches and balancing colors
+        
+        # Get all players in a single list
+        all_players = list(player_info.values())
+        
+        # Handle bye for odd number of players
+        if has_odd_players:
+            # Find eligible players for a bye (haven't had one yet)
+            eligible_for_bye = [
+                info for info in all_players
+                if not info['received_bye']
+            ]
+            
+            # If everyone has had a bye, consider all players
+            if not eligible_for_bye:
+                eligible_for_bye = all_players
+                
+            # Choose the middle-rated player
+            eligible_for_bye.sort(key=lambda x: x['player'].elo)
+            middle_index = len(eligible_for_bye) // 2
+            bye_player = eligible_for_bye[middle_index]['player']
+            
+            # Create bye match
+            Match.objects.create(
+                tournament=tournament,
+                round=round_obj,
+                white_player=bye_player,
+                black_player=None,
+                result='bye'
+            )
+            
+            # Award 1 point
+            standing = TournamentStanding.objects.get(
+                tournament=tournament,
+                player=bye_player
+            )
+            standing.score += 1
+            standing.save()
+            
+            # Remove bye player from pairing pool
+            all_players = [p for p in all_players if p['player'].id != bye_player.id]
+        
+        # Pair remaining players avoiding rematches when possible
+        pairings = []
+        players_left = all_players.copy()
+        
+        while len(players_left) >= 2:
+            player1 = players_left[0]
+            players_left.remove(player1)
+            
+            # Find best opponent who hasn't played player1 yet
+            opponent_found = False
+            for i, player2 in enumerate(players_left):
+                if player2['player'].id not in player1['opponents']:
+                    # Found a valid opponent - determine colors and create pairing
+                    white, black = determine_colors(player1, player2)
+                    if white and black:
+                        pairings.append((white, black))
+                        players_left.remove(player2)
+                        opponent_found = True
+                        break
+            
+            # If no valid opponent found, just pair with next available player
+            if not opponent_found and players_left:
+                player2 = players_left[0]
+                players_left.remove(player2)
+                
+                # Force color determination even if they've played before
+                white, black = determine_colors(player1, player2)
+                if not white or not black:  # If colors couldn't be determined
+                    # Assign arbitrarily based on color history
+                    if player1['color_diff'] <= player2['color_diff']:
+                        white, black = player1['player'], player2['player']
+                    else:
+                        white, black = player2['player'], player1['player']
+                
+                pairings.append((white, black))
+        
+        # Create matches from pairings
+        match_pairings = []
+        for white, black in pairings:
+            Match.objects.create(
+                tournament=tournament,
+                round=round_obj,
+                white_player=white,
+                black_player=black,
+                result='pending'
+            )
+            match_pairings.append((white, black))
+        
+        return match_pairings
+    
     # --- STEP 6: Handle Bye for Odd Number of Players ---
     if has_odd_players:
-        # UPDATED: Find eligible players for a bye (players who haven't had a bye yet)
+        # Find eligible players for a bye (players who haven't had a bye yet)
         eligible_for_bye = [
             info for player_id, info in player_info.items() 
             if not info['received_bye']
@@ -229,22 +324,11 @@ def generate_swiss_pairings(tournament, round_obj):
         if not eligible_for_bye:
             eligible_for_bye = list(player_info.values())
         
-        # UPDATED: Instead of choosing the lowest scoring player, choose the one in the middle
-        # Sort eligible players by score
+        # Sort eligible players by score (prioritize lowest scores for byes)
         eligible_for_bye.sort(key=lambda x: x['score'])
         
-        # Select the middle player from the sorted list
-        middle_index = len(eligible_for_bye) // 2
-        bye_player = eligible_for_bye[middle_index]['player']
-        
-        # If multiple players have the same score as the middle player, choose the lowest rated
-        middle_score = eligible_for_bye[middle_index]['score']
-        middle_score_players = [p for p in eligible_for_bye if p['score'] == middle_score]
-        
-        if len(middle_score_players) > 1:
-            # Sort by rating and pick the lowest rated
-            middle_score_players.sort(key=lambda x: x['player'].elo)
-            bye_player = middle_score_players[0]['player']
+        # Select player from lowest score group for the bye
+        bye_player = eligible_for_bye[0]['player']
         
         # Create a bye match
         Match.objects.create(
@@ -478,15 +562,32 @@ def determine_colors(s1, s2):
 
 def generate_round_robin_pairings(tournament, round_obj):
     """
-    Generate pairings for a Round Robin tournament
+    Generate pairings for a Round Robin tournament using the circle method (polygon method).
     
     In Round Robin tournaments, each player plays against all other players.
     For Double Round Robin, each player faces all others twice (once with white, once with black).
+    
+    Args:
+        tournament: Tournament object
+        round_obj: Round object for which to generate pairings
+    
+    Returns:
+        List of pairings as tuples (white_player, black_player)
     """
     from .models import Match
+    import logging
     
-    participants = list(tournament.participants.all())
+    # Get list of participants, sort by ELO for deterministic behavior
+    participants = list(tournament.participants.all().order_by('elo'))
     n = len(participants)
+    
+    # If we have no participants, return empty list
+    if n == 0:
+        logging.warning(f"No participants in tournament {tournament.id} for round {round_obj.number}")
+        return []
+    
+    # Log participants for debugging
+    logging.info(f"Generating round robin pairings for {n} participants in round {round_obj.number}")
     
     # Special case for exactly two players
     if n == 2:
@@ -497,6 +598,7 @@ def generate_round_robin_pairings(tournament, round_obj):
         else:  # Even round number
             white_player, black_player = participants[1], participants[0]
             
+        # Create the match in the database
         Match.objects.create(
             tournament=tournament,
             round=round_obj,
@@ -505,37 +607,57 @@ def generate_round_robin_pairings(tournament, round_obj):
             result='pending'
         )
         
+        logging.info(f"Created pairing for 2 players: {white_player.username} vs {black_player.username}")
         return [(white_player, black_player)]
     
-    # Standard round robin algorithm for more than 2 players
-    # If odd number of players, add a "dummy" player for byes
+    # Check if we have enough rounds planned
+    is_double_round_robin = tournament.tournament_type == 'double_round_robin'
+    
+    # For an odd number of participants, each player needs n rounds
+    # For an even number, each player needs n-1 rounds
+    needed_rounds = n if n % 2 == 1 else n - 1
+    
+    # For double round robin, double the number of needed rounds
+    if is_double_round_robin:
+        needed_rounds *= 2
+    
+    # Warning if attempting to create more rounds than needed
+    if round_obj.number > needed_rounds:
+        logging.warning(f"Creating round {round_obj.number} but only {needed_rounds} rounds needed for {n} players")
+    
+    # Standard round robin algorithm
+    # If odd number of players, add a "dummy" player (None) for byes
     if n % 2 == 1:
         participants.append(None)
         n += 1
     
-    # Apply the "polygon method" for round robin scheduling
+    # Apply the "circle method" for round robin scheduling
+    # In this method:
+    # 1. Player 0 stays fixed
+    # 2. All other players rotate clockwise for each round
+    
     round_number = round_obj.number
     
     # For double round robin, we have 2*(n-1) rounds total
-    # For rounds n through 2*(n-1), we reverse colors
-    is_double_round_robin = tournament.tournament_type == 'double_round_robin'
+    # For rounds n through 2*(n-1), we reverse colors from the first cycle
     is_second_cycle = is_double_round_robin and round_number > (n - 1)
     
     # Adjust round number for second cycle
     effective_round = round_number if not is_second_cycle else round_number - (n - 1)
     
-    # The first player is fixed, others rotate clockwise
-    pairings = []
-    
     # Calculate positions for this round
     positions = [0]  # First player stays at position 0
     for i in range(1, n):
-        new_pos = (i + effective_round - 1) % (n - 1)
-        if new_pos == 0:
-            new_pos = n - 1
-        positions.append(new_pos)
+        pos = (i + effective_round - 1) % (n - 1)
+        if pos == 0:
+            pos = n - 1
+        positions.append(pos)
+    
+    logging.info(f"Round {round_number} (effective {effective_round}) positions: {positions}")
     
     # Generate pairings for this round
+    pairings = []
+    
     for i in range(n // 2):
         player1_idx = positions[i]
         player2_idx = positions[n - 1 - i]
@@ -545,6 +667,34 @@ def generate_round_robin_pairings(tournament, round_obj):
         
         # Skip if one is dummy player (for odd number of original participants)
         if player1 is None or player2 is None:
+            # The non-None player gets a bye
+            bye_player = player2 if player1 is None else player1
+            
+            # Create a bye match
+            Match.objects.create(
+                tournament=tournament,
+                round=round_obj,
+                white_player=bye_player,
+                black_player=None,
+                result='bye'
+            )
+            
+            logging.info(f"Created bye for player {bye_player.username}")
+            
+            # Update standings to give the player with a bye 1 point
+            from .models import TournamentStanding
+            standing, created = TournamentStanding.objects.get_or_create(
+                tournament=tournament,
+                player=bye_player,
+                defaults={'score': 0}
+            )
+            standing.score += 1
+            standing.save()
+            
+            # Update tournament standings
+            from .utils import update_tournament_standings
+            update_tournament_standings(tournament)
+            
             continue
         
         # For second cycle in double round robin, reverse colors
@@ -552,6 +702,16 @@ def generate_round_robin_pairings(tournament, round_obj):
             white_player, black_player = player2, player1
         else:
             white_player, black_player = player1, player2
+        
+        # Check for possible previous matches
+        previous_matches = Match.objects.filter(
+            (Q(white_player=player1, black_player=player2) | 
+             Q(white_player=player2, black_player=player1)),
+            tournament=tournament
+        ).exists()
+        
+        if previous_matches:
+            logging.warning(f"Players {player1.username} and {player2.username} already played - creating rematch")
         
         # Create match
         Match.objects.create(
@@ -561,9 +721,15 @@ def generate_round_robin_pairings(tournament, round_obj):
             black_player=black_player,
             result='pending'
         )
+        
+        logging.info(f"Created pairing: {white_player.username} vs {black_player.username}")
         pairings.append((white_player, black_player))
     
+    if not pairings:
+        logging.warning(f"No pairings generated for round {round_obj.number}")
+    
     return pairings
+
 
 def update_tournament_standings(tournament):
     # Before calculating new rankings, store current ranks as previous ranks
