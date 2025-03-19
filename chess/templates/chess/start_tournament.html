@@ -1,118 +1,367 @@
-<!-- templates/chess/start_tournament.html -->
+<!-- templates/chess/start_tournament.html - Redesigned with consistent styling -->
 {% extends 'chess/base.html' %}
 
-{% block title %}Start Tournament - De Laurierboom Chess{% endblock %}
+{% block title %}Start Tournament - Bar Blitz{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Base styles */
+    body {
+        background-color: #1a2721;
+        color: #ffffff;
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    /* Panel styles */
+    .form-panel {
+        background-color: #19e893;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .form-panel-title {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #000000;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Form container styling */
+    .form-container {
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        color: #000000;
+    }
+    
+    /* Alert styling */
+    .alert-container {
+        width: 100%;
+        background-color: #fff3cd;
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        color: #856404;
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .alert-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        color: #856404;
+    }
+    
+    .alert-content h5 {
+        color: #856404;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .alert-content p {
+        margin-bottom: 0.5rem;
+    }
+    
+    .alert-content p:last-child {
+        margin-bottom: 0;
+    }
+    
+    /* Form label styling */
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        color: #000000;
+    }
+    
+    .required-asterisk {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    /* Input styling */
+    .form-control, .form-select {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #19e893;
+        box-shadow: 0 0 0 0.25rem rgba(25, 232, 147, 0.25);
+    }
+    
+    /* Input group styling */
+    .input-group-text {
+        background-color: #4056a1;
+        border: none;
+        color: #ffffff;
+    }
+    
+    /* Help text styling */
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Button styling */
+    .btn-primary {
+        background-color: #19e893;
+        border-color: #19e893;
+        color: #000000;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+    }
+    
+    .btn-primary:hover {
+        background-color: #15cb7f;
+        border-color: #15cb7f;
+        color: #000000;
+    }
+    
+    .btn-large {
+        font-size: 1.1rem;
+        padding: 0.8rem 2rem;
+    }
+    
+    .btn-outline-secondary {
+        color: #ffffff;
+        border-color: #ffffff;
+        background-color: transparent;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+    }
+    
+    /* Form sections */
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #000000;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 0.75rem;
+        color: #4056a1;
+    }
+    
+    /* Icon colors */
+    .input-group-text i {
+        color: #ffffff;
+    }
+    
+    /* Table styling */
+    .table {
+        background-color: #ffffff;
+        color: #000000;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .table-light {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .table th {
+        font-weight: 600;
+        color: #000000;
+        background-color: #f5f5f5;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .table td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+    }
+    
+    .table tr:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    /* Badge styling */
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 20px;
+    }
+    
+    .bg-primary-subtle {
+        background-color: rgba(25, 232, 147, 0.15);
+    }
+    
+    .text-primary {
+        color: #15cb7f !important;
+    }
+    
+    /* Start button styling */
+    .start-button {
+        background-color: #f7b945;
+        color: #000000;
+        border: none;
+        border-radius: 8px;
+        padding: 0.8rem 1.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+    
+    .start-button:hover {
+        background-color: #f0ad2b;
+        transform: translateY(-2px);
+    }
+    
+    .start-button i {
+        margin-right: 0.75rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="page-container">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow">
-                <div class="card-header bg-dark text-white py-3">
-                    <h2 class="card-title mb-0">
-                        <i class="fas fa-play me-2"></i>Start Tournament: {{ tournament.name }}
-                    </h2>
-                </div>
-                <div class="card-body p-4">
-                    <div class="alert alert-warning">
-                        <div class="d-flex">
-                            <div class="me-3">
-                                <i class="fas fa-exclamation-triangle fa-2x"></i>
-                            </div>
-                            <div>
-                                <h5 class="alert-heading">Important</h5>
-                                <p>Starting the tournament will generate the first round of pairings and lock the participant list.</p>
-                                <p class="mb-0">This action cannot be undone. Please ensure all participants are registered before proceeding.</p>
-                            </div>
+        <div class="col-lg-10">
+            <div class="form-panel">
+                <h2 class="form-panel-title">
+                    <i class="fas fa-play me-2"></i>Start Tournament: {{ tournament.name }}
+                </h2>
+                
+                <div class="form-container">
+                    <!-- Important Warning -->
+                    <div class="alert-container">
+                        <div class="alert-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <h5>Important</h5>
+                            <p>Starting the tournament will generate the first round of pairings and lock the participant list.</p>
+                            <p class="mb-0">This action cannot be undone. Please ensure all participants are registered before proceeding.</p>
                         </div>
                     </div>
                     
-                    <form method="post" class="mt-4">
+                    <form method="post">
                         {% csrf_token %}
                         
-                        <h4 class="mb-3">
-                            <i class="fas fa-cog me-2"></i>Tournament Configuration
-                        </h4>
-                        
-                        <div class="row mb-4">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.tournament_type.id_for_label }}" class="form-label fw-bold">Tournament Type <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-chess"></i></span>
-                                    {{ form.tournament_type }}
-                                </div>
-                                {% if form.tournament_type.errors %}
-                                    <div class="text-danger mt-1 small">
-                                        {{ form.tournament_type.errors }}
-                                    </div>
-                                {% endif %}
-                            </div>
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-cog"></i>Tournament Configuration
+                            </h3>
                             
-                            <div class="col-md-6 mb-3 num-rounds-field">
-                                <label for="{{ form.num_rounds.id_for_label }}" class="form-label fw-bold">Number of Rounds <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-list-ol"></i></span>
-                                    {{ form.num_rounds }}
-                                </div>
-                                {% if form.num_rounds.errors %}
-                                    <div class="text-danger mt-1 small">
-                                        {{ form.num_rounds.errors }}
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.tournament_type.id_for_label }}" class="form-label">
+                                        Tournament Type <span class="required-asterisk">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-chess"></i></span>
+                                        {{ form.tournament_type }}
                                     </div>
-                                {% endif %}
-                                <div class="form-text">Required for Swiss tournaments</div>
+                                    {% if form.tournament_type.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.tournament_type.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3 num-rounds-field">
+                                    <label for="{{ form.num_rounds.id_for_label }}" class="form-label">
+                                        Number of Rounds <span class="required-asterisk">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-list-ol"></i></span>
+                                        {{ form.num_rounds }}
+                                    </div>
+                                    {% if form.num_rounds.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.num_rounds.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Required for Swiss tournaments</div>
+                                </div>
                             </div>
                         </div>
                     
-                        <h4 class="mb-3">
-                            <i class="fas fa-users me-2"></i>Registered Participants ({{ participants.count }})
-                        </h4>
-                        
-                        {% if participants.count < 2 %}
-                            <div class="alert alert-danger">
-                                <div class="d-flex">
-                                    <div class="me-3">
-                                        <i class="fas fa-times-circle fa-2x"></i>
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-users"></i>Registered Participants ({{ participants.count }})
+                            </h3>
+                            
+                            {% if participants.count < 2 %}
+                                <div class="alert-container" style="background-color: #f8d7da; color: #721c24;">
+                                    <div class="alert-icon" style="color: #721c24;">
+                                        <i class="fas fa-times-circle"></i>
                                     </div>
-                                    <div>
+                                    <div class="alert-content">
                                         <p class="mb-0">At least 2 participants are required to start the tournament.</p>
                                     </div>
                                 </div>
+                            {% endif %}
+                            
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Player</th>
+                                            <th>Rating</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for player in participants %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ player.get_full_name|default:player.username }}</td>
+                                                <td>
+                                                    <span class="badge bg-primary-subtle text-primary">{{ player.elo|floatformat:0 }}</span>
+                                                </td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="3" class="text-center py-4">No participants registered yet</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
-                        {% endif %}
-                        
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Player</th>
-                                        <th>Rating</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for player in participants %}
-                                        <tr>
-                                            <td>{{ forloop.counter }}</td>
-                                            <td>{{ player.get_full_name|default:player.username }}</td>
-                                            <td>
-                                                <span class="badge bg-primary-subtle text-primary">{{ player.elo|floatformat:0 }}</span>
-                                            </td>
-                                        </tr>
-                                    {% empty %}
-                                        <tr>
-                                            <td colspan="3" class="text-center py-4">No participants registered yet</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
                         </div>
                         
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-2"></i>Back to Tournament
                             </a>
-                            <button type="submit" class="btn btn-primary btn-lg" {% if participants.count < 2 %}disabled{% endif %}>
-                                <i class="fas fa-play me-2"></i>Start Tournament
+                            <button type="submit" class="start-button" {% if participants.count < 2 %}disabled{% endif %}>
+                                <i class="fas fa-play"></i>Start Tournament
                             </button>
                         </div>
                     </form>

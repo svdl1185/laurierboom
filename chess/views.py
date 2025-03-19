@@ -1045,59 +1045,97 @@ def remove_player_from_tournament(request, tournament_id, player_id):
 
 def complete_round(request, tournament_id, round_id):
     """Admin view to manually complete a round and generate the next round"""
+    print(f"\n==== COMPLETE ROUND CALLED FOR TOURNAMENT {tournament_id}, ROUND {round_id} ====")
+    
     if not request.user.is_staff:
+        print("Permission denied - user is not staff")
         messages.error(request, "You don't have permission to perform this action")
         return redirect('tournament_detail', pk=tournament_id)
     
     tournament = get_object_or_404(Tournament, pk=tournament_id)
     round_obj = get_object_or_404(Round, pk=round_id)
     
+    print(f"Tournament: {tournament.name} (ID: {tournament.id})")
+    print(f"Round: {round_obj.number} (ID: {round_obj.id})")
+    print(f"Tournament type: {tournament.tournament_type}")
+    print(f"Tournament has_started: {tournament.has_started}")
+    print(f"Tournament is_completed: {tournament.is_completed}")
+    
     if tournament.is_completed:
+        print("Tournament is already completed, aborting")
         messages.error(request, "This tournament is already completed")
         return redirect('tournament_detail', pk=tournament_id)
     
     if round_obj.tournament_id != tournament.id:
+        print("Round doesn't belong to this tournament, aborting")
         messages.error(request, "Round doesn't belong to this tournament")
         return redirect('tournament_detail', pk=tournament_id)
     
     # Check if any matches are still pending
     pending_matches = round_obj.matches.filter(result='pending')
+    print(f"Pending matches: {pending_matches.count()}")
+    
     if pending_matches.exists():
+        for match in pending_matches:
+            white_name = match.white_player.username if match.white_player else "None"
+            black_name = match.black_player.username if match.black_player else "None"
+            print(f"Pending match: {white_name} vs {black_name}")
+        
         messages.warning(request, f"There are still {pending_matches.count()} pending matches in this round")
         return redirect('tournament_detail', pk=tournament_id)
     
     # Mark round as completed
+    print(f"Marking round {round_obj.number} as completed")
     round_obj.is_completed = True
     round_obj.save()
     
     # Update tournament standings
+    print("Updating tournament standings")
     update_tournament_standings(tournament)
+    
+    # Get current standings
+    standings = TournamentStanding.objects.filter(tournament=tournament).order_by('-score')
+    print("Current standings:")
+    for standing in standings:
+        print(f"  {standing.player.username}: {standing.score} points, rank: {standing.rank or 'None'}")
     
     # Calculate the planned total rounds based on tournament type and participants count
     participant_count = tournament.participants.count()
+    print(f"Participant count: {participant_count}")
     
-    # Special handling for 2-player Round Robin
+    # Special handling for 2-player tournament
     if participant_count == 2:
+        print("Special handling for 2-player tournament")
         if tournament.tournament_type == 'round_robin':
+            print("2-player round robin - single match")
             planned_rounds = 1
         elif tournament.tournament_type == 'double_round_robin':
+            print("2-player double round robin - two matches with reversed colors")
             planned_rounds = 2
         else:  # Swiss
+            print(f"2-player Swiss - using specified number of rounds: {tournament.num_rounds}")
             planned_rounds = tournament.num_rounds
     else:
         # Normal calculation for more than 2 players
         if tournament.tournament_type == 'round_robin':
             if participant_count % 2 == 1:
                 planned_rounds = participant_count
+                print(f"Round robin with odd number of players ({participant_count}) - {planned_rounds} rounds")
             else:
                 planned_rounds = participant_count - 1
+                print(f"Round robin with even number of players ({participant_count}) - {planned_rounds} rounds")
         elif tournament.tournament_type == 'double_round_robin':
             if participant_count % 2 == 1:
                 planned_rounds = participant_count * 2
+                print(f"Double round robin with odd number of players ({participant_count}) - {planned_rounds} rounds")
             else:
                 planned_rounds = (participant_count - 1) * 2
+                print(f"Double round robin with even number of players ({participant_count}) - {planned_rounds} rounds")
         else:  # Swiss
             planned_rounds = tournament.num_rounds
+            print(f"Swiss tournament - {planned_rounds} rounds specified")
+    
+    print(f"Current round: {round_obj.number}, Planned rounds: {planned_rounds}")
     
     # Check if there are more rounds to be played
     if round_obj.number < planned_rounds:
@@ -1107,26 +1145,60 @@ def complete_round(request, tournament_id, round_id):
             number=round_obj.number + 1
         ).exists()
         
+        print(f"Round {round_obj.number} < Planned rounds {planned_rounds}")
+        print(f"Next round already exists: {next_round_exists}")
+        
         if not next_round_exists:
             # Create next round
+            print(f"Creating round {round_obj.number + 1}")
             next_round = Round.objects.create(
                 tournament=tournament,
                 number=round_obj.number + 1
             )
             
             # Generate pairings for next round
-            if tournament.tournament_type in ['round_robin', 'double_round_robin']:
-                generate_round_robin_pairings(tournament, next_round)
-            else:  # Swiss
-                generate_swiss_pairings(tournament, next_round)
-            
-            messages.success(request, f"Round {round_obj.number} completed. Round {next_round.number} pairings generated.")
+            print(f"Generating pairings for round {next_round.number}")
+            try:
+                if tournament.tournament_type in ['round_robin', 'double_round_robin']:
+                    print("Using round robin pairing algorithm")
+                    generate_round_robin_pairings(tournament, next_round)
+                else:  # Swiss
+                    print("Using Swiss pairing algorithm")
+                    generate_swiss_pairings(tournament, next_round)
+                
+                # Check if pairings were actually created
+                matches_created = Match.objects.filter(round=next_round).count()
+                print(f"Matches created for round {next_round.number}: {matches_created}")
+                
+                if matches_created == 0:
+                    print("WARNING: No matches were created for the next round!")
+                
+                messages.success(request, f"Round {round_obj.number} completed. Round {next_round.number} pairings generated.")
+            except Exception as e:
+                print(f"ERROR generating pairings: {str(e)}")
+                # If an error occurs, roll back the round creation
+                next_round.delete()
+                round_obj.is_completed = False
+                round_obj.save()
+                messages.error(request, f"Error generating pairings: {str(e)}")
+                return redirect('tournament_detail', pk=tournament_id)
         else:
+            print(f"Round {round_obj.number + 1} already exists, not creating pairings")
             messages.info(request, f"Round {round_obj.number} completed. Round {round_obj.number + 1} already exists.")
     else:
+        print(f"All planned rounds completed (current round {round_obj.number} = planned rounds {planned_rounds})")
         # All planned rounds are done - inform the admin
         messages.success(request, f"Round {round_obj.number} completed. All planned rounds are now finished. You can end the tournament.")
     
+    # Dump all matches for debugging
+    all_matches = Match.objects.filter(tournament=tournament).order_by('round__number')
+    print("\nAll matches in tournament:")
+    for match in all_matches:
+        white_name = match.white_player.username if match.white_player else "None"
+        black_name = match.black_player.username if match.black_player else "None"
+        print(f"Round {match.round.number}: {white_name} vs {black_name} - Result: {match.result}")
+    
+    print("=== COMPLETE ROUND FINISHED ===\n")
     return redirect('tournament_detail', pk=tournament_id)
 
 def complete_tournament(request, tournament_id):

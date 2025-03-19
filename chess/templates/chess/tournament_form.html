@@ -1,207 +1,369 @@
-<!-- Update your tournament_form.html with these changes -->
+<!-- templates/chess/tournament_form.html - Redesigned with consistent styling -->
 {% extends 'chess/base.html' %}
 
 {% block title %}
     {% if form.instance.pk %}
-        Edit Tournament - De Laurierboom Chess
+        Edit Tournament - Bar Blitz
     {% else %}
-        Create Tournament - De Laurierboom Chess
+        Create Tournament - Bar Blitz
     {% endif %}
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Base styles */
+    body {
+        background-color: #1a2721;
+        color: #ffffff;
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    /* Panel styles */
+    .form-panel {
+        background-color: #19e893;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .form-panel-title {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #000000;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Form container styling */
+    .form-container {
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        color: #000000;
+    }
+    
+    /* Form label styling */
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        color: #000000;
+    }
+    
+    .required-asterisk {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    /* Input styling */
+    .form-control {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #19e893;
+        box-shadow: 0 0 0 0.25rem rgba(25, 232, 147, 0.25);
+    }
+    
+    /* Input group styling */
+    .input-group-text {
+        background-color: #4056a1;
+        border: none;
+        color: #ffffff;
+    }
+    
+    /* Help text styling */
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Button styling */
+    .btn-primary {
+        background-color: #19e893;
+        border-color: #19e893;
+        color: #000000;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+    }
+    
+    .btn-primary:hover {
+        background-color: #15cb7f;
+        border-color: #15cb7f;
+        color: #000000;
+    }
+    
+    .btn-outline-secondary {
+        color: #ffffff;
+        border-color: #ffffff;
+        background-color: transparent;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+    }
+    
+    /* Form sections */
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #000000;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Icon colors */
+    .input-group-text i {
+        color: #ffffff;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
+<div class="page-container">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow">
-                <div class="card-header bg-dark text-white py-3">
-                    <h2 class="card-title mb-0">
-                        {% if form.instance.pk %}
-                            <i class="fas fa-edit me-2"></i>Edit Tournament
-                        {% else %}
-                            <i class="fas fa-plus me-2"></i>Create Tournament
-                        {% endif %}
-                    </h2>
-                </div>
-                <div class="card-body p-4">
+        <div class="col-lg-10">
+            <div class="form-panel">
+                <h2 class="form-panel-title">
+                    {% if form.instance.pk %}
+                        <i class="fas fa-edit me-2"></i>Edit Tournament
+                    {% else %}
+                        <i class="fas fa-plus me-2"></i>Create Tournament
+                    {% endif %}
+                </h2>
+                
+                <div class="form-container">
                     <form method="post">
                         {% csrf_token %}
                         
-                        <!-- Tournament Name -->
-                        <div class="tournament-form-group">
-                          <label for="{{ form.name.id_for_label }}" class="form-label">Tournament Name <span class="text-danger">*</span></label>
-                          <input type="text" name="{{ form.name.name }}" 
-                                 id="{{ form.name.id_for_label }}" 
-                                 class="form-control form-control-lg {% if form.name.errors %}is-invalid{% endif %}"
-                                 value="{{ form.name.value|default:'' }}"
-                                 autofocus required>
-                          {% if form.name.errors %}
-                            <div class="invalid-feedback">
-                              {{ form.name.errors }}
+                        <div class="form-section">
+                            <h3 class="section-title">Basic Information</h3>
+                            
+                            <!-- Tournament Name -->
+                            <div class="mb-4">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    Tournament Name <span class="required-asterisk">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-trophy"></i></span>
+                                    <input type="text" name="{{ form.name.name }}" 
+                                        id="{{ form.name.id_for_label }}" 
+                                        class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                                        value="{{ form.name.value|default:'' }}"
+                                        placeholder="Enter tournament name"
+                                        autofocus required>
+                                </div>
+                                {% if form.name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.name.errors }}
+                                    </div>
+                                {% endif %}
                             </div>
-                          {% endif %}
+                            
+                            <!-- Date and Time -->
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="{{ form.date.id_for_label }}" class="form-label">
+                                        Date <span class="required-asterisk">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                                        {{ form.date }}
+                                    </div>
+                                    {% if form.date.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.date.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <label for="{{ form.start_time.id_for_label }}" class="form-label">Start Time</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="far fa-clock"></i></span>
+                                        {{ form.start_time }}
+                                    </div>
+                                    {% if form.start_time.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.start_time.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                         
-                        <!-- Date and Time -->
-                        <div class="row mb-4">
-                          <div class="col-md-6 mb-3">
-                            <label for="{{ form.date.id_for_label }}" class="form-label">Date <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                              <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
-                              {{ form.date }}
+                        <div class="form-section">
+                            <h3 class="section-title">Tournament Settings</h3>
+                            
+                            <!-- Location and Type -->
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="{{ form.location.id_for_label }}" class="form-label">
+                                        Location <span class="required-asterisk">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                        <input type="text" name="{{ form.location.name }}" 
+                                            id="{{ form.location.id_for_label }}" 
+                                            class="form-control {% if form.location.errors %}is-invalid{% endif %}"
+                                            value="{{ form.location.value|default:'De Laurierboom, Amsterdam' }}"
+                                            placeholder="Enter location"
+                                            required>
+                                    </div>
+                                    {% if form.location.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.location.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <label for="{{ form.tournament_type.id_for_label }}" class="form-label">Tournament Type</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-chess"></i></span>
+                                        <select name="{{ form.tournament_type.name }}" 
+                                                id="{{ form.tournament_type.id_for_label }}" 
+                                                class="form-select {% if form.tournament_type.errors %}is-invalid{% endif %}">
+                                            <option value="" selected>--- Select Type Later ---</option>
+                                            {% for value, label in form.tournament_type.field.choices %}
+                                                {% if value %}  <!-- Skip the empty option -->
+                                                    <option value="{{ value }}" 
+                                                            {% if form.tournament_type.value == value|stringformat:"s" %}selected{% endif %}>
+                                                        {{ label }}
+                                                    </option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% if form.tournament_type.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.tournament_type.errors }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-text mt-1">
+                                            You can select the tournament type when starting the tournament.
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
-                            {% if form.date.errors %}
-                              <div class="text-danger mt-1 small">
-                                {{ form.date.errors }}
-                              </div>
-                            {% endif %}
-                          </div>
-                          
-                          <div class="col-md-6 mb-3">
-                            <label for="{{ form.start_time.id_for_label }}" class="form-label">Start Time</label>
-                            <div class="input-group">
-                              <span class="input-group-text"><i class="far fa-clock"></i></span>
-                              {{ form.start_time }}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="{{ form.max_participants.id_for_label }}" class="form-label">
+                                        Maximum Participants <span class="required-asterisk">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-users"></i></span>
+                                        <input type="number" name="{{ form.max_participants.name }}" 
+                                            id="{{ form.max_participants.id_for_label }}" 
+                                            class="form-control {% if form.max_participants.errors %}is-invalid{% endif %}"
+                                            value="{{ form.max_participants.value|default:'20' }}"
+                                            min="2">
+                                    </div>
+                                    {% if form.max_participants.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.max_participants.errors }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-text mt-1">
+                                            Maximum number of players who can register
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <label for="{{ form.time_control.id_for_label }}" class="form-label">
+                                        Time Control <span class="required-asterisk">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                        {{ form.time_control }}
+                                    </div>
+                                    {% if form.time_control.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {{ form.time_control.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
-                            {% if form.start_time.errors %}
-                              <div class="text-danger mt-1 small">
-                                {{ form.start_time.errors }}
-                              </div>
-                            {% endif %}
-                          </div>
-                        </div>
-                        
-                        <!-- Location and Type -->
-                        <div class="row mb-4">
-                          <div class="col-md-6 mb-3">
-                            <label for="{{ form.location.id_for_label }}" class="form-label">Location <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                              <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
-                              <input type="text" name="{{ form.location.name }}" 
-                                     id="{{ form.location.id_for_label }}" 
-                                     class="form-control {% if form.location.errors %}is-invalid{% endif %}"
-                                     value="{{ form.location.value|default:'De Laurierboom, Amsterdam' }}"
-                                     required>
+                            
+                            <!-- Number of Rounds - hidden by default -->
+                            <div id="rounds-field-container" class="mb-4" style="display: none;">
+                                <label for="{{ form.num_rounds.id_for_label }}" class="form-label">Number of Rounds</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-list-ol"></i></span>
+                                    <input type="number" name="{{ form.num_rounds.name }}" 
+                                        id="{{ form.num_rounds.id_for_label }}" 
+                                        class="form-control {% if form.num_rounds.errors %}is-invalid{% endif %}"
+                                        value="{{ form.num_rounds.value|default:'10' }}"
+                                        min="1">
+                                </div>
+                                {% if form.num_rounds.errors %}
+                                    <div class="text-danger mt-1 small">
+                                        {{ form.num_rounds.errors }}
+                                    </div>
+                                {% else %}
+                                    <div class="form-text mt-1">
+                                        Required for Swiss tournaments. For Round Robin, this will be automatically calculated.
+                                    </div>
+                                {% endif %}
                             </div>
-                            {% if form.location.errors %}
-                              <div class="text-danger mt-1 small">
-                                {{ form.location.errors }}
-                              </div>
-                            {% endif %}
-                          </div>
-                          
-                          <div class="col-md-6 mb-3">
-                            <label for="{{ form.tournament_type.id_for_label }}" class="form-label">Tournament Type</label>
-                            <div class="input-group">
-                              <span class="input-group-text"><i class="fas fa-chess"></i></span>
-                              <select name="{{ form.tournament_type.name }}" 
-                                      id="{{ form.tournament_type.id_for_label }}" 
-                                      class="form-select {% if form.tournament_type.errors %}is-invalid{% endif %}">
-                                <option value="" selected>--- Select Type Later ---</option>
-                                {% for value, label in form.tournament_type.field.choices %}
-                                  {% if value %}  <!-- Skip the empty option -->
-                                    <option value="{{ value }}" 
-                                            {% if form.tournament_type.value == value|stringformat:"s" %}selected{% endif %}>
-                                      {{ label }}
-                                    </option>
-                                  {% endif %}
-                                {% endfor %}
-                              </select>
-                            </div>
-                            {% if form.tournament_type.errors %}
-                              <div class="text-danger mt-1 small">
-                                {{ form.tournament_type.errors }}
-                              </div>
-                            {% else %}
-                              <div class="form-text">
-                                You can select the tournament type when starting the tournament.
-                              </div>
-                            {% endif %}
-                          </div>
-
-                          <div class="col-md-6 mb-3">
-                            <label for="{{ form.max_participants.id_for_label }}" class="form-label">Maximum Participants <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                              <span class="input-group-text"><i class="fas fa-users"></i></span>
-                              <input type="number" name="{{ form.max_participants.name }}" 
-                                     id="{{ form.max_participants.id_for_label }}" 
-                                     class="form-control {% if form.max_participants.errors %}is-invalid{% endif %}"
-                                     value="{{ form.max_participants.value|default:'20' }}"
-                                     min="2">
-                            </div>
-                            {% if form.max_participants.errors %}
-                              <div class="text-danger mt-1 small">
-                                {{ form.max_participants.errors }}
-                              </div>
-                            {% else %}
-                              <div class="form-text">
-                                Maximum number of players who can register
-                              </div>
-                            {% endif %}
-                          </div>
-
-                          <div class="col-md-6 mb-3">
-                            <label for="{{ form.time_control.id_for_label }}" class="form-label">Time Control <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                              <span class="input-group-text"><i class="fas fa-clock"></i></span>
-                              {{ form.time_control }}
-                            </div>
-                            {% if form.time_control.errors %}
-                              <div class="text-danger mt-1 small">
-                                {{ form.time_control.errors }}
-                              </div>
-                            {% endif %}
-                          </div>
-                        </div>
-                        
-                        <!-- Number of Rounds - this div should initially be hidden via JS -->
-                        <div id="rounds-field-container" class="mb-4" style="display: none;">
-                          <label for="{{ form.num_rounds.id_for_label }}" class="form-label">Number of Rounds</label>
-                          <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-list-ol"></i></span>
-                            <input type="number" name="{{ form.num_rounds.name }}" 
-                                   id="{{ form.num_rounds.id_for_label }}" 
-                                   class="form-control {% if form.num_rounds.errors %}is-invalid{% endif %}"
-                                   value="{{ form.num_rounds.value|default:'10' }}"
-                                   min="1">
-                          </div>
-                          {% if form.num_rounds.errors %}
-                            <div class="text-danger mt-1 small">
-                              {{ form.num_rounds.errors }}
-                            </div>
-                          {% else %}
-                            <div class="form-text">
-                              Required for Swiss tournaments. For Round Robin, this will be automatically calculated.
-                            </div>
-                          {% endif %}
                         </div>
                         
                         <!-- Description -->
-                        <div class="mb-4">
-                          <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
-                          <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-align-left"></i></span>
-                            {{ form.description }}
-                          </div>
-                          {% if form.description.errors %}
-                            <div class="text-danger mt-1 small">
-                              {{ form.description.errors }}
+                        <div class="form-section">
+                            <h3 class="section-title">Additional Information</h3>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-align-left"></i></span>
+                                    {{ form.description }}
+                                </div>
+                                {% if form.description.errors %}
+                                    <div class="text-danger mt-1 small">
+                                        {{ form.description.errors }}
+                                    </div>
+                                {% endif %}
                             </div>
-                          {% endif %}
                         </div>
                         
                         <!-- Form Actions -->
                         <div class="d-flex justify-content-between mt-4">
-                          <a href="{% url 'tournament_list' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Cancel
-                          </a>
-                          <button type="submit" class="btn btn-primary">
-                            {% if form.instance.pk %}
-                              <i class="fas fa-save me-2"></i>Update Tournament
-                            {% else %}
-                              <i class="fas fa-plus me-2"></i>Create Tournament
-                            {% endif %}
-                          </button>
+                            <a href="{% url 'tournament_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                {% if form.instance.pk %}
+                                    <i class="fas fa-save me-2"></i>Update Tournament
+                                {% else %}
+                                    <i class="fas fa-plus me-2"></i>Create Tournament
+                                {% endif %}
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -213,7 +375,24 @@
 
 {% block extra_js %}
 <script>
-  // This script has been moved to main.js. 
-  // The JavaScript will handle hiding/showing the rounds field based on tournament type
+    document.addEventListener('DOMContentLoaded', function() {
+        const tournamentTypeSelect = document.getElementById('{{ form.tournament_type.id_for_label }}');
+        const roundsFieldContainer = document.getElementById('rounds-field-container');
+        
+        // Function to toggle rounds field visibility based on tournament type
+        function toggleRoundsField() {
+            if (tournamentTypeSelect.value === 'swiss') {
+                roundsFieldContainer.style.display = 'block';
+            } else {
+                roundsFieldContainer.style.display = 'none';
+            }
+        }
+        
+        // Set initial state
+        toggleRoundsField();
+        
+        // Listen for changes
+        tournamentTypeSelect.addEventListener('change', toggleRoundsField);
+    });
 </script>
 {% endblock %}

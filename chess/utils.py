@@ -10,18 +10,23 @@ from .models import TournamentStanding, User, Match
 def generate_swiss_pairings(tournament, round_obj):
     """
     Generate pairings for a Swiss tournament round following FIDE Dutch Swiss System rules
-    with updated bye handling and improved handling for situations where all players have the same score
+    with improved handling for cases where players are separated into distinct score groups.
     """
     from .models import Match, TournamentStanding
     import math
     
+    print(f"\n==== STARTING SWISS PAIRING FOR TOURNAMENT {tournament.id}, ROUND {round_obj.number} ====")
+    
     participants = list(tournament.participants.all())
+    print(f"Participants: {[p.username for p in participants]}, Count: {len(participants)}")
     
     # Check if we have an odd number of players
     has_odd_players = len(participants) % 2 == 1
+    print(f"Has odd players: {has_odd_players}")
     
     # Special case for exactly two players - alternate colors each round
     if len(participants) == 2:
+        print("Special case: Exactly 2 players")
         # Get previous matches between these players
         previous_matches = Match.objects.filter(
             tournament=tournament,
@@ -51,6 +56,7 @@ def generate_swiss_pairings(tournament, round_obj):
     
     # First round pairing with bye handling - split players into top and bottom half by rating
     if round_obj.number == 1:
+        print("First round pairing - using rating-based pairing")
         # Sort players by rating (highest to lowest)
         participants.sort(key=lambda x: x.elo, reverse=True)
         
@@ -213,104 +219,11 @@ def generate_swiss_pairings(tournament, round_obj):
             score_groups[score] = []
         score_groups[score].append(info)
     
+    print(f"Score groups: {[(score, [p['player'].username for p in players]) for score, players in score_groups.items()]}")
+    
     # Sort players within each score group by rating (for consistent results)
     for score, players in score_groups.items():
         players.sort(key=lambda x: x['player'].elo, reverse=True)
-    
-    # --- SPECIAL HANDLING: When all players have the same score ---
-    if len(score_groups) == 1:
-        # All players have the same score - use a simplified pairing approach
-        # that focuses on avoiding rematches and balancing colors
-        
-        # Get all players in a single list
-        all_players = list(player_info.values())
-        
-        # Handle bye for odd number of players
-        if has_odd_players:
-            # Find eligible players for a bye (haven't had one yet)
-            eligible_for_bye = [
-                info for info in all_players
-                if not info['received_bye']
-            ]
-            
-            # If everyone has had a bye, consider all players
-            if not eligible_for_bye:
-                eligible_for_bye = all_players
-                
-            # Choose the middle-rated player
-            eligible_for_bye.sort(key=lambda x: x['player'].elo)
-            middle_index = len(eligible_for_bye) // 2
-            bye_player = eligible_for_bye[middle_index]['player']
-            
-            # Create bye match
-            Match.objects.create(
-                tournament=tournament,
-                round=round_obj,
-                white_player=bye_player,
-                black_player=None,
-                result='bye'
-            )
-            
-            # Award 1 point
-            standing = TournamentStanding.objects.get(
-                tournament=tournament,
-                player=bye_player
-            )
-            standing.score += 1
-            standing.save()
-            
-            # Remove bye player from pairing pool
-            all_players = [p for p in all_players if p['player'].id != bye_player.id]
-        
-        # Pair remaining players avoiding rematches when possible
-        pairings = []
-        players_left = all_players.copy()
-        
-        while len(players_left) >= 2:
-            player1 = players_left[0]
-            players_left.remove(player1)
-            
-            # Find best opponent who hasn't played player1 yet
-            opponent_found = False
-            for i, player2 in enumerate(players_left):
-                if player2['player'].id not in player1['opponents']:
-                    # Found a valid opponent - determine colors and create pairing
-                    white, black = determine_colors(player1, player2)
-                    if white and black:
-                        pairings.append((white, black))
-                        players_left.remove(player2)
-                        opponent_found = True
-                        break
-            
-            # If no valid opponent found, just pair with next available player
-            if not opponent_found and players_left:
-                player2 = players_left[0]
-                players_left.remove(player2)
-                
-                # Force color determination even if they've played before
-                white, black = determine_colors(player1, player2)
-                if not white or not black:  # If colors couldn't be determined
-                    # Assign arbitrarily based on color history
-                    if player1['color_diff'] <= player2['color_diff']:
-                        white, black = player1['player'], player2['player']
-                    else:
-                        white, black = player2['player'], player1['player']
-                
-                pairings.append((white, black))
-        
-        # Create matches from pairings
-        match_pairings = []
-        for white, black in pairings:
-            Match.objects.create(
-                tournament=tournament,
-                round=round_obj,
-                white_player=white,
-                black_player=black,
-                result='pending'
-            )
-            match_pairings.append((white, black))
-        
-        return match_pairings
     
     # --- STEP 6: Handle Bye for Odd Number of Players ---
     if has_odd_players:
@@ -360,129 +273,153 @@ def generate_swiss_pairings(tournament, round_obj):
             # If the score group is now empty, remove it
             if not players:
                 del score_groups[score]
+    
+    # --- FIX: Handle case when players are split into exactly two score groups ---
+    
+    # This handles the case where all white players won in the previous round
+    # or any other case where players are split into exactly two score groups
+    if len(score_groups) == 2:
+        print("EXACTLY TWO SCORE GROUPS - APPLYING SPECIAL PAIRING")
         
-        # --- STEP 7: Generate Pairings (FIDE Dutch Swiss) ---
+        # Get the two score groups
+        high_score, low_score = sorted(score_groups.keys(), reverse=True)
         
+        high_score_players = score_groups[high_score]
+        low_score_players = score_groups[low_score]
+        
+        print(f"High score group ({high_score}): {[p['player'].username for p in high_score_players]}")
+        print(f"Low score group ({low_score}): {[p['player'].username for p in low_score_players]}")
+        
+        # Ensure equal number of players in each group for pairing
+        if len(high_score_players) != len(low_score_players):
+            print(f"WARNING: Unequal score groups - High: {len(high_score_players)}, Low: {len(low_score_players)}")
+        
+        # Pair high score players with low score players
         pairings = []
-        remaining_players = []
         
-        # Start with highest score group, work down to lowest
-        for score in sorted(score_groups.keys(), reverse=True):
-            group = score_groups[score]
+        # Match as many players as possible between the groups
+        for i in range(min(len(high_score_players), len(low_score_players))):
+            high_player = high_score_players[i]
+            low_player = low_score_players[i]
             
-            # Add any players that floated down from previous groups
-            group = remaining_players + group
-            remaining_players = []
+            # Determine colors based on color preferences
+            if high_player['color_pref'] < 0 and low_player['color_pref'] > 0:
+                # High score player prefers black, low score player prefers white
+                white_player = low_player['player']
+                black_player = high_player['player']
+            elif high_player['color_pref'] > 0 and low_player['color_pref'] < 0:
+                # High score player prefers white, low score player prefers black
+                white_player = high_player['player']
+                black_player = low_player['player']
+            else:
+                # If color preferences don't align, prioritize balancing color history
+                if high_player['color_diff'] > low_player['color_diff']:
+                    # High player has had more whites, give white to low player
+                    white_player = low_player['player']
+                    black_player = high_player['player']
+                else:
+                    # Otherwise, give white to high player
+                    white_player = high_player['player']
+                    black_player = low_player['player']
             
-            # While there are at least 2 players in the group
-            while len(group) >= 2:
-                # Start with the highest rated player in the group
-                s1 = group[0]
-                player1 = s1['player']
-                
-                # Try to find a compatible pairing
-                pair_found = False
-                for i in range(1, len(group)):
-                    s2 = group[i]
-                    player2 = s2['player']
-                    
-                    # Check if they've already played
-                    if player2.id in s1['opponents']:
-                        continue
-                    
-                    # Try to determine colors
-                    white_player, black_player = determine_colors(s1, s2)
-                    
-                    if white_player and black_player:
-                        # Valid pairing found
-                        pairings.append((white_player, black_player))
-                        # Remove these players from the group
-                        group.remove(s1)
-                        group.remove(s2)
-                        pair_found = True
-                        break
-                
-                # If no valid pairing found, float player to next group
-                if not pair_found:
-                    remaining_players.append(s1)
-                    group.remove(s1)
+            print(f"Pairing: {white_player.username} (W) vs {black_player.username} (B)")
             
-            # If one player remains, add to next group
-            if len(group) == 1:
-                remaining_players.append(group[0])
-        
-        # Handle any players that couldn't be paired
-        # In a proper implementation, these would get byes
-        # But since we already handled byes earlier, we'll just pair them sub-optimally
-        if len(remaining_players) >= 2:
-            while len(remaining_players) >= 2:
-                s1 = remaining_players[0]
-                s2 = remaining_players[1]
-                white_player, black_player = determine_colors(s1, s2)
-                
-                # If colors can't be determined, just assign arbitrarily
-                if not white_player or not black_player:
-                    white_player = s1['player']
-                    black_player = s2['player']
-                    
-                pairings.append((white_player, black_player))
-                remaining_players.remove(s1)
-                remaining_players.remove(s2)
-        
-        # --- STEP 8: Sort Pairings by Importance ---
-        
-        # Sort pairings by the combined score of the players (highest first)
-        # This ensures that board 1 has the most important match (highest scoring players)
-        scored_pairings = []
-        
-        for white, black in pairings:
-            # Get the scores of both players
-            white_score = 0
-            black_score = 0
-            
-            for player_id, info in player_info.items():
-                if info['player'] == white:
-                    white_score = info['score']
-                elif info['player'] == black:
-                    black_score = info['score']
-            
-            # Calculate the importance of this pairing
-            # Primary sort: Combined score (higher = more important)
-            # Secondary sort: Highest player rating (higher = more important)
-            combined_score = white_score + black_score
-            max_rating = max(white.elo, black.elo)
-            
-            scored_pairings.append({
-                'white': white,
-                'black': black,
-                'combined_score': combined_score,
-                'max_rating': max_rating
-            })
-        
-        # Sort the pairings by importance (highest combined score first, then by highest rating)
-        sorted_pairings = sorted(scored_pairings, 
-                            key=lambda p: (p['combined_score'], p['max_rating']), 
-                            reverse=True)
-        
-        # --- STEP 9: Create Match Objects With Board Numbers ---
-        
-        # Create match objects for the sorted pairings
-        pairings_result = []
-        for board_number, pairing in enumerate(sorted_pairings, 1):
-            white = pairing['white']
-            black = pairing['black']
-            
+            # Create the match
             match = Match.objects.create(
                 tournament=tournament,
                 round=round_obj,
-                white_player=white,
-                black_player=black,
+                white_player=white_player,
+                black_player=black_player,
                 result='pending'
             )
             
-            pairings_result.append((white, black))
+            pairings.append((white_player, black_player))
         
-        return pairings_result
+        # Return the created pairings
+        return pairings
+    
+    # --- STEP 7: Generate Pairings (FIDE Dutch Swiss) ---
+    
+    pairings = []
+    remaining_players = []
+    
+    # Start with highest score group, work down to lowest
+    for score in sorted(score_groups.keys(), reverse=True):
+        group = score_groups[score]
+        
+        # Add any players that floated down from previous groups
+        group = remaining_players + group
+        remaining_players = []
+        
+        # While there are at least 2 players in the group
+        while len(group) >= 2:
+            # Start with the highest rated player in the group
+            s1 = group[0]
+            player1 = s1['player']
+            
+            # Try to find a compatible pairing
+            pair_found = False
+            for i in range(1, len(group)):
+                s2 = group[i]
+                player2 = s2['player']
+                
+                # Check if they've already played
+                if player2.id in s1['opponents']:
+                    continue
+                
+                # Try to determine colors
+                white_player, black_player = determine_colors(s1, s2)
+                
+                if white_player and black_player:
+                    # Valid pairing found
+                    pairings.append((white_player, black_player))
+                    # Remove these players from the group
+                    group.remove(s1)
+                    group.remove(s2)
+                    pair_found = True
+                    break
+            
+            # If no valid pairing found, float player to next group
+            if not pair_found:
+                remaining_players.append(s1)
+                group.remove(s1)
+        
+        # If one player remains, add to next group
+        if len(group) == 1:
+            remaining_players.append(group[0])
+    
+    # Handle any players that couldn't be paired
+    # In a proper implementation, these would get byes
+    # But since we already handled byes earlier, we'll just pair them sub-optimally
+    if len(remaining_players) >= 2:
+        while len(remaining_players) >= 2:
+            s1 = remaining_players[0]
+            s2 = remaining_players[1]
+            white_player, black_player = determine_colors(s1, s2)
+            
+            # If colors can't be determined, just assign arbitrarily
+            if not white_player or not black_player:
+                white_player = s1['player']
+                black_player = s2['player']
+                
+            pairings.append((white_player, black_player))
+            remaining_players.remove(s1)
+            remaining_players.remove(s2)
+    
+    # Create matches from the pairings
+    created_pairings = []
+    for white, black in pairings:
+        match = Match.objects.create(
+            tournament=tournament,
+            round=round_obj,
+            white_player=white,
+            black_player=black,
+            result='pending'
+        )
+        created_pairings.append((white, black))
+    
+    return created_pairings
+
 
 def determine_colors(s1, s2):
     """
@@ -494,70 +431,108 @@ def determine_colors(s1, s2):
     p1 = s1['player']
     p2 = s2['player']
     
+    print(f"Determining colors between {p1.username} and {p2.username}")
+    print(f"  {p1.username}: color_pref={s1['color_pref']}, color_diff={s1['color_diff']}, colors={s1['colors']}")
+    print(f"  {p2.username}: color_pref={s2['color_pref']}, color_diff={s2['color_diff']}, colors={s2['colors']}")
+    
     # Rule C.04.1.h.1: If both players have a strong color preference, and these 
     # preferences are for opposite colors, the higher ranked player should receive
     # their preference
     if abs(s1['color_pref']) >= 2 and abs(s2['color_pref']) >= 2 and s1['color_pref'] * s2['color_pref'] < 0:
+        print("  Both have strong opposite preferences, giving higher ranked player their preference")
         if s1['color_pref'] > 0:  # s1 prefers white
+            print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
             return p1, p2
         else:  # s1 prefers black
+            print(f"  Result: {p2.username} (W) vs {p1.username} (B)")
             return p2, p1
     
     # Rule C.04.1.h.2: If both players have opposite color preferences
     # (one preferring white, the other black), satisfy both
     if s1['color_pref'] * s2['color_pref'] < 0:
+        print("  Players have opposite preferences, satisfying both")
         if s1['color_pref'] > 0:  # s1 prefers white
+            print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
             return p1, p2
         else:  # s1 prefers black
+            print(f"  Result: {p2.username} (W) vs {p1.username} (B)")
             return p2, p1
     
     # Rule C.04.1.h.3: If one player has a color preference and the other is neutral
     # (no preference), satisfy the player with a preference
     if s1['color_pref'] != 0 and s2['color_pref'] == 0:
+        print(f"  {p1.username} has preference, {p2.username} is neutral")
         if s1['color_pref'] > 0:  # s1 prefers white
+            print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
             return p1, p2
         else:  # s1 prefers black
+            print(f"  Result: {p2.username} (W) vs {p1.username} (B)")
             return p2, p1
     elif s1['color_pref'] == 0 and s2['color_pref'] != 0:
+        print(f"  {p1.username} is neutral, {p2.username} has preference")
         if s2['color_pref'] > 0:  # s2 prefers white
+            print(f"  Result: {p2.username} (W) vs {p1.username} (B)")
             return p2, p1
         else:  # s2 prefers black
+            print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
             return p1, p2
     
     # Rule C.04.1.h.4: If both players have the same color preference, alternate
     # colors from the most recent game where they had different colors
     if s1['color_pref'] != 0 and s2['color_pref'] != 0:
+        print("  Both players have same color preference")
         # In this case, we'll just assign based on who has the stronger color imbalance
         if abs(s1['color_diff']) > abs(s2['color_diff']):
             if s1['color_diff'] > 0:  # s1 has had more whites
+                print(f"  {p1.username} has stronger color imbalance (more whites)")
+                print(f"  Result: {p2.username} (W) vs {p1.username} (B)")
                 return p2, p1
             else:  # s1 has had more blacks
+                print(f"  {p1.username} has stronger color imbalance (more blacks)")
+                print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
                 return p1, p2
         else:
             if s2['color_diff'] > 0:  # s2 has had more whites
+                print(f"  {p2.username} has stronger color imbalance (more whites)")
+                print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
                 return p1, p2
             else:  # s2 has had more blacks
+                print(f"  {p2.username} has stronger color imbalance (more blacks)")
+                print(f"  Result: {p2.username} (W) vs {p1.username} (B)")
                 return p2, p1
     
     # Rule C.04.1.h.5: If both players are neutral, alternate colors from the most recent
     # game where they had different colors
     if s1['color_pref'] == 0 and s2['color_pref'] == 0:
+        print("  Both players are neutral")
         # Alternate from the previous round for the highest-ranked player
         if len(s1['colors']) > 0:
             if s1['colors'][-1] == 'W':
+                print(f"  {p1.username} had white in last game")
+                print(f"  Result: {p2.username} (W) vs {p1.username} (B)")
                 return p2, p1
             else:
+                print(f"  {p1.username} had black in last game")
+                print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
                 return p1, p2
         elif len(s2['colors']) > 0:
             if s2['colors'][-1] == 'W':
+                print(f"  {p2.username} had white in last game")
+                print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
                 return p1, p2
             else:
+                print(f"  {p2.username} had black in last game")
+                print(f"  Result: {p2.username} (W) vs {p1.username} (B)")
                 return p2, p1
         else:
             # If neither has played before, higher ranked gets white
+            print("  Neither player has played before, higher ranked gets white")
+            print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
             return p1, p2
     
     # Fallback
+    print("  Using fallback rule - default assignment")
+    print(f"  Result: {p1.username} (W) vs {p2.username} (B)")
     return p1, p2
 
 def generate_round_robin_pairings(tournament, round_obj):
