@@ -1,0 +1,163 @@
+<!-- templates/chess/profile_delete.html -->
+{% extends 'chess/base.html' %}
+
+{% block title %}Delete Profile - Bar Blitz{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Base styles */
+    body {
+        background-color: #1a2721;
+        color: #ffffff;
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .page-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    /* Panel styles */
+    .delete-panel {
+        background-color: #19e893;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .panel-title {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #000000;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Confirm Delete Container */
+    .confirm-container {
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 2rem;
+        color: #000000;
+    }
+    
+    .warning-icon {
+        font-size: 3rem;
+        color: #dc3545;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .confirm-message {
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    
+    .consequences-list {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .consequences-list ul {
+        margin-bottom: 0;
+        padding-left: 1.5rem;
+    }
+    
+    .consequences-list li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .consequences-list li:last-child {
+        margin-bottom: 0;
+    }
+    
+    .button-container {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-cancel {
+        background-color: #6c757d;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    
+    .btn-cancel:hover {
+        background-color: #5a6268;
+        color: #ffffff;
+    }
+    
+    .btn-proceed {
+        background-color: #dc3545;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+    }
+    
+    .btn-proceed:hover {
+        background-color: #c82333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="delete-panel">
+        <h2 class="panel-title">Delete Profile</h2>
+        
+        <div class="confirm-container">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            
+            <div class="confirm-message">
+                <p>You are about to initiate the process of deleting your Bar Blitz profile. Please read the following information carefully before proceeding.</p>
+            </div>
+            
+            <div class="consequences-list">
+                <h4>What happens when you delete your profile:</h4>
+                <ul>
+                    <li>Your personal information (name, email, chess account IDs) will be removed</li>
+                    <li>Your account will be deactivated and you will no longer be able to log in</li>
+                    <li>Your tournament history will be preserved but anonymized</li>
+                    <li>Your ratings and statistics will remain in the system for tournament integrity</li>
+                    <li>You will need to create a new account if you wish to participate in future tournaments</li>
+                </ul>
+            </div>
+            
+            <div class="confirm-message">
+                <p>If you are currently registered in any active tournaments, you will not be able to delete your profile until those tournaments are completed.</p>
+                <p><strong>Please note that this action cannot be undone.</strong></p>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="button-container">
+                    <a href="{% url 'profile' %}" class="btn btn-cancel">
+                        <i class="fas fa-arrow-left me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-proceed">
+                        <i class="fas fa-arrow-right me-2"></i>Continue to Confirmation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

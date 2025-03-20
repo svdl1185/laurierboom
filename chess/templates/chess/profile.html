@@ -1137,6 +1137,14 @@
                             {% endif %}
                         </div>
                     </div>
+
+                    {% if is_own_profile %}
+                        <div class="mt-4 text-center">
+                            <a href="{% url 'profile_delete' %}" class="btn btn-outline-danger">
+                                <i class="fas fa-user-slash me-2"></i>Delete My Account
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             

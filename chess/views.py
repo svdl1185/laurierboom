@@ -11,6 +11,7 @@ from django.views.generic import TemplateView
 from django.utils import timezone
 import datetime
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 
 from .models import Achievement, PlayerRatingHistory, Tournament, User, Match, Round, TournamentStanding
 from .forms import EmptyForm, MatchResultForm, ProfileEditForm, SimplePlayerRegistrationForm, StartTournamentSettingsForm, TournamentForm, UserEditForm, UserRegistrationForm, AddPlayerToTournamentForm
@@ -1519,3 +1520,80 @@ def unregister_from_tournament(request, tournament_id):
         messages.success(request, f"You have been unregistered from {tournament.name}")
     
     return redirect('tournament_detail', pk=tournament_id)
+
+class DeleteTournamentView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """View for deleting tournaments (admin only)"""
+    model = Tournament
+    template_name = 'chess/tournament_confirm_delete.html'
+    success_url = reverse_lazy('tournament_list')
+    
+    def test_func(self):
+        # Only staff can delete tournaments
+        if not self.request.user.is_staff:
+            return False
+        
+        # Check if tournament has started - prevent deletion if it has
+        tournament = self.get_object()
+        return not tournament.has_started
+    
+    def handle_no_permission(self):
+        tournament = self.get_object()
+        if tournament.has_started:
+            messages.error(self.request, "Cannot delete tournament after it has started")
+        return super().handle_no_permission()
+    
+    def delete(self, request, *args, **kwargs):
+        tournament = self.get_object()
+        messages.success(request, f"Tournament '{tournament.name}' has been deleted")
+        return super().delete(request, *args, **kwargs)
+
+@login_required
+def delete_profile(request):
+    """View for users to request profile deletion"""
+    if request.method == 'POST':
+        return redirect('profile_delete_confirm')
+    
+    return render(request, 'chess/profile_delete.html')
+
+@login_required
+def delete_profile_confirm(request):
+    """View for users to confirm profile deletion"""
+    user = request.user
+    
+    if request.method == 'POST':
+        # Check if user has active tournaments
+        active_tournaments = Tournament.objects.filter(
+            participants=user,
+            has_started=True,
+            is_completed=False
+        )
+        
+        if active_tournaments.exists():
+            messages.error(request, "Cannot delete profile while you are registered in active tournaments")
+            return redirect('profile_delete')
+        
+        # Check if user is tournament organizer (admin)
+        if user.is_staff:
+            messages.error(request, "Administrator accounts cannot be deleted through this interface")
+            return redirect('profile')
+        
+        # For regular users, we perform a soft delete by anonymizing data
+        username = f"deleted_user_{user.id}"
+        user.username = username
+        user.first_name = "Deleted"
+        user.last_name = "User"
+        user.email = f"{username}@deleted.example.com"
+        user.lichess_account = None
+        user.chesscom_account = None
+        user.fide_id = None
+        user.is_active = False
+        user.set_unusable_password()
+        user.save()
+        
+        # Log the user out
+        logout(request)
+        
+        messages.success(request, "Your profile has been deleted successfully")
+        return redirect('home')
+    
+    return render(request, 'chess/profile_delete_confirm.html')

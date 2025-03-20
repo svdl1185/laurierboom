@@ -9,6 +9,8 @@ urlpatterns = [
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('profile/<int:pk>/', views.ProfileView.as_view(), name='profile_detail'),
     path('profile/edit/', views.profile_edit, name='profile_edit'),
+    path('profile/delete/', views.delete_profile, name='profile_delete'),
+    path('profile/delete/confirm/', views.delete_profile_confirm, name='profile_delete_confirm'),
     
     # Tournament views
     path('tournaments/', views.TournamentListView.as_view(), name='tournament_list'),
@@ -21,6 +23,7 @@ urlpatterns = [
     path('tournament/<int:tournament_id>/remove-player/<int:player_id>/', views.remove_player_from_tournament, name='remove_player_from_tournament'),
     path('tournament/<int:tournament_id>/complete/', views.complete_tournament, name='complete_tournament'),
     path('tournament/<int:tournament_id>/round/<int:round_id>/complete/', views.complete_round, name='complete_round'),
+    path('tournament/<int:pk>/delete/', views.DeleteTournamentView.as_view(), name='tournament_delete'),
 
     path('tournament/<int:tournament_id>/register/', views.register_for_tournament, name='tournament_register'),
     path('tournament/<int:tournament_id>/unregister/', views.unregister_from_tournament, name='tournament_unregister'),
