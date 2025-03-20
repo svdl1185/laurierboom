@@ -1202,7 +1202,7 @@ def complete_round(request, tournament_id, round_id):
     return redirect('tournament_detail', pk=tournament_id)
 
 def complete_tournament(request, tournament_id):
-    """Admin view to manually complete a tournament"""
+    """Admin view to manually complete a tournament with improved achievement handling"""
     if not request.user.is_staff:
         messages.error(request, "You don't have permission to perform this action")
         return redirect('tournament_detail', pk=tournament_id)
@@ -1224,6 +1224,22 @@ def complete_tournament(request, tournament_id):
     
     # Update tournament standings one last time
     update_tournament_standings(tournament)
+    
+    # Mark the tournament as completed BEFORE checking achievements
+    tournament.is_completed = True
+    tournament.save()
+    
+    # Get the tournament winner
+    try:
+        winner_standing = TournamentStanding.objects.get(
+            tournament=tournament,
+            rank=1
+        )
+        winner = winner_standing.player
+        messages.success(request, f"Tournament winner: {winner.get_full_name() or winner.username}")
+    except TournamentStanding.DoesNotExist:
+        winner = None
+        messages.warning(request, "No tournament winner could be determined")
     
     # Save rating history for each participant
     for participant in tournament.participants.all():
@@ -1250,16 +1266,44 @@ def complete_tournament(request, tournament_id):
             }
         )
         
-        # Check for achievements - ONLY do this at tournament completion
+        # Check for achievements - with additional verification for tournament winners
         from .achievement_service import check_achievements
+        
+        # If this participant is the winner, ensure they get the tournament_win_1 achievement
+        if winner and participant.id == winner.id:
+            # Count their total tournament wins
+            win_count = TournamentStanding.objects.filter(
+                player=participant,
+                rank=1,
+                tournament__is_completed=True
+            ).count()
+            
+            # Check if they already have the tournament_win_1 achievement
+            existing_achievement = Achievement.objects.filter(
+                user=participant, 
+                achievement_type='tournament_win_1'
+            ).first()
+            
+            if existing_achievement:
+                # Update the count if needed
+                if existing_achievement.count != win_count:
+                    existing_achievement.count = win_count
+                    existing_achievement.save()
+                    messages.info(request, f"Updated tournament win count for {participant.get_full_name()}")
+            else:
+                # Create the achievement
+                Achievement.objects.create(
+                    user=participant, 
+                    achievement_type='tournament_win_1',
+                    count=win_count
+                )
+                messages.info(request, f"{participant.get_full_name()} earned: Tournament Champion")
+        
+        # Run standard achievement check for all participants
         new_achievements = check_achievements(participant)
         if new_achievements:
             achievement_names = [dict(Achievement.ACHIEVEMENT_TYPES).get(a.achievement_type) for a in new_achievements]
             messages.info(request, f"{participant.get_full_name()} earned new achievements: {', '.join(achievement_names)}")
-    
-    # Mark the tournament as completed
-    tournament.is_completed = True
-    tournament.save()
     
     messages.success(request, "Tournament has been marked as completed")
     return redirect('tournament_detail', pk=tournament_id)
