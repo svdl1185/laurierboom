@@ -915,6 +915,10 @@
                                                 0 - 1
                                             {% elif match.result == 'draw' %}
                                                 ½ - ½
+                                            {% elif match.result == 'white_forfeit' %}
+                                                0 - 1 <small style="color: #dc3545; font-weight: 500;">(White forfeit)</small>
+                                            {% elif match.result == 'black_forfeit' %}
+                                                1 - 0 <small style="color: #dc3545; font-weight: 500;">(Black forfeit)</small>
                                             {% else %}
                                                 ... - ...
                                             {% endif %}
