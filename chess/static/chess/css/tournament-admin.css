@@ -1,0 +1,325 @@
+/* Enhanced Tournament Admin Panel Styles */
+
+/* Admin section container */
+.admin-controls {
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+    transition: all 0.3s ease;
+}
+
+.admin-heading {
+    color: #ffffff;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-family: 'Playfair Display', serif;
+    display: flex;
+    align-items: center;
+}
+
+.admin-divider {
+    height: 35px;
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.2);
+    margin: 0 0.75rem;
+}
+
+/* Admin controls card */
+.admin-controls .card {
+    background-color: #ffffff;
+    border-radius: 15px !important;
+    border: none;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.admin-controls .card:hover {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.admin-controls .card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Rounds accordion section */
+.rounds-section {
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.rounds-accordion {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.accordion-item {
+    border: none;
+    margin-bottom: 0.5rem;
+    border-radius: 10px !important;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.accordion-button {
+    background-color: #f8f9fa;
+    border: none;
+    font-weight: 600;
+    padding: 1.25rem 1.5rem;
+    color: #000000;
+    transition: all 0.3s ease;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #19e893;
+    color: #000000;
+    box-shadow: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: transparent;
+}
+
+.accordion-button::after {
+    background-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+/* Match table styling */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.accordion-body {
+    padding: 0;
+}
+
+.accordion-body .table {
+    margin-bottom: 0;
+}
+
+.accordion-body .table th {
+    background-color: #f8f9fa;
+    color: #000000;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.accordion-body .table td {
+    padding: 1rem;
+    vertical-align: middle;
+    color: #000000;
+}
+
+/* Board number styling */
+.board-number {
+    background-color: #f2f4f6;
+    color: #000000;
+    font-weight: 700 !important;
+    border-right: 2px solid #e9ecef;
+    text-align: center;
+}
+
+.board-header {
+    background-color: #f2f4f6;
+    border-right: 2px solid #e9ecef;
+    text-align: center;
+}
+
+/* Highlighting for changed rows */
+tr.pending-change {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+    transition: all 0.3s ease;
+}
+
+tr.pending-change td {
+    font-weight: 600;
+}
+
+/* Result select dropdown styling */
+.result-select {
+    min-width: 180px;
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    cursor: pointer;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.result-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(25, 232, 147, 0.25);
+    border-color: #19e893;
+}
+
+.result-select.border-warning {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+}
+
+/* Main save button styling */
+#unified-save-button {
+    min-width: 200px;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+#unified-save-button.btn-success {
+    background-color: #19e893;
+    border-color: #19e893;
+    color: #000000;
+}
+
+#unified-save-button.btn-success:hover {
+    background-color: #15cb7f;
+    border-color: #15cb7f;
+}
+
+/* Pulse animation for the save button */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(25, 232, 147, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(25, 232, 147, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(25, 232, 147, 0);
+    }
+}
+
+.pulse-animation {
+    animation: pulse 1.5s infinite;
+}
+
+/* Round completion button styling */
+.complete-round-btn {
+    margin: 1rem;
+    background-color: #19e893;
+    border-color: #19e893;
+    color: #000;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.complete-round-btn:hover {
+    background-color: #15cb7f;
+    border-color: #15cb7f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Toast notification styling */
+.toast-container {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1050;
+}
+
+.toast {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.toast-header {
+    border-bottom: none;
+    padding: 0.75rem 1rem;
+}
+
+.toast-body {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.toast.success {
+    border-left: 4px solid #19e893;
+}
+
+.toast.danger {
+    border-left: 4px solid #dc3545;
+}
+
+/* Quick set button styling */
+.btn-outline-light {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .admin-controls .card-body {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .admin-divider {
+        width: 100%;
+        height: 1px;
+        margin: 0.5rem 0;
+    }
+    
+    #unified-save-button {
+        width: 100%;
+    }
+    
+    .result-select {
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+/* Updated unified save button styling */
+#unified-save-button {
+    min-width: 200px;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+    background-color: #4056a1; /* Changed to a nice blue color */
+    border-color: #4056a1;
+    color: #ffffff; /* White text for better contrast */
+}
+
+#unified-save-button:hover {
+    background-color: #34478f; /* Slightly darker blue on hover */
+    border-color: #34478f;
+}
+
+/* When there are changes to save, use a different highlight color */
+#unified-save-button.btn-success {
+    background-color: #5c6bc0; /* A different shade of blue for "has changes" state */
+    border-color: #5c6bc0;
+    color: #ffffff;
+}
+
+#unified-save-button.btn-success:hover {
+    background-color: #3f51b5; /* Darker when hovering */
+    border-color: #3f51b5;
+}
